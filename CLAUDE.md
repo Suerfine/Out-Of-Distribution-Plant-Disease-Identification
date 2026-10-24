@@ -4,7 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-COS30082 Applied Machine Learning (Sem 2, 2026) group project: **zero-shot / out-of-distribution plant disease identification**. The repository currently contains only the README, a Python `.gitignore`, and the assignment spec at `docs/Out of Distributon Plant Disease Identification v2.pdf`. There is no source code, dependency manifest, build, lint, or test setup yet — when these are added, update this file with the real commands rather than assuming any.
+COS30082 Applied Machine Learning (Sem 2, 2026) group project: **zero-shot / out-of-distribution plant disease identification**. The assignment spec is at `docs/Out of Distributon Plant Disease Identification v2.pdf`. No models, training code, or test suite exist yet; when they are added, update this file with the real commands.
+
+## Commands
+
+```bash
+python -m venv .venv && .venv/Scripts/python -m pip install -r requirements.txt   # Windows venv layout
+.venv/Scripts/streamlit run streamlit_app.py
+```
+
+## Code layout
+
+- `dpd/data.py`: the single place that knows the dataset layout. It provides `load_metadata()` (all splits in one DataFrame with `split`, `source`, `is_unseen` columns) plus cached thumbnail and image loading. Dataset root defaults to `./DPD_Small` and can be overridden with the `DPD_ROOT` env var. Reuse this for training code instead of re-parsing the CSVs.
+- `streamlit_app.py` + `app_pages/`: multipage Streamlit app (`st.navigation`; pages are plain scripts). The Dataset pages are for exploration. `app_pages/inference.py` is a placeholder for the required UI (predict pair + show similar training images).
+- `dpd/gallery.py`: shared thumbnail-grid helper for the pages.
+- Thumbnails are cached with `st.cache_data`. After changing `dpd/data.py`, restart the server, because cached entries from the old code can be served otherwise.
 
 The spec PDF is the source of truth for requirements; re-read it when in doubt. Due 27/11/2026, 11:59pm.
 
