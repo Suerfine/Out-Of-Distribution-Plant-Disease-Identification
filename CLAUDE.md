@@ -4,21 +4,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-COS30082 Applied Machine Learning (Sem 2, 2026) group project: **zero-shot / out-of-distribution plant disease identification**. The assignment spec is at `docs/Out of Distributon Plant Disease Identification v2.pdf`. No models, training code, or test suite exist yet; when they are added, update this file with the real commands.
+COS30082 Applied Machine Learning (Sem 2, 2026) group project: **zero-shot / out-of-distribution plant disease identification**. The assignment spec is at `docs/Out of Distributon Plant Disease Identification v2.pdf`. Current state: dataset explorer app, shared evaluation code, zero-shot CLIP versions (v1-v3, v7), the proposed model (compositional prompt learning on frozen CLIP: v4-v6, v8), and the required CNN baselines (v9 independent, v10 multi-task). Each config's `_result` records its outcome.
 
 ## Commands
 
 ```bash
-python -m venv .venv && .venv/Scripts/python -m pip install -r requirements.txt   # Windows venv layout
+python -m venv .venv
+.venv/Scripts/python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128   # CUDA build first
+.venv/Scripts/python -m pip install -r requirements.txt
 .venv/Scripts/streamlit run streamlit_app.py
+.venv/Scripts/python zeroshot.py --config config/v3_config.json   # method clip_zeroshot
+.venv/Scripts/python train.py --config config/v6_config.json      # method clip_prompt_learning
+.venv/Scripts/python train_cnn.py --config config/v9_config.json  # method cnn_independent / cnn_multitask
 ```
+
+Each script asserts the config's `method` matches. The Streamlit app caches CLIP models on the GPU (about 3.5 GB once two runs are loaded); stop it while training CNNs on the 6 GB GPU. On Windows, never run DataLoader-with-workers code from a stdin script (`python -`): spawned workers cannot re-import it and hang; use a file. On Windows the Python process can segfault (exit 139) at interpreter shutdown after torch is imported; runs finish and write outputs before that.
+
+## Versioned configs
+
+Every model version is a `config/vN_config.json`; scripts take `--config` and read every decision from it (no hard-coded hyperparameters). Keys starting with `_` are documentation: `_note` explains what changed from the previous version and why, `_result` records the outcome after the run (fill it in by hand). Each section can carry its own `_note`. To try a change, copy the latest config to a new version number rather than editing an old one. Outputs go to the config's `output_dir` (`runs/vN/`, gitignored).
 
 ## Code layout
 
-- `dpd/data.py`: the single place that knows the dataset layout. It provides `load_metadata()` (all splits in one DataFrame with `split`, `source`, `is_unseen` columns) plus cached thumbnail and image loading. Dataset root defaults to `./DPD_Small` and can be overridden with the `DPD_ROOT` env var. Reuse this for training code instead of re-parsing the CSVs.
-- `streamlit_app.py` + `app_pages/`: multipage Streamlit app (`st.navigation`; pages are plain scripts). The Dataset pages are for exploration. `app_pages/inference.py` is a placeholder for the required UI (predict pair + show similar training images).
-- `dpd/gallery.py`: shared thumbnail-grid helper for the pages.
-- Thumbnails are cached with `st.cache_data`. After changing `dpd/data.py`, restart the server, because cached entries from the old code can be served otherwise.
+- `dpd/data.py`: the single place that knows the dataset layout (no Streamlit imports). `read_metadata()` returns all splits in one DataFrame with `split`, `source`, `is_unseen` columns; `pair_table()` maps pair id 0..332 to crop/disease ids and names. Dataset root defaults to `./DPD_Small`, override with the `DPD_ROOT` env var.
+- `dpd/evaluate.py`: the shared protocol. Every model produces a score matrix (images × 333 pairs) for each test split and calls `evaluate()`, which ranks against all 333 pairs (generalised zero-shot) and returns Top-1/Top-5, per-class means, crop/disease accuracy, harmonic mean, and an unseen-only diagnostic. `calibrate()` subtracts `gamma` from seen-pair scores; gamma must be tuned without the test sets. `seen_confusion_matrix()` is 323 seen rows × 333 predicted columns.
+- `dpd/clip_utils.py`: open_clip loading, prompt building from the config's `names`/`prompts` sections, and image/text embedding. Image embeddings from a frozen encoder are cached in `runs/cache/`.
+- `zeroshot.py`: zero-shot CLIP runner (method `clip_zeroshot`). Fails on duplicate prompts across pairs (e.g. `banana_segatoka` and `banana_sigatoka` are separate classes, so they must not be renamed to the same text) and on prompts over 77 tokens.
+- `train.py` + `dpd/prompt_learner.py`: the proposed model. `CompositionalPrompts` keeps CLIP frozen and learns one vector per crop and per disease, substituted for a placeholder token (`x`) in fixed prompt sentences; text sequences are truncated after EOT (safe under the causal mask) to save memory. Training runs on cached image embeddings. Two stages: select epoch + gamma on a validation split (`dpd/splits.py`: whole seen pairs held out as pseudo-unseen, plus a fraction of images as val-seen), then refit on all train and test once.
+- `dpd/inference.py`: loads a finished run (`list_runs`, `load_run_model`) and scores single images. Uses the run's `pair_text_embeddings.npy` (saved by `train.py` since v5) or rebuilds the embeddings from the config (zero-shot) or `prompt_vectors.pt` (v4); verified to reproduce the saved test scores.
+- `train_cnn.py` + `dpd/cnn.py`: the CNN baselines (torchvision ResNet-50, one linear head per target). Pair scores = log P(crop) + log P(disease), so they go through the same 333-pair evaluation and gamma selection (gamma in log-prob units, hence a different `gamma_grid`). Images come from `dpd/resize_cache.py` (one-off copies at shorter side 256 in `runs/cache/resized_256/`). Do not use `channels_last`: on this machine (RTX 4050 Laptop, torch 2.11) it made ResNet-50 training 4.5x slower.
+- `dpd/report.py`: writes `metrics.json`, `confusion_test_seen.csv`, `predictions_<split>.csv`, `scores.npz` identically for every method.
+- `knowledge/disease_descriptions_v1.json`: one short visual symptom description per raw disease name, used via `prompts.descriptions_file`. Written from general knowledge, unverified.
+- `streamlit_app.py` + `app_pages/`: multipage Streamlit app (`st.navigation`; pages are plain scripts). `dpd/ui.py` holds the Streamlit-only helpers (cached `load_metadata`, thumbnails, image grid). `app_pages/inference.py` is the required UI: pick any finished run from `runs/`, upload or pick a test image, and it shows the calibrated top-5 pairs, the nearest training images, and for the predicted pair the training images of the same crop and the same disease (how an unseen pair is composed).
+- Streamlit caches thumbnails with `st.cache_data`. After changing `dpd/ui.py` or `dpd/data.py`, restart the server, because cached entries from the old code can be served otherwise.
 
 The spec PDF is the source of truth for requirements; re-read it when in doubt. Due 27/11/2026, 11:59pm.
 

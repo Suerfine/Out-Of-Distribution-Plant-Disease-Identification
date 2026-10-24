@@ -1,0 +1,93 @@
+{
+  "_note": "v9 (required baseline 1, independent CNNs): two separate ResNet-50s fine-tuned on DPD-Small train, one predicting the crop (55 classes), one the disease (175 classes). Each network only ever sees its own label. For the shared 333-pair evaluation their outputs are combined as log P(crop) + log P(disease), so unseen pairs can be predicted from a seen crop plus a seen disease. Same validation procedure and gamma calibration as the CLIP versions, so the comparison is fair. Both networks are scored at the same epoch when choosing the epoch count.",
+  "_result": "Pending.",
+  "version": "v9",
+  "method": "cnn_independent",
+  "seed": 42,
+  "data": {
+    "_note": "Same splits and 333-pair protocol as the CLIP versions (generalised zero-shot).",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "ResNet-50 with ImageNet weights (torchvision IMAGENET1K_V2): a standard, well-understood CNN for the required baseline, small enough to fine-tune fully on the 6 GB GPU. One linear head per target with dropout 0.3.",
+    "backbone": "resnet50",
+    "pretrained": true,
+    "head_dropout": 0.3
+  },
+  "input": {
+    "_note": "Images are pre-resized once to shorter side 256 (runs/cache/resized_256) so training is not bottlenecked on decoding 3120 px JPEGs. Train: random resized crop 224. Test: resize 256, centre crop 224. ImageNet mean/std.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "Standard field-robustness augmentation: random resized crop (scale 0.25-1), horizontal and vertical flips (leaf orientation is arbitrary), brightness/contrast/saturation jitter 0.2. No hue jitter: colour is diagnostic (yellow halos, orange rust, purple tints), see the symptom research.",
+    "random_resized_crop_scale": [
+      0.25,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "Cross-entropy with label smoothing 0.1 (long-tailed, noisy labels: median 7 images per pair). For the multi-task model the two head losses are summed with equal weight.",
+    "label_smoothing": 0.1,
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    }
+  },
+  "optimizer": {
+    "_note": "AdamW; backbone 1e-4 (pretrained, small steps), heads 1e-3 (random init), weight decay 0.05. Cosine decay per step over the run.",
+    "lr_backbone": 0.0001,
+    "lr_head": 0.001,
+    "weight_decay": 0.05
+  },
+  "validation": {
+    "_note": "Same validation split procedure and settings as v6 (pseudo-unseen pairs held out, healthy excluded, 40 images per held-out pair, real unseen pairs hidden), so gamma is chosen the same way for baselines and the proposed model. gamma_grid is in log-probability units here (pair score = sum of two log-probs), so its range differs from the CLIP versions' cosine units: 0 to 10, step 0.1.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      10.0,
+      0.1
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "Batch 32, AMP (channels-last was 4.5x slower on this GPU, see train_cnn.py). max_epochs bounds stage 1; stage 2 refits on all training images for the selected epoch count.",
+    "batch_size": 32,
+    "max_epochs": 20,
+    "final_fit": "all_train"
+  },
+  "evaluation": {
+    "_note": "Pair score = log P(crop) + log P(disease). gamma (subtracted from seen pairs) from validation, in log-probability units.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "4 dataloader workers; images come from the resized cache.",
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 4
+  },
+  "output_dir": "runs/v9"
+}

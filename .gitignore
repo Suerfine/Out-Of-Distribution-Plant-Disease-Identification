@@ -219,3 +219,5 @@ __marimo__/
 
 #data
 DPD_Small
+#runs (metrics, predictions, cached embeddings)
+runs/

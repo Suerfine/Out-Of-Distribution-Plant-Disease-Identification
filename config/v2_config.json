@@ -1,0 +1,114 @@
+{
+  "_note": "v2 (zero-shot, text only): two changes vs v1, both pure text, no training. (1) Class names cleaned: typos fixed (xamthomonas, verticulium, crinckle, monillia), ambiguous dataset names expanded (paddy -> rice, pepper_bell -> bell pepper, curl -> leaf curl), and Latin pest/pathogen names replaced by the common name CLIP is likelier to have seen (eriosoma_lanigerum -> woolly apple aphids, venturia_inaequalis -> apple scab, ...). Names were left alone when the meaning was unclear (spot, streak, stripe, dot_leaf, mummification_leaf). (2) Five prompt templates averaged per class (standard CLIP prompt ensembling) instead of one. v1 showed CLIP gets the crop right far more often than the disease (43% vs 8% on test_seen), so both changes target the disease wording.",
+  "_result": "Small gain over v1: harmonic mean 5.6% (v1 5.4%), top-5 HM 22.2% (v1 18.4%); seen top-1 7.2%, unseen top-1 4.6% (unchanged). Disease correct rose on test_seen (10.5% vs 8.2%) but not on test_unseen. Unseen-only diagnostic 47% (v1 43%). Cleaner names and template averaging help ranking (top-5) more than top-1. Found while running: banana_segatoka and banana_sigatoka are two separate classes for the same disease (11 and 10 train images), a label-quality issue worth noting in the report.",
+  "version": "v2",
+  "method": "clip_zeroshot",
+  "seed": 42,
+
+  "data": {
+    "_note": "Unchanged from v1.",
+    "eval_splits": ["test_seen", "test_unseen"],
+    "label_space": "all_pairs"
+  },
+
+  "model": {
+    "_note": "Unchanged from v1 (OpenAI ViT-B/16, QuickGELU variant).",
+    "library": "open_clip",
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai"
+  },
+
+  "input": {
+    "_note": "Unchanged from v1.",
+    "preprocess": "model_default"
+  },
+
+  "names": {
+    "_note": "Overrides are applied before underscore_to_space. segatoka is NOT renamed: banana_segatoka and banana_sigatoka are two separate classes in the dataset (a duplicate label for one disease), so renaming would give two classes the same prompt. Common names for pests were chosen only where the mapping is standard; zeroshot.py fails if two pairs end up with identical prompts.",
+    "underscore_to_space": true,
+    "crop_overrides": {
+      "pepper_bell": "bell pepper",
+      "paddy": "rice",
+      "blackgram": "black gram"
+    },
+    "disease_overrides": {
+      "xamthomonas": "xanthomonas bacterial blight",
+      "verticulium_wilt": "verticillium wilt",
+      "crinckle": "crinkle",
+      "monillia_laxa": "monilinia brown rot",
+      "leafblast": "leaf blast",
+      "die_back": "dieback",
+      "gray_light": "gray blight",
+      "curl": "leaf curl",
+      "viral": "viral disease",
+      "miner": "leaf miner damage",
+      "slug": "slug feeding damage",
+      "caterpillar": "caterpillar feeding damage",
+      "insects_damages": "insect damage",
+      "nutrition_deficiency": "nutrient deficiency",
+      "scorch": "leaf scorch",
+      "pox_virus": "plum pox virus",
+      "pocket_disease": "plum pocket disease",
+      "cercospora": "cercospora leaf spot",
+      "tungro": "tungro virus",
+      "hispa": "rice hispa beetle damage",
+      "aphis_spp": "aphids",
+      "eriosoma_lanigerum": "woolly apple aphids",
+      "icerya_seychellarum": "fluted scale insects",
+      "parthenolecanium_corni": "lecanium scale insects",
+      "ceroplastes_rubens": "red wax scale insects",
+      "aulacaspis_tubercularis": "white mango scale insects",
+      "ischnaspis_longirostris": "black thread scale insects",
+      "procontarinia_matteiana": "mango leaf gall midge galls",
+      "procontarinia_rubus": "gall midge galls",
+      "erosomyia_sp": "gall midge damage",
+      "venturia_inaequalis": "apple scab",
+      "gnomonia_leptostyla": "walnut anthracnose",
+      "erwinia_amylovora": "erwinia fire blight",
+      "aculus_olearius": "olive bud mites",
+      "cisaberoptus_kenyae": "leaf coating mites",
+      "dialeuropora_decempuncta": "whiteflies",
+      "neomelicharia_sparsa": "planthoppers",
+      "valanga_nigricornis": "grasshopper feeding damage",
+      "mictis_longicornis": "leaf-footed bug damage",
+      "apoderus_javanicus": "leaf-rolling weevil damage",
+      "orthaga_euadrusalis": "leaf webber caterpillars",
+      "dappula_tertia": "bagworms",
+      "diabrotica_speciosa": "cucumber beetle feeding damage"
+    }
+  },
+
+  "prompts": {
+    "_note": "Five templates per class, embeddings averaged. Wording mixes 'photo of', close-up, and field phrasing because DPD images range from lab close-ups to field shots.",
+    "templates": [
+      "a photo of {crop} leaves with {disease}.",
+      "a close-up photo of a {crop} leaf showing {disease}.",
+      "a {crop} plant affected by {disease}.",
+      "{disease} on a {crop} leaf.",
+      "a field photo of {crop} leaves with {disease}."
+    ],
+    "healthy_templates": [
+      "a photo of healthy {crop} leaves.",
+      "a close-up photo of a healthy {crop} leaf.",
+      "a healthy {crop} plant.",
+      "a healthy green {crop} leaf.",
+      "a field photo of healthy {crop} leaves."
+    ]
+  },
+
+  "evaluation": {
+    "_note": "Unchanged from v1 (gamma 0: nothing trained yet).",
+    "top_k": [1, 5],
+    "calibration_gamma": 0.0
+  },
+
+  "runtime": {
+    "_note": "Unchanged from v1; reuses v1's cached image embeddings.",
+    "device": "cuda",
+    "amp": true,
+    "batch_size": 64,
+    "num_workers": 4
+  },
+
+  "output_dir": "runs/v2"
+}

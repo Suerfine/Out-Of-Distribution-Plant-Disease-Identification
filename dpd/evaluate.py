@@ -1,0 +1,112 @@
+"""Shared evaluation protocol. Every model hands in a score matrix over all 333 pairs, so results stay comparable.
+
+Protocol (generalised zero-shot): each test image is ranked against ALL pairs (seen + unseen), for both test splits.
+  - Top-1 / Top-5 accuracy per split (per image), plus the per-class mean as a balance check.
+  - Harmonic mean of seen and unseen accuracy, for Top-1 and Top-5.
+  - Confusion matrix for test_seen: rows = the 323 seen pairs (true), columns = all 333 pairs (predicted),
+    so seen images misclassified as an unseen pair stay visible.
+`gamma` (calibrated stacking) is subtracted from every seen pair's score before ranking; it must be chosen
+without looking at the test sets.
+"""
+
+import numpy as np
+import pandas as pd
+
+
+def calibrate(scores: np.ndarray, unseen_mask: np.ndarray, gamma: float) -> np.ndarray:
+    """Subtract `gamma` from the seen-pair columns (counteracts the bias towards seen classes)."""
+    return scores - gamma * (~unseen_mask)[None, :]
+
+
+def topk_hits(scores: np.ndarray, labels: np.ndarray, k: int) -> np.ndarray:
+    """Boolean per image: is the true label among the k highest scores?"""
+    topk = np.argpartition(-scores, kth=min(k, scores.shape[1]) - 1, axis=1)[:, :k]
+    return (topk == labels[:, None]).any(axis=1)
+
+
+def harmonic_mean(a: float, b: float) -> float:
+    return 0.0 if a + b == 0 else 2 * a * b / (a + b)
+
+
+def evaluate_split(scores: np.ndarray, labels: np.ndarray, pairs: pd.DataFrame, top_k=(1, 5)) -> dict:
+    """Accuracy for one split. `pairs` is dpd.data.pair_table() (row i = pair id i)."""
+    pred = scores.argmax(axis=1)
+    out = {"n_images": int(len(labels)), "n_classes": int(len(np.unique(labels)))}
+    for k in top_k:
+        hits = topk_hits(scores, labels, k)
+        out[f"top{k}"] = float(hits.mean())
+        # Mean over classes: guards against one big class (e.g. tomato_early_blight is 1/3 of test_unseen).
+        out[f"top{k}_class_mean"] = float(pd.Series(hits).groupby(labels).mean().mean())
+    # Diagnostics for the compositional view: was the crop / disease right even when the pair was wrong?
+    crop_ids, disease_ids = pairs["crop_id"].to_numpy(), pairs["disease_id"].to_numpy()
+    out["crop_top1"] = float((crop_ids[pred] == crop_ids[labels]).mean())
+    out["disease_top1"] = float((disease_ids[pred] == disease_ids[labels]).mean())
+    out["predicted_as_unseen"] = float(pairs["is_unseen"].to_numpy()[pred].mean())
+    return out
+
+
+def evaluate(
+    scores_seen: np.ndarray,
+    labels_seen: np.ndarray,
+    scores_unseen: np.ndarray,
+    labels_unseen: np.ndarray,
+    pairs: pd.DataFrame,
+    gamma: float = 0.0,
+    top_k=(1, 5),
+) -> dict:
+    unseen_mask = pairs["is_unseen"].to_numpy()
+    s_seen = calibrate(scores_seen, unseen_mask, gamma)
+    s_unseen = calibrate(scores_unseen, unseen_mask, gamma)
+    seen = evaluate_split(s_seen, labels_seen, pairs, top_k)
+    unseen = evaluate_split(s_unseen, labels_unseen, pairs, top_k)
+    result = {"gamma": gamma, "test_seen": seen, "test_unseen": unseen}
+    for k in top_k:
+        result[f"harmonic_mean_top{k}"] = harmonic_mean(seen[f"top{k}"], unseen[f"top{k}"])
+
+    # Diagnostic only (not the protocol): unseen accuracy when choosing among the 10 unseen pairs alone.
+    # The gap to test_unseen.top1 shows how much the seen pairs are stealing unseen images.
+    unseen_ids = np.flatnonzero(unseen_mask)
+    remap = {p: i for i, p in enumerate(unseen_ids)}
+    closed = scores_unseen[:, unseen_ids]
+    closed_labels = np.array([remap[p] for p in labels_unseen])
+    result["diagnostic_unseen_only_top1"] = float(topk_hits(closed, closed_labels, 1).mean())
+    return result
+
+
+def seen_confusion_matrix(scores_seen: np.ndarray, labels_seen: np.ndarray, pairs: pd.DataFrame, gamma: float = 0.0) -> pd.DataFrame:
+    """Counts with rows = true seen pair, columns = predicted pair (all 333), labelled by pair name."""
+    pred = calibrate(scores_seen, pairs["is_unseen"].to_numpy(), gamma).argmax(axis=1)
+    seen_ids = pairs.loc[~pairs["is_unseen"], "pair_id"].to_numpy()
+    cm = np.zeros((len(seen_ids), len(pairs)), dtype=np.int32)
+    row_of = {p: i for i, p in enumerate(seen_ids)}
+    np.add.at(cm, ([row_of[t] for t in labels_seen], pred), 1)
+    names = pairs["pair"].to_numpy()
+    return pd.DataFrame(cm, index=pd.Index(names[seen_ids], name="true"), columns=pd.Index(names, name="predicted"))
+
+
+def predictions_table(files, scores: np.ndarray, labels: np.ndarray, pairs: pd.DataFrame, gamma: float = 0.0, k: int = 5) -> pd.DataFrame:
+    """Per-image top-k predictions, for error analysis and the UI."""
+    s = calibrate(scores, pairs["is_unseen"].to_numpy(), gamma)
+    order = np.argsort(-s, axis=1)[:, :k]
+    names = pairs["pair"].to_numpy()
+    df = pd.DataFrame({"file": list(files), "true": names[labels], "correct_top1": order[:, 0] == labels})
+    for i in range(k):
+        df[f"pred{i + 1}"] = names[order[:, i]]
+        df[f"score{i + 1}"] = np.take_along_axis(s, order[:, i : i + 1], axis=1)[:, 0]
+    return df
+
+
+def format_summary(result: dict) -> str:
+    s, u = result["test_seen"], result["test_unseen"]
+    lines = [
+        f"gamma = {result['gamma']:g}",
+        f"{'':22s}{'top1':>8s}{'top5':>8s}{'top1 cls':>10s}{'crop':>8s}{'disease':>9s}{'->unseen':>10s}",
+    ]
+    for name, r in (("test_seen", s), ("test_unseen", u)):
+        lines.append(
+            f"{name:22s}{r['top1']:8.2%}{r['top5']:8.2%}{r['top1_class_mean']:10.2%}"
+            f"{r['crop_top1']:8.2%}{r['disease_top1']:9.2%}{r['predicted_as_unseen']:10.2%}"
+        )
+    lines.append(f"{'harmonic mean':22s}{result['harmonic_mean_top1']:8.2%}{result['harmonic_mean_top5']:8.2%}")
+    lines.append(f"(diagnostic) unseen top1 among the 10 unseen pairs only: {result['diagnostic_unseen_only_top1']:.2%}")
+    return "\n".join(lines)

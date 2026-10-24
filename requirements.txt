@@ -1,3 +1,8 @@
+# Install the CUDA build of torch first (see CLAUDE.md), then: pip install -r requirements.txt
 streamlit>=1.57
 pandas
 pillow
+torch
+torchvision
+open_clip_torch
+tqdm

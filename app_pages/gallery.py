@@ -2,8 +2,8 @@ import math
 
 import streamlit as st
 
-from dpd.data import SPLITS, load_image, load_metadata
-from dpd.gallery import SPLIT_LABELS, image_grid
+from dpd.data import SPLITS, load_image
+from dpd.ui import SPLIT_LABELS, image_grid, load_metadata
 
 df = load_metadata()
 

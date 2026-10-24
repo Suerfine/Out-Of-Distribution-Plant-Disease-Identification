@@ -1,0 +1,54 @@
+{
+  "_note": "v1 (zero-shot CLIP reference, no training): how much does an off-the-shelf vision-language model already know about these crop-disease pairs? Each pair becomes a text prompt; every test image is ranked against all 333 prompts by cosine similarity. This is the 'before any training' row of the results table, the starting point the trained CLIP versions are measured against. Kept deliberately plain (one template, mechanical class names, no calibration) so each later change can be measured on its own.",
+  "_result": "Seen top-1 6.4% / top-5 20.7%, unseen top-1 4.6% / top-5 16.6%, harmonic mean 5.4% (top-5 HM 18.4%); chance is 0.3% top-1. (A first run with plain 'ViT-B-16' got HM 3.3%; see model._note.) CLIP recognises the crop (crop correct 43% seen / 32% unseen) but barely the disease (8% / 8%), so the gap the trained versions must close is disease knowledge, not crop knowledge. Predictions collapse onto a few 'hub' prompts (soybean_bacterial_blight takes 99 seen and 129 unseen images). Several errors are near-synonyms in the label space (sugarcane_rust -> sugarcane_brown_rust, cucumber_powdery_mildew -> pumpkin_powdery_mildew). Choosing among the 10 unseen pairs only gives 43%, so the text carries signal once the seen pairs stop competing. Best unseen pair: cotton_bacterial_blight (22% top-1); 0% on mango_anthracnose, cherry_aphis_spp, corn_brown_spot, cucumber_downy_mildew.",
+  "version": "v1",
+  "method": "clip_zeroshot",
+  "seed": 42,
+
+  "data": {
+    "_note": "No training data used. Both test splits are scored against all 333 pairs (generalised zero-shot), matching the protocol every model will use. The dataset root comes from DPD_ROOT or ./DPD_Small (see dpd/data.py).",
+    "eval_splits": ["test_seen", "test_unseen"],
+    "label_space": "all_pairs"
+  },
+
+  "model": {
+    "_note": "OpenAI CLIP ViT-B/16 via open_clip: the standard, well-documented starting point and small enough for the 6 GB RTX 4050. BioCLIP is a planned later comparison. Arch must be the -quickgelu variant: the OpenAI weights were trained with QuickGELU, and plain 'ViT-B-16' silently runs them with standard GELU (open_clip only warns), which degrades the features.",
+    "library": "open_clip",
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai"
+  },
+
+  "input": {
+    "_note": "The checkpoint's own preprocessing (resize shorter side to 224, centre crop 224, CLIP mean/std). Large images (up to 3120 px) lose fine lesions at 224; that is a known limitation, not changed here.",
+    "preprocess": "model_default"
+  },
+
+  "names": {
+    "_note": "Mechanical only: underscores become spaces, no overrides. The raw names include odd forms (pepper_bell, paddy for rice, aphis_spp, typos such as segatoka/xamthomonas); fixing them is a candidate later version so its effect can be measured.",
+    "underscore_to_space": true,
+    "crop_overrides": {},
+    "disease_overrides": {}
+  },
+
+  "prompts": {
+    "_note": "One template, plural 'leaves' to avoid a/an errors. 'healthy' gets its own template because 'with healthy' is not a disease. Template ensembling and symptom descriptions are candidate later versions.",
+    "templates": ["a photo of {crop} leaves with {disease}."],
+    "healthy_templates": ["a photo of healthy {crop} leaves."]
+  },
+
+  "evaluation": {
+    "_note": "gamma = 0: no seen/unseen calibration. Zero-shot CLIP has not been trained on the seen pairs, so it has no learned bias towards them; calibration matters once prompts are trained.",
+    "top_k": [1, 5],
+    "calibration_gamma": 0.0
+  },
+
+  "runtime": {
+    "_note": "Inference only; batch 64 at 224 px fits the 6 GB GPU in fp16 autocast. Image embeddings are cached in runs/cache (the encoder is frozen).",
+    "device": "cuda",
+    "amp": true,
+    "batch_size": 64,
+    "num_workers": 4
+  },
+
+  "output_dir": "runs/v1"
+}

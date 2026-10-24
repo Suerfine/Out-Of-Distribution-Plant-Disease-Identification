@@ -1,0 +1,133 @@
+{
+  "_note": "v8 (trained, BioCLIP backbone): v6 with ONLY the backbone changed to BioCLIP (see v7). Same prompts, descriptions, validation (3 splits) and training settings, so the difference from v6 is the backbone alone. Tests whether biology pretraining helps once the crop/disease vectors are trained.",
+  "_result": "BioCLIP does not help: harmonic mean 48.6% top-1 / 83.3% top-5, vs 51.8% / 87.1% for v6 (identical recipe on OpenAI CLIP). Seen top-1 is similar (43.7% vs 41.2%; uncalibrated 56.9% vs 55.5%), so BioCLIP's image features learn the seen pairs as well, but unseen is clearly worse: 54.7% vs 69.7% top-1, and the unseen-only diagnostic 59.6% vs 75.6%. So composing a new pair from separately learned crop and disease vectors works less well on BioCLIP, consistent with v7 (zero-shot HM 3.3%): its text encoder, trained on taxonomic captions, is a weaker base for common-name prompts with symptom descriptions. Validation also needed a much larger gamma (0.07; per split 0.075 / 0.0575 / 0.0725), i.e. a stronger seen bias to correct. OpenAI CLIP stays the backbone.",
+  "version": "v8",
+  "method": "clip_prompt_learning",
+  "seed": 42,
+  "data": {
+    "_note": "Unchanged from v6.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Same as v7: BioCLIP (hf-hub:imageomics/bioclip), ViT-B/16, same CLIP text encoder layout, so CompositionalPrompts works unchanged.",
+    "library": "open_clip",
+    "arch": "hf-hub:imageomics/bioclip",
+    "pretrained": null
+  },
+  "input": {
+    "_note": "Unchanged from v6.",
+    "preprocess": "model_default"
+  },
+  "names": {
+    "_note": "Unchanged from v6.",
+    "underscore_to_space": true,
+    "crop_overrides": {
+      "pepper_bell": "bell pepper",
+      "paddy": "rice",
+      "blackgram": "black gram"
+    },
+    "disease_overrides": {
+      "xamthomonas": "xanthomonas bacterial blight",
+      "verticulium_wilt": "verticillium wilt",
+      "crinckle": "crinkle",
+      "monillia_laxa": "monilinia brown rot",
+      "leafblast": "leaf blast",
+      "die_back": "dieback",
+      "gray_light": "gray blight",
+      "curl": "leaf curl",
+      "viral": "viral disease",
+      "miner": "leaf miner damage",
+      "slug": "slug feeding damage",
+      "caterpillar": "caterpillar feeding damage",
+      "insects_damages": "insect damage",
+      "nutrition_deficiency": "nutrient deficiency",
+      "scorch": "leaf scorch",
+      "pox_virus": "plum pox virus",
+      "pocket_disease": "plum pocket disease",
+      "cercospora": "cercospora leaf spot",
+      "tungro": "tungro virus",
+      "hispa": "rice hispa beetle damage",
+      "aphis_spp": "aphids",
+      "eriosoma_lanigerum": "woolly apple aphids",
+      "icerya_seychellarum": "fluted scale insects",
+      "parthenolecanium_corni": "lecanium scale insects",
+      "ceroplastes_rubens": "red wax scale insects",
+      "aulacaspis_tubercularis": "white mango scale insects",
+      "ischnaspis_longirostris": "black thread scale insects",
+      "procontarinia_matteiana": "mango leaf gall midge galls",
+      "procontarinia_rubus": "gall midge galls",
+      "erosomyia_sp": "gall midge damage",
+      "venturia_inaequalis": "apple scab",
+      "gnomonia_leptostyla": "walnut anthracnose",
+      "erwinia_amylovora": "erwinia fire blight",
+      "aculus_olearius": "olive bud mites",
+      "cisaberoptus_kenyae": "leaf coating mites",
+      "dialeuropora_decempuncta": "whiteflies",
+      "neomelicharia_sparsa": "planthoppers",
+      "valanga_nigricornis": "grasshopper feeding damage",
+      "mictis_longicornis": "leaf-footed bug damage",
+      "apoderus_javanicus": "leaf-rolling weevil damage",
+      "orthaga_euadrusalis": "leaf webber caterpillars",
+      "dappula_tertia": "bagworms",
+      "diabrotica_speciosa": "cucumber beetle feeding damage"
+    }
+  },
+  "prompts": {
+    "_note": "Unchanged from v6.",
+    "descriptions_file": "knowledge/disease_descriptions_v1.json",
+    "pair_template": "a photo of {crop} leaves with {disease}: {description}.",
+    "crop_template": "a photo of {crop} leaves.",
+    "disease_template": "a photo of leaves with {disease}: {description}."
+  },
+  "validation": {
+    "_note": "Unchanged from v6.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      0.1,
+      0.0025
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "Unchanged from v6.",
+    "lr": 0.0002,
+    "weight_decay": 0.0,
+    "batch_size": 256,
+    "max_epochs": 30,
+    "logit_scale": 100.0,
+    "loss_weights": {
+      "pair": 1.0,
+      "crop": 0.5,
+      "disease": 0.5
+    },
+    "final_fit": "all_train"
+  },
+  "evaluation": {
+    "_note": "Unchanged from v6.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "Unchanged from v6.",
+    "device": "cuda",
+    "amp": true,
+    "grad_checkpointing": true,
+    "batch_size": 64,
+    "num_workers": 4
+  },
+  "output_dir": "runs/v8"
+}

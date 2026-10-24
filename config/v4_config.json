@@ -1,0 +1,133 @@
+{
+  "_note": "v4 (first trained model: compositional prompt learning on frozen CLIP). Builds on v3's zero-shot prompt (cleaned names + symptom descriptions, HM 10.2%). New: each crop (55) and each disease (175) becomes ONE learnable word vector inside the prompt 'a photo of [CROP] leaves with [DISEASE]: <description>.', initialised from CLIP's embedding of the v2/v3 name. Both CLIP encoders stay frozen; only 230 x 512 = 118k numbers are trained, so overfitting risk is low despite a median of 7 images per pair. Unseen pairs reuse vectors trained on other pairs. Seen-class calibration (gamma) is introduced here: training on seen pairs biases scores towards them, and gamma is chosen on a validation split with pseudo-unseen pairs, never on test.",
+  "_result": "Big step up from zero-shot. With gamma 0.045 (chosen on validation): harmonic mean 43.6% top-1 / 84.7% top-5 (v3: 10.2% / 30.0%); seen top-1 30.1% / top-5 74.7%, unseen top-1 79.1% / top-5 97.7%. Uncalibrated (gamma 0): HM 34.9%, seen 50.8%, unseen 26.6%; crop correct 83% seen / 70% unseen, disease 55% / 31%. Learning the 230 vectors fixed the disease gap seen in v1-v3. Selection picked epoch 3 of 40: validation pseudo-unseen accuracy peaks at epochs 1-3 and then falls (39% -> 15%) while val-seen keeps rising, so longer training overfits the vectors to the seen pairs; val HM is also noisy epoch to epoch (35.7% at epoch 3 vs 35.7% at epoch 7). Calibration overshoots on test: gamma 0.045 sends 53% of seen-test images to unseen pairs and halves seen top-1 (50.8% -> 30.1%). A diagnostic sweep on test (NOT usable for selection) shows HM would peak near gamma 0.02 (~52.7%), so the validation split mis-estimates gamma. Likely causes: validation ranks against 30 untrained pairs (20 pseudo-unseen + the 10 real unseen) versus 10 at test, and pseudo-unseen is dominated by cassava_mosaic (544 of 1,340 images). Per unseen pair at the chosen gamma: corn_brown_spot and mango_anthracnose 100%, grape_black_rot 85%, tomato_early_blight 82%, pepper_bell_bacterial_spot 73%, cherry_aphis_spp 42% (lowest). Next (v5): make validation mirror test (exclude the real unseen pairs from the validation label space, cap images per pseudo-unseen pair) so gamma transfers, and lower the learning rate so the best epoch is less noisy.",
+  "version": "v4",
+  "method": "clip_prompt_learning",
+  "seed": 42,
+  "data": {
+    "_note": "Trains on DPD_Small train only. Test splits scored against all 333 pairs, as in v1-v3.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Same frozen OpenAI ViT-B/16 as v1-v3, so image embeddings come from the shared cache.",
+    "library": "open_clip",
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai"
+  },
+  "input": {
+    "_note": "Checkpoint preprocessing, no augmentation: the image encoder is frozen and its embeddings are cached once. Augmentation would need several cached views per image; a candidate for a later version.",
+    "preprocess": "model_default"
+  },
+  "names": {
+    "_note": "Same as v2/v3. Here the names only initialise the learnable vectors; training can move them.",
+    "underscore_to_space": true,
+    "crop_overrides": {
+      "pepper_bell": "bell pepper",
+      "paddy": "rice",
+      "blackgram": "black gram"
+    },
+    "disease_overrides": {
+      "xamthomonas": "xanthomonas bacterial blight",
+      "verticulium_wilt": "verticillium wilt",
+      "crinckle": "crinkle",
+      "monillia_laxa": "monilinia brown rot",
+      "leafblast": "leaf blast",
+      "die_back": "dieback",
+      "gray_light": "gray blight",
+      "curl": "leaf curl",
+      "viral": "viral disease",
+      "miner": "leaf miner damage",
+      "slug": "slug feeding damage",
+      "caterpillar": "caterpillar feeding damage",
+      "insects_damages": "insect damage",
+      "nutrition_deficiency": "nutrient deficiency",
+      "scorch": "leaf scorch",
+      "pox_virus": "plum pox virus",
+      "pocket_disease": "plum pocket disease",
+      "cercospora": "cercospora leaf spot",
+      "tungro": "tungro virus",
+      "hispa": "rice hispa beetle damage",
+      "aphis_spp": "aphids",
+      "eriosoma_lanigerum": "woolly apple aphids",
+      "icerya_seychellarum": "fluted scale insects",
+      "parthenolecanium_corni": "lecanium scale insects",
+      "ceroplastes_rubens": "red wax scale insects",
+      "aulacaspis_tubercularis": "white mango scale insects",
+      "ischnaspis_longirostris": "black thread scale insects",
+      "procontarinia_matteiana": "mango leaf gall midge galls",
+      "procontarinia_rubus": "gall midge galls",
+      "erosomyia_sp": "gall midge damage",
+      "venturia_inaequalis": "apple scab",
+      "gnomonia_leptostyla": "walnut anthracnose",
+      "erwinia_amylovora": "erwinia fire blight",
+      "aculus_olearius": "olive bud mites",
+      "cisaberoptus_kenyae": "leaf coating mites",
+      "dialeuropora_decempuncta": "whiteflies",
+      "neomelicharia_sparsa": "planthoppers",
+      "valanga_nigricornis": "grasshopper feeding damage",
+      "mictis_longicornis": "leaf-footed bug damage",
+      "apoderus_javanicus": "leaf-rolling weevil damage",
+      "orthaga_euadrusalis": "leaf webber caterpillars",
+      "dappula_tertia": "bagworms",
+      "diabrotica_speciosa": "cucumber beetle feeding damage"
+    }
+  },
+  "prompts": {
+    "_note": "One template (v3 averaged five; with learnable vectors, five templates would cost five text passes per step). Healthy uses the same template, so 'healthy' is a learnable disease vector like the others. The crop-only and disease-only prompts feed the auxiliary losses, which keep each vector meaningful on its own: that is what an unseen pair needs.",
+    "descriptions_file": "knowledge/disease_descriptions_v1.json",
+    "pair_template": "a photo of {crop} leaves with {disease}: {description}.",
+    "crop_template": "a photo of {crop} leaves.",
+    "disease_template": "a photo of leaves with {disease}: {description}."
+  },
+  "validation": {
+    "_note": "From train: 20 whole seen pairs (each with >= 8 images) held out as pseudo-unseen, chosen so their crop and disease still occur in training (like the real unseen pairs), plus 15% of the remaining images as val-seen. Picks the epoch and gamma (grid 0 to 0.1, step 0.0025, in cosine-similarity units). 'healthy' pairs are not held out: none of the real unseen pairs is healthy, and without this exclusion 6 of the 20 held-out pairs were healthy (corn_healthy alone has 223 images), which would tune gamma on the wrong kind of class.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      0.1,
+      0.0025
+    ],
+    "exclude_real_unseen_from_label_space": false,
+    "max_images_per_holdout_pair": null,
+    "n_splits": 1
+  },
+  "training": {
+    "_note": "AdamW on the 230 vectors only; weight_decay 0 because decay would pull the vectors towards zero rather than towards their name initialisation. logit_scale 100 = CLIP's own temperature. Cosine LR over the run. final_fit 'all_train': after selection, refit on every training image (the held-out pairs are real seen classes in the test set) for the selected epoch count.",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "batch_size": 256,
+    "max_epochs": 40,
+    "logit_scale": 100.0,
+    "loss_weights": {
+      "pair": 1.0,
+      "crop": 0.5,
+      "disease": 0.5
+    },
+    "final_fit": "all_train"
+  },
+  "evaluation": {
+    "_note": "gamma comes from validation (see validation); metrics.json also reports the uncalibrated harmonic mean.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "Gradient checkpointing in the text encoder: 333 + 55 + 175 prompts go through it every step and the 6 GB GPU cannot hold all activations otherwise.",
+    "device": "cuda",
+    "amp": true,
+    "grad_checkpointing": true,
+    "batch_size": 64,
+    "num_workers": 4
+  },
+  "output_dir": "runs/v4"
+}

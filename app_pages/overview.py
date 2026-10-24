@@ -2,8 +2,8 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from dpd.data import SPLITS, load_metadata, image_sizes
-from dpd.gallery import SPLIT_LABELS
+from dpd.data import SPLITS
+from dpd.ui import SPLIT_LABELS, image_sizes, load_metadata
 
 df = load_metadata()
 train = df[df["split"] == "train"]

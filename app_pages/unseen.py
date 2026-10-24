@@ -1,7 +1,6 @@
 import streamlit as st
 
-from dpd.data import load_metadata
-from dpd.gallery import image_grid
+from dpd.ui import image_grid, load_metadata
 
 df = load_metadata()
 train = df[df["split"] == "train"]
