@@ -129,5 +129,5 @@
     "batch_size": 64,
     "num_workers": 4
   },
-  "output_dir": "runs/v4"
+  "output_dir": "runs/vlm/v4"
 }

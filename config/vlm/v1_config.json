@@ -50,5 +50,5 @@
     "num_workers": 4
   },
 
-  "output_dir": "runs/v1"
+  "output_dir": "runs/vlm/v1"
 }

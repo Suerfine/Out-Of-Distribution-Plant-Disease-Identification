@@ -1,6 +1,6 @@
 """CNN baselines (spec section 3.1), evaluated with the same protocol as the CLIP models.
 
-Usage:  python train_cnn.py --config config/v9_config.json
+Usage:  python train_cnn.py --config config/baseline/aniq_baseline_independent_cnn.json
 
 method "cnn_independent": two separate CNNs, one predicting the crop (55), one the disease (175).
 method "cnn_multitask":   one CNN backbone with a crop head and a disease head, trained jointly.

@@ -1,6 +1,7 @@
-"""Load a finished run from runs/vN and score new images with it. No Streamlit imports (the app wraps these in caches)."""
+"""Load a finished run from runs/<family>/<name> and score new images with it. No Streamlit imports (the app wraps these in caches)."""
 
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -14,18 +15,26 @@ RUNS_DIR = PROJECT_ROOT / "runs"
 SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning")
 
 
-def list_runs() -> list[dict]:
-    """Finished runs (config.json + metrics.json present) of a supported method, newest version first."""
+def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
+    """Finished runs (config.json + metrics.json present) under runs/<family>/<name>/ whose method is in `methods`.
+
+    Families are runs/vlm (versions vN, newest first) and runs/baseline (named runs, after the VLM runs).
+    """
     runs = []
-    for d in RUNS_DIR.glob("v*"):
-        if not ((d / "config.json").exists() and (d / "metrics.json").exists()):
+    for d in RUNS_DIR.glob("*/*"):
+        if d.parent.name == "cache" or not ((d / "config.json").exists() and (d / "metrics.json").exists()):
             continue
         cfg = json.loads((d / "config.json").read_text(encoding="utf-8"))
-        if cfg.get("method") not in SUPPORTED_METHODS:
+        if cfg.get("method") not in methods:
             continue
         metrics = json.loads((d / "metrics.json").read_text(encoding="utf-8"))
-        runs.append({"dir": d, "version": cfg["version"], "method": cfg["method"], "cfg": cfg, "metrics": metrics})
-    return sorted(runs, key=lambda r: int(r["version"].lstrip("v")), reverse=True)
+        runs.append({"dir": d, "family": d.parent.name, "version": cfg["version"], "method": cfg["method"], "cfg": cfg, "metrics": metrics})
+
+    def order(r):
+        m = re.fullmatch(r"v(\d+)", r["version"])
+        return (0, -int(m.group(1))) if m else (1, r["version"])
+
+    return sorted(runs, key=order)
 
 
 def device() -> str:
