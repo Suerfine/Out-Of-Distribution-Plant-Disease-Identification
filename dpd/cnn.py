@@ -17,6 +17,12 @@ from torchvision.transforms import v2 as T
 from dpd.resize_cache import cached_name
 
 IMAGENET_MEAN, IMAGENET_STD = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
+HEAD_SIZES = {"crop": 55, "disease": 175}
+# Networks per method: name -> heads. Each network is saved as <name>.pt in the run folder.
+NETWORKS = {
+    "cnn_independent": {"crop_net": ["crop"], "disease_net": ["disease"]},
+    "cnn_multitask": {"multitask_net": ["crop", "disease"]},
+}
 
 
 def build_backbone(name: str, pretrained: bool):

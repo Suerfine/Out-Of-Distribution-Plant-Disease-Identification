@@ -25,7 +25,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from dpd.cnn import ImageLabels, MultiHeadNet, build_transforms, compose_pair_scores
+from dpd.cnn import HEAD_SIZES, NETWORKS, ImageLabels, MultiHeadNet, build_transforms, compose_pair_scores
 from dpd.config import load_config, output_dir
 from dpd.data import pair_table, read_metadata
 from dpd.evaluate import evaluate, format_summary
@@ -33,11 +33,6 @@ from dpd.report import save_test_outputs
 from dpd.resize_cache import ensure_resized
 from dpd.splits import make_validation_split
 
-HEAD_SIZES = {"crop": 55, "disease": 175}
-NETWORKS = {
-    "cnn_independent": {"crop_net": ["crop"], "disease_net": ["disease"]},
-    "cnn_multitask": {"multitask_net": ["crop", "disease"]},
-}
 
 
 def seed_everything(seed: int):

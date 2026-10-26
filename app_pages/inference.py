@@ -5,23 +5,44 @@ import pandas as pd
 import streamlit as st
 from PIL import Image
 
-from dpd.data import load_image
-from dpd.inference import embed_image, list_runs, load_run_model, nearest, rank_pairs, train_embeddings
+from pathlib import Path
+
+from dpd.data import IMAGE_DIR, pair_table
+from dpd.evaluate import evaluate
+from dpd.inference import list_runs, load_run_model, nearest, rank_scores
 from dpd.ui import SPLIT_LABELS, image_grid, load_metadata
 
 
 @st.cache_resource(max_entries=2, show_spinner="Loading model…")
 def get_model(run_dir: str):
+    """A ClipRunModel or CnnRunModel (dpd/inference.py). st.cache_resource keys on this function's source, so edit
+    this docstring if the returned object's interface changes, or a running server keeps serving stale objects."""
     run = next(r for r in list_runs() if str(r["dir"]) == run_dir)
     return load_run_model(run, load_metadata())
 
 
+@st.cache_data(max_entries=32)
+def top1_breakdown(run_dir: str, gamma: float) -> pd.DataFrame:
+    """Pair / crop / disease Top-1 on both test splits, with the run's gamma and without calibration (gamma 0).
+
+    Recomputed from the run's saved scores.npz with dpd/evaluate.py, so it matches metrics.json exactly.
+    Crop and disease accuracy are read off the top-1 predicted pair.
+    """
+    z = np.load(Path(run_dir) / "scores.npz")
+    pairs = pair_table(load_metadata())
+    rows = []
+    for label, g in (("calibrated", gamma), ("uncalibrated", 0.0)):
+        r = evaluate(z["test_seen_scores"], z["test_seen_labels"], z["test_unseen_scores"], z["test_unseen_labels"], pairs, g, (1,))
+        for split, name in (("test_seen", "Seen"), ("test_unseen", "Unseen")):
+            rows.append({"setting": label, "split": name, "pair": r[split]["top1"],
+                         "crop": r[split]["crop_top1"], "disease": r[split]["disease_top1"]})
+    return pd.DataFrame(rows)
+
+
 @st.cache_resource(max_entries=2, show_spinner="Loading training-image embeddings…")
 def get_train_bank(run_dir: str):
-    run = next(r for r in list_runs() if str(r["dir"]) == run_dir)
-    m = get_model(run_dir)
     train = load_metadata().query("split == 'train'").reset_index(drop=True)
-    return train, train_embeddings(m["clip"], m["preprocess"], run["cfg"]["model"], train["file"])
+    return train, get_model(run_dir).train_bank(train)
 
 
 df = load_metadata()
@@ -31,14 +52,29 @@ if not runs:
     st.stop()
 
 
+KIND = {
+    "clip_zeroshot": "zero-shot CLIP",
+    "clip_prompt_learning": "trained prompts",
+    "cnn_independent": "baseline: independent CNNs",
+    "cnn_multitask": "baseline: multi-task CNN",
+}
+
+
+def backbone(r):
+    if r["method"].startswith("cnn"):
+        n = "2 × " if r["method"] == "cnn_independent" else ""
+        return n + {"resnet50": "ResNet-50"}.get(r["cfg"]["model"]["backbone"], r["cfg"]["model"]["backbone"])
+    return "BioCLIP" if "bioclip" in r["cfg"]["model"]["arch"] else "OpenAI CLIP"
+
+
 def run_label(r):
-    m = r["metrics"]
-    kind = "trained prompts" if r["method"] == "clip_prompt_learning" else "zero-shot"
-    return f"{r['version']} · {kind} · test HM {m['harmonic_mean_top1']:.1%}"
+    return f"{r['version']} · {KIND[r['method']]} · test HM {r['metrics']['harmonic_mean_top1']:.1%}"
 
 
 with st.container(horizontal=True, vertical_alignment="bottom"):
-    best_idx = max(range(len(runs)), key=lambda i: runs[i]["metrics"]["harmonic_mean_top1"])
+    # Default to the best proposed (VLM) model; the baselines are listed after it for comparison.
+    candidates = [i for i, r in enumerate(runs) if r["family"] == "vlm"] or list(range(len(runs)))
+    best_idx = max(candidates, key=lambda i: runs[i]["metrics"]["harmonic_mean_top1"])
     run = st.selectbox("Model", runs, index=best_idx, format_func=run_label, key="infer_run")
     source = st.segmented_control(
         "Image", ["Test image", "Upload"], default="Test image", required=True, key="infer_source"
@@ -65,13 +101,46 @@ with st.container(horizontal=True):
     st.metric("Unseen images → unseen pairs", f"{metrics['test_unseen']['predicted_as_unseen']:.1%}", border=True,
               help="Share of unseen-test images whose top prediction is an unseen pair (right group, not necessarily the right pair).")
 
+with st.container(border=True):
+    st.markdown("**Top-1 accuracy: pair, crop and disease**")
+    bd = top1_breakdown(str(run["dir"]), float(metrics.get("gamma", 0.0)))
+    calibrated = bd[bd["setting"] == "calibrated"]
+    with st.container(horizontal=True):
+        for _, r in calibrated.iterrows():
+            st.metric(f"{r['split']} pair", f"{r['pair']:.1%}", border=True)
+            st.metric(f"{r['split']} crop", f"{r['crop']:.1%}", border=True)
+            st.metric(f"{r['split']} disease", f"{r['disease']:.1%}", border=True)
+    show_uncal = st.toggle("Compare with no calibration (γ = 0)", key="infer_show_uncal",
+                           help="Calibration subtracts γ from every seen pair's score. Without it, unseen-pair accuracy "
+                                "drops sharply, and unseen disease accuracy shows how well disease knowledge transfers to new crops.")
+    if show_uncal:
+        wide = bd.pivot(index="split", columns="setting", values=["pair", "crop", "disease"])
+        wide.columns = [f"{m}_{s}" for m, s in wide.columns]
+        pct = lambda label: st.column_config.ProgressColumn(label, format="percent", min_value=0.0, max_value=1.0)
+        st.dataframe(
+            wide.reset_index(),
+            hide_index=True,
+            alt="Pair, crop and disease Top-1 with and without calibration",
+            column_config={
+                "split": "Test split",
+                "pair_calibrated": pct("Pair (γ)"), "pair_uncalibrated": pct("Pair (γ=0)"),
+                "crop_calibrated": pct("Crop (γ)"), "crop_uncalibrated": pct("Crop (γ=0)"),
+                "disease_calibrated": pct("Disease (γ)"), "disease_uncalibrated": pct("Disease (γ=0)"),
+            },
+            column_order=["split", "pair_calibrated", "pair_uncalibrated", "crop_calibrated", "crop_uncalibrated",
+                          "disease_calibrated", "disease_uncalibrated"],
+        )
+    st.caption("Crop and disease accuracy are read off the top-1 predicted pair: a prediction can get the crop right and "
+               "the disease wrong. All values over all 333 pairs.")
+
 with st.expander("Compare all models", icon=":material/leaderboard:"):
     table = pd.DataFrame(
         [
             {
                 "model": r["version"],
-                "method": "trained prompts" if r["method"] == "clip_prompt_learning" else "zero-shot",
-                "backbone": "BioCLIP" if "bioclip" in r["cfg"]["model"]["arch"] else "OpenAI CLIP",
+                "family": "proposed (VLM)" if r["family"] == "vlm" else "baseline",
+                "method": KIND[r["method"]],
+                "backbone": backbone(r),
                 "seen_top1": r["metrics"]["test_seen"]["top1"],
                 "unseen_top1": r["metrics"]["test_unseen"]["top1"],
                 "hm_top1": r["metrics"]["harmonic_mean_top1"],
@@ -81,6 +150,12 @@ with st.expander("Compare all models", icon=":material/leaderboard:"):
                 "seen_to_unseen": r["metrics"]["test_seen"]["predicted_as_unseen"],
                 "unseen_to_unseen": r["metrics"]["test_unseen"]["predicted_as_unseen"],
                 "gamma": r["metrics"].get("gamma", 0.0),
+                "seen_crop": r["metrics"]["test_seen"]["crop_top1"],
+                "seen_disease": r["metrics"]["test_seen"]["disease_top1"],
+                "unseen_crop": r["metrics"]["test_unseen"]["crop_top1"],
+                "unseen_disease": r["metrics"]["test_unseen"]["disease_top1"],
+                "unseen_disease_g0": top1_breakdown(str(r["dir"]), float(r["metrics"].get("gamma", 0.0)))
+                .query("setting == 'uncalibrated' and split == 'Unseen'")["disease"].iloc[0],
             }
             for r in runs
         ]
@@ -92,6 +167,7 @@ with st.expander("Compare all models", icon=":material/leaderboard:"):
         alt="Test metrics of every finished model run",
         column_config={
             "model": "Model",
+            "family": "Family",
             "method": "Method",
             "backbone": "Backbone",
             "seen_top1": pct("Seen Top-1"),
@@ -101,16 +177,25 @@ with st.expander("Compare all models", icon=":material/leaderboard:"):
             "seen_unseen_ratio": st.column_config.NumberColumn("Seen : unseen", format="%.2f", help="Seen Top-1 / unseen Top-1; 1.00 is balanced"),
             "seen_to_unseen": pct("Seen → unseen"),
             "unseen_to_unseen": pct("Unseen → unseen"),
+            "seen_crop": pct("Seen crop"),
+            "seen_disease": pct("Seen disease"),
+            "unseen_crop": pct("Unseen crop"),
+            "unseen_disease": pct("Unseen disease"),
+            "unseen_disease_g0": st.column_config.ProgressColumn(
+                "Unseen disease (γ=0)", format="percent", min_value=0.0, max_value=1.0,
+                help="Disease accuracy on unseen images without calibration: how well disease knowledge transfers to a new crop"),
             "gamma": st.column_config.NumberColumn("γ", format="%.4f", help="Calibration subtracted from seen-pair scores"),
         },
     )
     st.caption("All rows use the same protocol: every test image ranked against all 333 pairs (dpd/evaluate.py).")
 
-image, truth = None, None
+# The models take the image source (path or bytes), not a decoded image: the CNNs must re-create the exact
+# downscaling their training cache used (dpd/resize_cache.standardise), which needs the original file.
+image_bytes, truth = None, None
 if source == "Upload":
     up = st.file_uploader("Plant image", type=["jpg", "jpeg", "png"], key="infer_upload")
     if up:
-        image = Image.open(io.BytesIO(up.getvalue())).convert("RGB")
+        image_bytes = up.getvalue()
 else:
     test = df[df["split"].isin(["test_seen", "test_unseen"])]
     with st.container(horizontal=True, vertical_alignment="bottom"):
@@ -125,17 +210,18 @@ else:
         if st.button("Random image", icon=":material/shuffle:") or st.session_state.get("infer_file") not in set(pool["file"]):
             st.session_state.infer_file = pool["file"].sample(1).iloc[0]
     row = pool[pool["file"] == st.session_state.infer_file].iloc[0]
-    image, truth = load_image(row["file"]), row
+    image_bytes, truth = (IMAGE_DIR / row["file"]).read_bytes(), row
 
-if image is None:
+if image_bytes is None:
     st.caption("Upload a leaf photo to identify it.")
     st.stop()
 
 m = get_model(str(run["dir"]))
-pairs = m["pairs"]
+pairs = m.pairs
 unseen_mask = pairs["is_unseen"].to_numpy()
-emb = embed_image(m["clip"], m["preprocess"], image)
-order, scores, probs = rank_pairs(emb, m["pair_emb"], unseen_mask, m["gamma"])
+emb, raw_scores = m.predict(io.BytesIO(image_bytes))
+order, scores, probs = rank_scores(raw_scores, unseen_mask, m.gamma, m.logit_scale)
+image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 top = pairs.iloc[order[0]]
 
 left, right = st.columns([2, 3])
@@ -168,10 +254,10 @@ with right:
         alt="Top five predicted crop-disease pairs",
         column_config={
             "confidence": st.column_config.ProgressColumn("Confidence", format="percent", min_value=0.0, max_value=1.0),
-            "score": st.column_config.NumberColumn("Score", format="%.3f", help="Cosine similarity after calibration"),
+            "score": st.column_config.NumberColumn("Score", format="%.3f", help=m.score_help),
         },
     )
-    st.caption(f"{run['version']}: calibration γ = {m['gamma']:g} subtracted from seen-pair scores.")
+    st.caption(f"{run['version']}: calibration γ = {m.gamma:g} subtracted from seen-pair scores.")
 
 st.subheader("Similar training images")
 train, bank = get_train_bank(str(run["dir"]))
