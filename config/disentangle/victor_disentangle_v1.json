@@ -1,0 +1,101 @@
+{
+  "_note": "victor_disentangle_v1 (control for the disentanglement approach: branches only, no disentangling losses). aniq_baseline_multitask_cnn with one change: the shared ResNet-50 features pass through a crop branch and a disease branch (Linear 2048 -> 256, BatchNorm, ReLU) before the heads. The two spies still train and their accuracy is logged (how much crop information z_dis holds, and disease information z_crop), but adversarial_weight 0 means they do not change the branches. So v1 vs aniq_baseline_multitask_cnn measures the branch layers alone, and later versions vs v1 measure the disentangling losses alone.",
+  "_result": "Branches alone do not help on test: harmonic mean 54.4% top-1 / 87.1% top-5, vs 57.9% / 86.3% for aniq_baseline_multitask_cnn rerun on the same GPU (D0). Seen top-1 50.1% (D0 53.4%), unseen top-1 59.6% (D0 63.4%), gamma 6.5, epoch 11. Validation disagrees: v1's mean val HM was 52.8% vs D0's 51.5%, and v1 led D0 at almost every epoch (52-53% vs 50-51%), so the 3.5-point test gap is within single-seed noise until repeated with other seeds. Unseen-only diagnostic 75.6% (D0 75.2%). Uncalibrated: seen 66.1%, unseen 5.2%, HM 9.6%. Leakage measure: the crop spy reading z_dis reached 96% crop accuracy in the final fit (57% after epoch 1), and the disease spy reading z_crop 80%. Without a disentangling loss each branch carries almost all the information of the other, which confirms the entanglement this approach targets.",
+  "version": "victor_disentangle_v1",
+  "method": "cnn_disentangle",
+  "seed": 42,
+  "data": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Backbone and dropout as aniq_baseline_multitask_cnn. z_dim: width of each branch output (z_crop, z_dis). spy_hidden: hidden width of each spy (a 2-layer MLP, so it can detect non-linear leakage, as in DANN).",
+    "backbone": "resnet50",
+    "pretrained": true,
+    "head_dropout": 0.3,
+    "z_dim": 256,
+    "spy_hidden": 256
+  },
+  "disentangle": {
+    "_note": "adversarial_weight: GRL strength (how hard the branches are pushed to fool the spies); 0 = spies only observe. adversarial_ramp: DANN schedule that raises the strength from 0 to adversarial_weight over training. decorrelation_weight: weight of the cross-correlation penalty between z_crop and z_dis; 0 = off.",
+    "adversarial_weight": 0.0,
+    "adversarial_ramp": true,
+    "decorrelation_weight": 0.0
+  },
+  "input": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "random_resized_crop_scale": [
+      0.25,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "Same as aniq_baseline_multitask_cnn for the two heads (CE + label smoothing 0.1, equal weights). The spy losses are plain CE with weight 1.",
+    "label_smoothing": 0.1,
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    }
+  },
+  "optimizer": {
+    "_note": "Same as aniq_baseline_multitask_cnn; lr_head applies to the branches, heads and spies.",
+    "lr_backbone": 0.0001,
+    "lr_head": 0.001,
+    "weight_decay": 0.05
+  },
+  "validation": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      10.0,
+      0.1
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "batch_size": 32,
+    "max_epochs": 20,
+    "final_fit": "all_train"
+  },
+  "evaluation": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 4
+  },
+  "output_dir": "runs/disentangle/victor_disentangle_v1"
+}
