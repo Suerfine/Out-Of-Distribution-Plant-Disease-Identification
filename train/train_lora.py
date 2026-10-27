@@ -7,6 +7,12 @@ encoder), but the image encoder is no longer frozen: LoRA adapters (dpd/lora.py)
 jointly with the vectors. Image embeddings therefore change during training and cannot be cached, so images are
 read from the 256 px resize cache with augmentation every epoch.
 
+Options (all in the config, each off by default so older configs behave exactly as before):
+  model.image_size            input resolution, e.g. 336 (needs input.resize_cache >= that size)
+  runtime.grad_checkpointing_image   recompute image-encoder activations in backward to save memory
+  evaluation.tta              test-time augmentation views averaged at validation and test time
+  training.sampling           {"type": "class_balanced", "power": p}: sample images with weight n_pair^-p
+
 Stage 1: train on train minus the validation split(s); after every epoch score the validation images and sweep
 gamma; pick the (epoch, gamma) with the best mean validation HM. Stage 2: refit a fresh model on all training
 images for that many epochs and evaluate once on test.
@@ -22,9 +28,9 @@ import pandas as pd
 import torch
 import torch.nn.functional as F
 from PIL import Image
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 
-from dpd.clip_utils import clip_transforms, load_clip
+from dpd.clip_utils import TTA_VIEWS, clip_transforms, load_clip
 from dpd.config import load_config, output_dir
 from dpd.data import pair_table, read_metadata
 from dpd.evaluate import evaluate, format_summary
@@ -50,7 +56,16 @@ class Images(Dataset):
 
 def loader(df, image_dir, transform, cfg, shuffle):
     rt = cfg["runtime"]
-    return DataLoader(Images(df, image_dir, transform), batch_size=cfg["training"]["batch_size"], shuffle=shuffle,
+    sampling = cfg["training"].get("sampling", {"type": "uniform"})
+    sampler = None
+    if shuffle and sampling["type"] == "class_balanced":
+        # Weight each image by n_pair^-power: power 1 = every pair equally often, 0.5 = square-root balancing.
+        n = df["pair_id"].map(df["pair_id"].value_counts()).to_numpy()
+        sampler = WeightedRandomSampler(torch.as_tensor(n ** -sampling["power"], dtype=torch.double), num_samples=len(df), replacement=True)
+    elif sampling["type"] not in ("uniform", "class_balanced"):
+        raise ValueError(f"unknown sampling {sampling['type']!r}")
+    return DataLoader(Images(df, image_dir, transform), batch_size=cfg["training"]["batch_size"],
+                      shuffle=shuffle and sampler is None, sampler=sampler,
                       num_workers=rt["num_workers"], pin_memory=True, persistent_workers=rt["num_workers"] > 0, drop_last=shuffle)
 
 
@@ -58,6 +73,7 @@ def build(cfg, pairs, device):
     """Fresh CLIP + learnable prompt vectors + LoRA adapters on the image encoder."""
     clip_model, _, tokenizer = load_clip(cfg["model"], device)
     clip_model.transformer.grad_checkpointing = cfg["runtime"]["grad_checkpointing"]
+    clip_model.visual.transformer.grad_checkpointing = cfg["runtime"].get("grad_checkpointing_image", False)
     model = build_model(cfg, clip_model, tokenizer, pairs).to(device)  # freezes all of CLIP
     lcfg = cfg["image_encoder"]["lora"]
     lora_params = apply_lora(clip_model.visual, lcfg["last_n_blocks"], lcfg["rank"], lcfg["alpha"], lcfg["targets"])
@@ -65,13 +81,17 @@ def build(cfg, pairs, device):
 
 
 @torch.no_grad()
-def encode(model, dl, device, amp) -> np.ndarray:
+def encode(model, dl, device, amp, tta=("identity",)) -> np.ndarray:
+    """L2-normalised image embeddings; with several TTA views, the mean of the views' normalised embeddings."""
     model.eval()
     feats = []
     for x, _ in dl:
-        with torch.autocast(device, enabled=amp):
-            f = model.clip.encode_image(x.to(device, non_blocking=True))
-        feats.append(F.normalize(f.float(), dim=-1).cpu())
+        x = x.to(device, non_blocking=True)
+        views = []
+        for v in tta:
+            with torch.autocast(device, enabled=amp):
+                views.append(F.normalize(model.clip.encode_image(TTA_VIEWS[v](x)).float(), dim=-1))
+        feats.append(F.normalize(torch.stack(views).mean(0), dim=-1).cpu())
     return torch.cat(feats).numpy()
 
 
@@ -134,6 +154,7 @@ def main():
     assert cfg["method"] == "clip_prompt_lora", f"{args.config} is a '{cfg['method']}' config"
     rt, tcfg, vcfg, ev = cfg["runtime"], cfg["training"], cfg["validation"], cfg["evaluation"]
     device, amp = rt["device"], rt["amp"]
+    tta = tuple(ev.get("tta", ["identity"]))
     if device == "cuda" and not torch.cuda.is_available():
         raise SystemExit("Config asks for cuda but torch.cuda.is_available() is False.")
     out = output_dir(cfg)
@@ -176,7 +197,7 @@ def main():
         model, lora_params = build(cfg, pairs, device)
 
         def validate(epoch, k=k):
-            s = pair_scores(model, encode(model, val_dl, device, amp), amp)
+            s = pair_scores(model, encode(model, val_dl, device, amp, tta), amp)
             s[:, hidden] = -1e9
             res = [evaluate(s[:n_vs], y_vs, s[n_vs:], y_vu, val_pairs, g, (1,)) for g in gammas]
             hm_grid[k, epoch - 1] = [r["harmonic_mean_top1"] for r in res]
@@ -204,7 +225,7 @@ def main():
     scores, labels, files = {}, {}, {}
     for s in ("test_seen", "test_unseen"):
         sub = df[df["split"] == s]
-        scores[s] = pair_scores(model, encode(model, loader(sub, image_dir, tfs[1], cfg, shuffle=False), device, amp), amp)
+        scores[s] = pair_scores(model, encode(model, loader(sub, image_dir, tfs[1], cfg, shuffle=False), device, amp, tta), amp)
         labels[s], files[s] = sub["pair_id"].to_numpy(), sub["file"].to_numpy()
     top_k = tuple(ev["top_k"])
     result = evaluate(scores["test_seen"], labels["test_seen"], scores["test_unseen"], labels["test_unseen"], pairs, gamma, top_k)

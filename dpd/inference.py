@@ -1,5 +1,6 @@
 """Load a finished run from runs/<family>/<name> and score new images with it. No Streamlit imports (the app wraps these in caches)."""
 
+import io
 import json
 import re
 from pathlib import Path
@@ -12,7 +13,7 @@ from dpd.clip_utils import build_prompts, encode_images, encode_prompts, load_cl
 from dpd.data import PROJECT_ROOT, pair_table
 
 RUNS_DIR = PROJECT_ROOT / "runs"
-SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "cnn_independent", "cnn_multitask")
+SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "cnn_independent", "cnn_multitask", "ensemble")
 
 
 def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
@@ -131,9 +132,15 @@ class ClipLoraRunModel(ClipRunModel):
 
     @torch.no_grad()
     def _encode(self, x):
-        with torch.autocast(device(), enabled=device() == "cuda"):
-            f = self.clip.encode_image(x.to(device()))
-        return torch.nn.functional.normalize(f.float(), dim=-1).cpu().numpy()
+        """Same as evaluation: mean of the normalised embeddings over the run's TTA views (default: none)."""
+        from dpd.clip_utils import TTA_VIEWS
+
+        x = x.to(device())
+        views = []
+        for v in self.run["cfg"]["evaluation"].get("tta", ["identity"]):
+            with torch.autocast(device(), enabled=device() == "cuda"):
+                views.append(torch.nn.functional.normalize(self.clip.encode_image(TTA_VIEWS[v](x)).float(), dim=-1))
+        return torch.nn.functional.normalize(torch.stack(views).mean(0), dim=-1).cpu().numpy()
 
     def predict(self, src):
         from dpd.resize_cache import standardise
@@ -221,6 +228,41 @@ class CnnRunModel:
         return bank
 
 
+def member_run(path: str) -> dict:
+    """A run dict (as list_runs builds) for an ensemble member given its folder relative to the project root."""
+    d = PROJECT_ROOT / path
+    cfg = json.loads((d / "config.json").read_text(encoding="utf-8"))
+    return {"dir": d, "family": d.parent.name, "version": cfg["version"], "method": cfg["method"], "cfg": cfg,
+            "metrics": json.loads((d / "metrics.json").read_text(encoding="utf-8"))}
+
+
+class EnsembleRunModel:
+    """An ensemble run (train/ensemble.py): w * logprob(member 1) + (1 - w) * logprob(member 2), with the weight and
+    gamma chosen on validation. Loads both members; retrieval uses the first member's image features."""
+
+    logit_scale = 1.0  # scores are log-probabilities
+    score_help = "Weighted sum of the members' log-probabilities, after calibration"
+
+    def __init__(self, run: dict, pairs):
+        self.run, self.pairs = run, pairs
+        self.gamma = float(run["metrics"].get("gamma", 0.0))
+        self.weight = float(run["metrics"]["weight"])
+        self.members = [member_run(m["run"]) for m in run["cfg"]["members"]]
+        self.models = [model_class(m["method"])(m, pairs) for m in self.members]
+
+    def predict(self, src):
+        from dpd.ensemble import to_logprob
+
+        data = Path(src).read_bytes() if isinstance(src, (str, Path)) else src.read()
+        (emb, a), (_, b) = (m.predict(io.BytesIO(data)) for m in self.models)
+        mixed = (self.weight * to_logprob(a, self.members[0]["method"])
+                 + (1 - self.weight) * to_logprob(b, self.members[1]["method"]))
+        return emb, mixed
+
+    def train_bank(self, train) -> np.ndarray:
+        return self.models[0].train_bank(train)
+
+
 def model_class(method: str):
     """ClipRunModel or CnnRunModel; class attributes (logit_scale, score_help) are usable without loading weights."""
     if method in ("clip_zeroshot", "clip_prompt_learning"):
@@ -229,6 +271,8 @@ def model_class(method: str):
         return ClipLoraRunModel
     if method in ("cnn_independent", "cnn_multitask"):
         return CnnRunModel
+    if method == "ensemble":
+        return EnsembleRunModel
     raise ValueError(f"unsupported method {method!r}")
 
 

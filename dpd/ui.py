@@ -25,6 +25,7 @@ KIND = {
     "clip_prompt_lora": "trained prompts + LoRA",
     "cnn_independent": "baseline: independent CNNs",
     "cnn_multitask": "baseline: multi-task CNN",
+    "ensemble": "ensemble",
 }
 
 
@@ -92,6 +93,10 @@ def test_predictions(run_dir: str, method: str, gamma: float, k: int = 5) -> pd.
 
 
 def backbone(run: dict) -> str:
+    if run["method"] == "ensemble":
+        from dpd.inference import member_run
+
+        return " + ".join(f"{m['version']} ({backbone(m)})" for m in map(member_run, (x["run"] for x in run["cfg"]["members"])))
     if run["method"].startswith("cnn"):
         n = "2 × " if run["method"] == "cnn_independent" else ""
         return n + {"resnet50": "ResNet-50"}.get(run["cfg"]["model"]["backbone"], run["cfg"]["model"]["backbone"])

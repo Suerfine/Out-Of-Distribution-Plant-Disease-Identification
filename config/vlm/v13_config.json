@@ -1,0 +1,163 @@
+{
+  "_note": "v13: v9 + more LoRA capacity (8 blocks, rank 16). Ablation of ONE change against v9 (everything else identical, same validation split: seed 42, 1 split). Keep the change only if validation HM beats v9's 51.2% by more than 2 points (v11 measured run-to-run noise of about 3 points: v9 retrained on the same split scored 48.3% vs 51.2%); the test result is recorded but must not decide.",
+  "_result": "Pending.",
+  "version": "v13",
+  "method": "clip_prompt_lora",
+  "seed": 42,
+  "data": {
+    "_note": "Unchanged from v9.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Unchanged from v9.",
+    "library": "open_clip",
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai"
+  },
+  "image_encoder": {
+    "_note": "v9 + more LoRA capacity: last 8 blocks instead of 4, rank 16 instead of 8. alpha 16 -> 32 keeps the LoRA scale (alpha/rank) at 2, so only capacity changes, not the effective step size. About 4x more adapter parameters (1.57M vs 393k). Same lr.",
+    "lora": {
+      "last_n_blocks": 8,
+      "rank": 16,
+      "alpha": 32,
+      "targets": [
+        "attn_qkv",
+        "attn_out",
+        "mlp_in",
+        "mlp_out"
+      ],
+      "lr": 0.0001
+    }
+  },
+  "input": {
+    "_note": "Unchanged from v9.",
+    "resize_cache": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "Unchanged from v9.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "names": {
+    "_note": "Unchanged from v9.",
+    "underscore_to_space": true,
+    "crop_overrides": {
+      "pepper_bell": "bell pepper",
+      "paddy": "rice",
+      "blackgram": "black gram"
+    },
+    "disease_overrides": {
+      "xamthomonas": "xanthomonas bacterial blight",
+      "verticulium_wilt": "verticillium wilt",
+      "crinckle": "crinkle",
+      "monillia_laxa": "monilinia brown rot",
+      "leafblast": "leaf blast",
+      "die_back": "dieback",
+      "gray_light": "gray blight",
+      "curl": "leaf curl",
+      "viral": "viral disease",
+      "miner": "leaf miner damage",
+      "slug": "slug feeding damage",
+      "caterpillar": "caterpillar feeding damage",
+      "insects_damages": "insect damage",
+      "nutrition_deficiency": "nutrient deficiency",
+      "scorch": "leaf scorch",
+      "pox_virus": "plum pox virus",
+      "pocket_disease": "plum pocket disease",
+      "cercospora": "cercospora leaf spot",
+      "tungro": "tungro virus",
+      "hispa": "rice hispa beetle damage",
+      "aphis_spp": "aphids",
+      "eriosoma_lanigerum": "woolly apple aphids",
+      "icerya_seychellarum": "fluted scale insects",
+      "parthenolecanium_corni": "lecanium scale insects",
+      "ceroplastes_rubens": "red wax scale insects",
+      "aulacaspis_tubercularis": "white mango scale insects",
+      "ischnaspis_longirostris": "black thread scale insects",
+      "procontarinia_matteiana": "mango leaf gall midge galls",
+      "procontarinia_rubus": "gall midge galls",
+      "erosomyia_sp": "gall midge damage",
+      "venturia_inaequalis": "apple scab",
+      "gnomonia_leptostyla": "walnut anthracnose",
+      "erwinia_amylovora": "erwinia fire blight",
+      "aculus_olearius": "olive bud mites",
+      "cisaberoptus_kenyae": "leaf coating mites",
+      "dialeuropora_decempuncta": "whiteflies",
+      "neomelicharia_sparsa": "planthoppers",
+      "valanga_nigricornis": "grasshopper feeding damage",
+      "mictis_longicornis": "leaf-footed bug damage",
+      "apoderus_javanicus": "leaf-rolling weevil damage",
+      "orthaga_euadrusalis": "leaf webber caterpillars",
+      "dappula_tertia": "bagworms",
+      "diabrotica_speciosa": "cucumber beetle feeding damage"
+    }
+  },
+  "prompts": {
+    "_note": "Unchanged from v9.",
+    "descriptions_file": "knowledge/disease_descriptions_v1.json",
+    "pair_template": "a photo of {crop} leaves with {disease}: {description}.",
+    "crop_template": "a photo of {crop} leaves.",
+    "disease_template": "a photo of leaves with {disease}: {description}."
+  },
+  "validation": {
+    "_note": "Unchanged from v9.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      0.1,
+      0.0025
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 1
+  },
+  "training": {
+    "_note": "Unchanged from v9.",
+    "lr": 0.0002,
+    "weight_decay": 0.0,
+    "batch_size": 64,
+    "max_epochs": 15,
+    "logit_scale": 100.0,
+    "loss_weights": {
+      "pair": 1.0,
+      "crop": 0.5,
+      "disease": 0.5
+    },
+    "final_fit": "all_train"
+  },
+  "evaluation": {
+    "_note": "Unchanged from v9.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "Unchanged from v9.",
+    "device": "cuda",
+    "amp": true,
+    "grad_checkpointing": true,
+    "num_workers": 4
+  },
+  "output_dir": "runs/vlm/v13"
+}

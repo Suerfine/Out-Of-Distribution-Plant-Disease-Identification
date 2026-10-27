@@ -29,8 +29,11 @@ class ImageDataset(Dataset):
 
 
 def load_clip(model_cfg: dict, device: str):
-    """arch is an open_clip model name (with `pretrained` naming the weights) or an 'hf-hub:org/name' id (pretrained null)."""
-    model, _, preprocess = open_clip.create_model_and_transforms(model_cfg["arch"], pretrained=model_cfg["pretrained"])
+    """arch is an open_clip model name (with `pretrained` naming the weights) or an 'hf-hub:org/name' id (pretrained null).
+    Optional `image_size` (e.g. 336) runs the image encoder at that resolution; open_clip interpolates the position
+    embeddings of the pretrained weights to the larger patch grid."""
+    extra = {"force_image_size": model_cfg["image_size"]} if model_cfg.get("image_size") else {}
+    model, _, preprocess = open_clip.create_model_and_transforms(model_cfg["arch"], pretrained=model_cfg["pretrained"], **extra)
     tokenizer = open_clip.get_tokenizer(model_cfg["arch"])
     return model.to(device).eval(), preprocess, tokenizer
 
@@ -132,3 +135,12 @@ def clip_transforms(input_cfg: dict, aug_cfg: dict):
         train.append(T.ColorJitter(**aug_cfg["color_jitter"]))
     test = [T.Resize(size, interpolation=T.InterpolationMode.BICUBIC, antialias=True), T.CenterCrop(size)]
     return T.Compose(train + norm), T.Compose(test + norm)
+
+
+# Test-time augmentation views (on a batch of image tensors); embeddings of the views are averaged.
+TTA_VIEWS = {
+    "identity": lambda x: x,
+    "hflip": lambda x: x.flip(-1),
+    "vflip": lambda x: x.flip(-2),
+    "hvflip": lambda x: x.flip(-1).flip(-2),
+}
