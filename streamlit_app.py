@@ -6,13 +6,14 @@ st.set_page_config(page_title="Plant disease ID", page_icon=":material/eco:", la
 
 page = st.navigation(
     {
+        "Model": [
+            st.Page("app_pages/inference.py", title="Identify disease", icon=":material/search:", default=True),
+            st.Page("app_pages/dashboard.py", title="Model dashboard", icon=":material/leaderboard:"),
+        ],
         "Dataset": [
             st.Page("app_pages/overview.py", title="Overview", icon=":material/monitoring:"),
             st.Page("app_pages/gallery.py", title="Gallery", icon=":material/photo_library:"),
             st.Page("app_pages/unseen.py", title="Unseen pairs", icon=":material/join_inner:"),
-        ],
-        "Model": [
-            st.Page("app_pages/inference.py", title="Identify disease", icon=":material/search:"),
         ],
     },
     position="top",

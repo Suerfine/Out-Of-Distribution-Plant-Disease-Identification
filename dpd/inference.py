@@ -171,11 +171,15 @@ class CnnRunModel:
         return bank
 
 
+def model_class(method: str):
+    """ClipRunModel or CnnRunModel; class attributes (logit_scale, score_help) are usable without loading weights."""
+    if method in ("clip_zeroshot", "clip_prompt_learning"):
+        return ClipRunModel
+    if method in ("cnn_independent", "cnn_multitask"):
+        return CnnRunModel
+    raise ValueError(f"unsupported method {method!r}")
+
+
 def load_run_model(run: dict, df):
     """A model object with .predict(path or file-like), .train_bank(train_df), .pairs, .gamma, .logit_scale, .score_help."""
-    pairs = pair_table(df)
-    if run["method"] in ("clip_zeroshot", "clip_prompt_learning"):
-        return ClipRunModel(run, pairs)
-    if run["method"] in ("cnn_independent", "cnn_multitask"):
-        return CnnRunModel(run, pairs)
-    raise ValueError(f"unsupported method {run['method']!r}")
+    return model_class(run["method"])(run, pair_table(df))
