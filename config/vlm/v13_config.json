@@ -1,6 +1,6 @@
 {
   "_note": "v13: v9 + more LoRA capacity (8 blocks, rank 16). Ablation of ONE change against v9 (everything else identical, same validation split: seed 42, 1 split). Keep the change only if validation HM beats v9's 51.2% by more than 2 points (v11 measured run-to-run noise of about 3 points: v9 retrained on the same split scored 48.3% vs 51.2%); the test result is recorded but must not decide.",
-  "_result": "Pending.",
+  "_result": "Qualifies for v15 on validation: val HM 56.9% (epoch 6, gamma 0.075) vs v9's 51.2% (+5.7 points, above the 2-point margin); every validation epoch from 3 on beat v9's best, so the gain is not one lucky epoch. Larger adapters learn faster and overfit sooner: val HM peaked at epochs 6-9 and gamma kept rising (0.055 -> 0.09). Test does NOT show the same gain in the headline metric: HM 64.5% top-1 / 92.1% top-5 vs v9's 65.1% / 92.1%; seen 52.2% (v9 53.4%), unseen 84.3% (v9 83.2%). The validation-test gap is a reminder that single-run validation differences carry noise. Where it clearly differs is uncalibrated behaviour: unseen top-1 at gamma 0 is 28.7% (v9 16.2%), uncalibrated HM 40.3% (v9 26.1%), and unseen DISEASE accuracy at gamma 0 is 32.3%, the best of any model so far (v9 21.1%, v4 30.9%, CNN baseline 14.8%). So more LoRA capacity (with the earlier epoch) reduced the seen-pair bias and improved disease transfer to new crops, but after calibration the harmonic mean ends up the same as v9.",
   "version": "v13",
   "method": "clip_prompt_lora",
   "seed": 42,

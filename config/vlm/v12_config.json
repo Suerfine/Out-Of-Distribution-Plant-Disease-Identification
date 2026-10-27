@@ -1,6 +1,6 @@
 {
   "_note": "v12: v9 + test-time augmentation (4 flip views). Ablation of ONE change against v9 (everything else identical, same validation split: seed 42, 1 split). Keep the change only if validation HM beats v9's 51.2% by more than 2 points (v11 measured run-to-run noise of about 3 points: v9 retrained on the same split scored 48.3% vs 51.2%); the test result is recorded but must not decide.",
-  "_result": "Pending.",
+  "_result": "TTA does not help: excluded from v15. Validation HM 51.6% (selected epoch 8, gamma 0.0725) vs v9's 51.2%: +0.4 points, under the 2-point margin. Training was bit-for-bit identical to v9 (same losses every epoch), so this is a clean comparison of TTA alone: across the 15 validation epochs TTA changed val HM by +0.5 points on average (range -0.5 to +1.7). Test (recorded, not used for the decision): HM 63.9% top-1 / 92.0% top-5 vs v9's 65.1% / 92.1%; seen 51.1% (v9 53.4%), unseen 85.5% (v9 83.2%). The lower seen accuracy comes mostly from the earlier selected epoch (8 vs 13: TTA's validation curve peaked earlier), not from TTA itself. Why so little: CLIP embeddings barely move under flips (cosine about 0.99 between a single view and the 4-view average), so averaging views adds little information. TTA also costs 4x inference time.",
   "version": "v12",
   "method": "clip_prompt_lora",
   "seed": 42,
