@@ -1,12 +1,15 @@
 import io
 import math
+from pathlib import Path
 
+import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
 from PIL import Image
 
 from dpd.data import IMAGE_DIR, pair_table
+from dpd.evaluate import evaluate
 from dpd.inference import list_runs, nearest, rank_scores
 from dpd.ui import (
     OUTCOMES, SPLIT_LABELS, best_run_index, get_model, get_train_bank, image_grid, load_metadata, outcome, run_label,
@@ -29,6 +32,35 @@ def predict_bytes(run_dir: str, data: bytes):
     return get_model(run_dir).predict(io.BytesIO(data))
 
 
+@st.cache_data(max_entries=64, show_spinner=False)
+def gamma_metrics(run_dir: str, gamma: float) -> dict:
+    """Test-set results at any gamma, from the run's saved raw scores (no model needed, milliseconds)."""
+    z = np.load(Path(run_dir) / "scores.npz")
+    r = evaluate(z["test_seen_scores"], z["test_seen_labels"], z["test_unseen_scores"], z["test_unseen_labels"],
+                 pair_table(load_metadata()), gamma, (1, 5))
+    return {"seen": r["test_seen"]["top1"], "unseen": r["test_unseen"]["top1"], "hm": r["harmonic_mean_top1"],
+            "hm5": r["harmonic_mean_top5"], "seen_to_unseen": r["test_seen"]["predicted_as_unseen"]}
+
+
+@st.cache_data(max_entries=16, show_spinner=False)
+def gamma_curve(run_dir: str, grid: tuple) -> pd.DataFrame:
+    rows = []
+    for g in np.round(np.arange(*grid), 6):
+        m = gamma_metrics(run_dir, float(g))
+        rows += [{"gamma": g, "metric": "Seen Top-1", "value": m["seen"]},
+                 {"gamma": g, "metric": "Unseen Top-1", "value": m["unseen"]},
+                 {"gamma": g, "metric": "HM Top-1", "value": m["hm"]}]
+    return pd.DataFrame(rows)
+
+
+def gamma_grid(run: dict) -> tuple:
+    """The (start, stop, step) range validation searched for this run; zero-shot runs have none, so use the CLIP one."""
+    grid = run["cfg"].get("validation", {}).get("gamma_grid")
+    if grid:
+        return tuple(grid)
+    return (0.0, 10.0, 0.1) if run["method"].startswith("cnn") else (0.0, 0.1, 0.0025)
+
+
 df = load_metadata()
 upload_bytes = {}
 by_file = df.set_index("file")
@@ -42,7 +74,54 @@ with st.container(horizontal=True, vertical_alignment="bottom"):
     source = st.segmented_control(
         "Images", ["Test set", "Upload"], default="Test set", required=True, key="infer_source"
     )
-run_dir, gamma = str(run["dir"]), float(run["metrics"].get("gamma", 0.0))
+run_dir, reported_gamma = str(run["dir"]), float(run["metrics"].get("gamma", 0.0))
+
+# ---- Calibration gamma: adjustable for exploration; reported results always use the validation choice ----
+grid = gamma_grid(run)
+gamma_key = f"infer_gamma_{run['version']}"  # one slider state per model, so switching models restores its own value
+if gamma_key not in st.session_state:
+    st.session_state[gamma_key] = reported_gamma
+with st.container(border=True):
+    with st.container(horizontal=True, vertical_alignment="bottom"):
+        gamma = st.slider(
+            "Calibration γ", min_value=float(grid[0]), max_value=float(max(grid[1], reported_gamma)), step=float(grid[2]),
+            key=gamma_key, format="%.4f" if grid[2] < 0.01 else "%.2f",
+            help="Subtracted from every seen pair's score before ranking. Higher γ favours the 10 unseen pairs. "
+                 "Changing it needs no retraining: it is applied after the model scores the image.",
+        )
+        st.button("Reset to validation γ", icon=":material/restart_alt:",
+                  on_click=lambda: st.session_state.update({gamma_key: reported_gamma}))
+    live, ref = gamma_metrics(run_dir, gamma), gamma_metrics(run_dir, reported_gamma)
+    delta = lambda k: None if gamma == reported_gamma else f"{(live[k] - ref[k]) * 100:+.1f} pts"
+    with st.container(horizontal=True):
+        st.metric("Seen Top-1", f"{live['seen']:.1%}", delta('seen'), border=True)
+        st.metric("Unseen Top-1", f"{live['unseen']:.1%}", delta('unseen'), border=True)
+        st.metric("HM Top-1", f"{live['hm']:.1%}", delta('hm'), border=True)
+        st.metric("HM Top-5", f"{live['hm5']:.1%}", delta('hm5'), border=True)
+        st.metric("Seen images → unseen pairs", f"{live['seen_to_unseen']:.1%}", delta('seen_to_unseen'),
+                  delta_color="inverse", border=True)
+    if gamma != reported_gamma:
+        st.warning(
+            f"Exploration only. Reported results use γ = {reported_gamma:g}, chosen on validation; picking γ by "
+            "looking at these test numbers would be tuning on the test set.", icon=":material/science:",
+        )
+    with st.expander("Seen / unseen trade-off across γ", icon=":material/show_chart:"):
+        curve = gamma_curve(run_dir, grid)
+        lines = alt.Chart(curve).mark_line().encode(
+            x=alt.X("gamma:Q", title="Calibration γ"),
+            y=alt.Y("value:Q", title="Test accuracy", axis=alt.Axis(format="%")),
+            color=alt.Color("metric:N", title=None),
+            tooltip=["metric", alt.Tooltip("gamma:Q", format=".4f"), alt.Tooltip("value:Q", format=".1%")],
+        )
+        marks = pd.DataFrame({"gamma": [reported_gamma, gamma], "which": ["validation γ", "current γ"]})
+        rules = alt.Chart(marks).mark_rule(strokeDash=[4, 4]).encode(
+            x="gamma:Q", color=alt.Color("which:N", title=None, scale=alt.Scale(range=["#888888", "#e45756"])),
+            tooltip=["which", alt.Tooltip("gamma:Q", format=".4f")],
+        )
+        st.altair_chart(alt.layer(lines, rules).resolve_scale(color="independent").properties(height=280),
+                        alt="Seen, unseen and harmonic-mean accuracy as calibration gamma increases")
+        st.caption("Raising γ moves images from seen to unseen pairs: unseen accuracy rises, seen accuracy falls, "
+                   "and the harmonic mean peaks in between.")
 
 # Every image becomes one row: file name, image bytes loader key, true pair id (or -1), predicted top-5 pair ids,
 # top-1 confidence and outcome. Test-set rows come from the run's saved scores (instant, identical to metrics.json);
@@ -78,7 +157,7 @@ else:
     bar = st.progress(0.0, text="Identifying…")
     for i, up in enumerate(ups):
         _, raw = predict_bytes(run_dir, up.getvalue())
-        order, _, probs = rank_scores(raw, unseen_mask, m.gamma, m.logit_scale)
+        order, _, probs = rank_scores(raw, unseen_mask, gamma, m.logit_scale)
         true_id = int(by_file.loc[up.name, "pair_id"]) if up.name in by_file.index else -1
         rows.append({"name": up.name, "uploaded": True, "true_id": true_id, "pred_id": order[0], "topk": order[:5],
                      "confidence": probs[order[0]]})
@@ -136,7 +215,7 @@ def show_details(name: str, uploaded: bool) -> None:
     m = get_model(run_dir)
     unseen_mask = m.pairs["is_unseen"].to_numpy()
     emb, raw = predict_bytes(run_dir, data) if uploaded else m.predict(IMAGE_DIR / name)
-    order, scores, probs = rank_scores(raw, unseen_mask, m.gamma, m.logit_scale)
+    order, scores, probs = rank_scores(raw, unseen_mask, gamma, m.logit_scale)
     top = m.pairs.iloc[order[0]]
     truth = by_file.loc[name] if name in by_file.index else None
 
@@ -215,5 +294,6 @@ for start in range(0, len(page), n_cols):
             if st.button("Details", key=f"det_{r.name}", icon=":material/open_in_full:", type="tertiary"):
                 show_details(r.name, r.uploaded)
 
-st.caption(f"{run['version']}: calibration γ = {gamma:g} subtracted from seen-pair scores. "
+st.caption(f"{run['version']}: calibration γ = {gamma:g} subtracted from seen-pair scores"
+           + ("" if gamma == reported_gamma else f" (validation choice: {reported_gamma:g})") + ". "
            "Test-set predictions are read from the run's saved scores; *Details* re-runs the model on the image.")
