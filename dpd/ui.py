@@ -22,6 +22,7 @@ OUTCOMES = ["Correct", "Wrong crop", "Wrong disease", "Both wrong"]
 KIND = {
     "clip_zeroshot": "zero-shot CLIP",
     "clip_prompt_learning": "trained prompts",
+    "clip_prompt_lora": "trained prompts + LoRA",
     "cnn_independent": "baseline: independent CNNs",
     "cnn_multitask": "baseline: multi-task CNN",
 }

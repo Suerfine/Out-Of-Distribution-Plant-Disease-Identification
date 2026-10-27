@@ -9,6 +9,7 @@ import open_clip
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader, Dataset
+from torchvision.transforms import v2 as T
 from tqdm import tqdm
 
 from dpd.data import PROJECT_ROOT, load_image
@@ -112,3 +113,22 @@ def encode_prompts(model, tokenizer, prompts: list[list[str]], device: str) -> n
         t = torch.nn.functional.normalize(t, dim=-1).mean(dim=0)
         embs.append(torch.nn.functional.normalize(t, dim=-1).cpu())
     return torch.stack(embs).numpy()
+
+
+CLIP_MEAN, CLIP_STD = (0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)
+
+
+def clip_transforms(input_cfg: dict, aug_cfg: dict):
+    """Train: augmented crops; test: CLIP's own resize + centre crop. Both on the resize-cache images."""
+    size = input_cfg["crop_size"]
+    norm = [T.ToImage(), T.ToDtype(torch.float32, scale=True), T.Normalize(CLIP_MEAN, CLIP_STD)]
+    train = [T.RandomResizedCrop(size, scale=tuple(aug_cfg["random_resized_crop_scale"]),
+                                 interpolation=T.InterpolationMode.BICUBIC, antialias=True)]
+    if aug_cfg["horizontal_flip_p"]:
+        train.append(T.RandomHorizontalFlip(aug_cfg["horizontal_flip_p"]))
+    if aug_cfg["vertical_flip_p"]:
+        train.append(T.RandomVerticalFlip(aug_cfg["vertical_flip_p"]))
+    if any(aug_cfg["color_jitter"].values()):
+        train.append(T.ColorJitter(**aug_cfg["color_jitter"]))
+    test = [T.Resize(size, interpolation=T.InterpolationMode.BICUBIC, antialias=True), T.CenterCrop(size)]
+    return T.Compose(train + norm), T.Compose(test + norm)

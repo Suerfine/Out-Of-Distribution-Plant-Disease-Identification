@@ -12,7 +12,7 @@ from dpd.clip_utils import build_prompts, encode_images, encode_prompts, load_cl
 from dpd.data import PROJECT_ROOT, pair_table
 
 RUNS_DIR = PROJECT_ROOT / "runs"
-SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "cnn_independent", "cnn_multitask")
+SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "cnn_independent", "cnn_multitask")
 
 
 def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
@@ -110,6 +110,56 @@ class ClipRunModel:
         return train_embeddings(self.clip, self.preprocess, self.run["cfg"]["model"], train["file"])
 
 
+class ClipLoraRunModel(ClipRunModel):
+    """A prompt-learning run whose image encoder carries trained LoRA adapters (train/train_lora.py).
+
+    Images go through the same path as in training: the resize cache's downscale + JPEG round trip, then CLIP's
+    resize/centre crop. Retrieval features come from the adapted encoder, so they are computed per run.
+    """
+
+    def __init__(self, run: dict, pairs):
+        from dpd.clip_utils import clip_transforms
+        from dpd.lora import load_lora
+
+        super().__init__(run, pairs)
+        cfg = run["cfg"]
+        lcfg = cfg["image_encoder"]["lora"]
+        state = torch.load(run["dir"] / "lora_image_encoder.pt", map_location="cpu")
+        load_lora(self.clip.visual, state, lcfg["last_n_blocks"], lcfg["rank"], lcfg["alpha"], lcfg["targets"])
+        self.clip.to(device()).eval()
+        self.transform = clip_transforms(cfg["input"], cfg["augmentation"])[1]
+
+    @torch.no_grad()
+    def _encode(self, x):
+        with torch.autocast(device(), enabled=device() == "cuda"):
+            f = self.clip.encode_image(x.to(device()))
+        return torch.nn.functional.normalize(f.float(), dim=-1).cpu().numpy()
+
+    def predict(self, src):
+        from dpd.resize_cache import standardise
+
+        emb = self._encode(self.transform(standardise(src, self.run["cfg"]["input"]["resize_cache"])).unsqueeze(0))[0]
+        return emb, self.pair_emb @ emb
+
+    def train_bank(self, train) -> np.ndarray:
+        """Adapted-encoder embeddings of every training image, computed once and saved in the run folder."""
+        from torch.utils.data import DataLoader
+
+        from dpd.cnn import ImageLabels
+        from dpd.resize_cache import ensure_resized
+
+        path = self.run["dir"] / "train_features.npy"
+        if path.exists():
+            bank = np.load(path)
+            if len(bank) == len(train):
+                return bank
+        image_dir = ensure_resized(train["file"], self.run["cfg"]["input"]["resize_cache"])
+        loader = DataLoader(ImageLabels(train, image_dir, self.transform), batch_size=64, num_workers=0)
+        bank = np.concatenate([self._encode(x) for x, _, _ in loader])
+        np.save(path, bank)
+        return bank
+
+
 class CnnRunModel:
     """A CNN baseline run: score = log P(crop) + log P(disease) from the saved network(s)."""
 
@@ -175,6 +225,8 @@ def model_class(method: str):
     """ClipRunModel or CnnRunModel; class attributes (logit_scale, score_help) are usable without loading weights."""
     if method in ("clip_zeroshot", "clip_prompt_learning"):
         return ClipRunModel
+    if method == "clip_prompt_lora":
+        return ClipLoraRunModel
     if method in ("cnn_independent", "cnn_multitask"):
         return CnnRunModel
     raise ValueError(f"unsupported method {method!r}")
