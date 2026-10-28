@@ -12,13 +12,13 @@ from dpd.clip_utils import build_prompts, encode_images, encode_prompts, load_cl
 from dpd.data import PROJECT_ROOT, pair_table
 
 RUNS_DIR = PROJECT_ROOT / "runs"
-SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "cnn_independent", "cnn_multitask")
+SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "cnn_independent", "cnn_multitask", "multi_task_cnn")
 
 
 def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
     """Finished runs (config.json + metrics.json present) under runs/<family>/<name>/ whose method is in `methods`.
 
-    Families are runs/vlm (versions vN, newest first) and runs/baseline (named runs, after the VLM runs).
+    Families are runs/vlm (versions vN, newest first), runs/baseline, and runs/multitask.
     """
     runs = []
     for d in RUNS_DIR.glob("*/*"):
@@ -176,6 +176,6 @@ def load_run_model(run: dict, df):
     pairs = pair_table(df)
     if run["method"] in ("clip_zeroshot", "clip_prompt_learning"):
         return ClipRunModel(run, pairs)
-    if run["method"] in ("cnn_independent", "cnn_multitask"):
+    if run["method"] in ("cnn_independent", "cnn_multitask", "multi_task_cnn"):
         return CnnRunModel(run, pairs)
     raise ValueError(f"unsupported method {run['method']!r}")

@@ -22,25 +22,47 @@ HEAD_SIZES = {"crop": 55, "disease": 175}
 NETWORKS = {
     "cnn_independent": {"crop_net": ["crop"], "disease_net": ["disease"]},
     "cnn_multitask": {"multitask_net": ["crop", "disease"]},
+    "multi_task_cnn": {"multitask_net": ["crop", "disease"]},
 }
 
 
 def build_backbone(name: str, pretrained: bool):
     """Feature extractor (classifier removed) and its output width."""
-    if name == "resnet50":
-        net = torchvision.models.resnet50(weights="IMAGENET1K_V2" if pretrained else None)
+    if name in ("resnet18", "resnet34"):
+        fn = getattr(torchvision.models, name)
+        net = fn(weights="IMAGENET1K_V1" if pretrained else None)
         dim = net.fc.in_features
         net.fc = nn.Identity()
-    elif name == "efficientnet_b0":
-        net = torchvision.models.efficientnet_b0(weights="IMAGENET1K_V1" if pretrained else None)
+    elif name in ("resnet50", "resnet101"):
+        fn = getattr(torchvision.models, name)
+        net = fn(weights="IMAGENET1K_V2" if pretrained else None)
+        dim = net.fc.in_features
+        net.fc = nn.Identity()
+    elif name in ("efficientnet_b0", "efficientnet_b2", "efficientnet_b3"):
+        fn = getattr(torchvision.models, name)
+        net = fn(weights="IMAGENET1K_V1" if pretrained else None)
         dim = net.classifier[1].in_features
         net.classifier = nn.Identity()
-    elif name == "convnext_tiny":
-        net = torchvision.models.convnext_tiny(weights="IMAGENET1K_V1" if pretrained else None)
+    elif name == "efficientnet_b1":
+        net = torchvision.models.efficientnet_b1(weights="IMAGENET1K_V2" if pretrained else None)
+        dim = net.classifier[1].in_features
+        net.classifier = nn.Identity()
+    elif name in ("convnext_tiny", "convnext_small"):
+        fn = getattr(torchvision.models, name)
+        net = fn(weights="IMAGENET1K_V1" if pretrained else None)
         dim = net.classifier[2].in_features
         net.classifier[2] = nn.Identity()
+    elif name == "vit_b_16":
+        net = torchvision.models.vit_b_16(weights="IMAGENET1K_V1" if pretrained else None)
+        dim = net.heads.head.in_features
+        net.heads.head = nn.Identity()
     else:
-        raise ValueError(f"unknown backbone {name!r}")
+        try:
+            import timm
+            net = timm.create_model(name, pretrained=pretrained, num_classes=0)
+            dim = net.num_features
+        except Exception:
+            raise ValueError(f"unknown backbone {name!r}")
     return net, dim
 
 

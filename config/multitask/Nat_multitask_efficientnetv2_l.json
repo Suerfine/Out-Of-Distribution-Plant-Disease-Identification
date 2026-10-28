@@ -1,0 +1,116 @@
+{
+  "_note": "Nat_multitask_efficientnetv2_l (multi-task CNN, trainer train/train_multi_task_cnn.py): EfficientNetV2-L pretrained on ImageNet-21k and fine-tuned on ImageNet-1k (tf_efficientnetv2_l.in21k_ft_in1k via timm) with two linear heads (crop 55, disease 175) and CE + label smoothing 0.1 summed with fixed equal weights.",
+  "_result": "Not run yet.",
+  "version": "Nat_multitask_efficientnetv2_l",
+  "method": "multi_task_cnn",
+  "seed": 42,
+  "data": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "backbone: tf_efficientnetv2_l.in21k_ft_in1k (EfficientNetV2-L pretrained on ImageNet-21k and fine-tuned on ImageNet-1k via timm).",
+    "backbone": "tf_efficientnetv2_l.in21k_ft_in1k",
+    "pretrained": true,
+    "head_dropout": 0.3
+  },
+  "input": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "random_resized_crop_scale": [
+      0.25,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "weighting: 'fixed' = sum of weights[h] * CE_h; 'uncertainty' = Kendall et al. 2018, sum of exp(-s_h) * CE_h + s_h with learnable log-variances s_h (init init_log_var; weights ignored). v1: fixed 1.0 / 1.0 like the baseline.",
+    "label_smoothing": 0.1,
+    "weighting": "fixed",
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    },
+    "init_log_var": 0.0
+  },
+  "optimizer": {
+    "_note": "name: adamw or sgd (momentum/nesterov only used by sgd). Same LRs and weight decay as aniq_baseline_multitask_cnn.",
+    "name": "adamw",
+    "lr_backbone": 0.0001,
+    "lr_head": 0.001,
+    "weight_decay": 0.05,
+    "momentum": 0.9,
+    "nesterov": true
+  },
+  "scheduler": {
+    "_note": "Per optimizer step. name: cosine (decays to min_lr_ratio x base LR), step (x step_factor every step_size_epochs) or none; linear warmup over warmup_epochs first. v1: cosine, no warmup, as the baseline.",
+    "name": "cosine",
+    "warmup_epochs": 0,
+    "min_lr_ratio": 0.0,
+    "step_size_epochs": 7,
+    "step_factor": 0.1
+  },
+  "validation": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      10.0,
+      0.1
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "freeze_backbone_epochs: heads-only warm-up epochs (BN frozen). accum_steps: effective batch = batch_size x accum_steps. grad_clip_norm: 0 = off. early_stopping.patience: stop a split after this many epochs without a better best-gamma val HM (0 = off, never before min_epochs). refit_schedule: 'compress' (schedule over the selected epoch count, as train_cnn.py) or 'match_stage1' (schedule over max_epochs, stop at the selected epoch).",
+    "batch_size": 32,
+    "max_epochs": 20,
+    "final_fit": "all_train",
+    "freeze_backbone_epochs": 0,
+    "accum_steps": 1,
+    "grad_clip_norm": 0.0,
+    "early_stopping": {
+      "patience": 0,
+      "min_epochs": 5
+    },
+    "refit_schedule": "compress"
+  },
+  "evaluation": {
+    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "Local RTX 4050 settings. On Colab override with --set runtime.num_workers=2. checkpoint_every_n_epochs: save runs/.../checkpoints/last.pt every N epochs and at the end of each split/refit (0 = off), used by --resume; 5 limits Drive writes while losing at most 4 epochs on a disconnect. keep_checkpoints=false deletes it after a successful run.",
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 4,
+    "checkpoint_every_n_epochs": 5,
+    "keep_checkpoints": false
+  },
+  "output_dir": "runs/multitask/Nat_multitask_efficientnetv2_l"
+}
