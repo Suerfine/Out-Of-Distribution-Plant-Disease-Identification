@@ -1,0 +1,217 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Training (v4-v6, v8)" id="mWjACX2QDCIm8KMyKjaQ">
+    <mxGraphModel dx="852" dy="369" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1120" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;" value="&lt;b&gt;Training: compositional prompt learning on a frozen CLIP&lt;/b&gt; (v4-v6, v8; train/train.py + dpd/prompt_learner.py)" vertex="1">
+          <mxGeometry height="40" width="1320" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="loop" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontColor=#666666;arcSize=2;" value="ONE TRAINING STEP (repeated for every batch, every epoch)" vertex="1">
+          <mxGeometry height="860" width="900" x="330" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="img" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;Training images&lt;/b&gt;&lt;br&gt;8,000 photos of 323 seen pairs" vertex="1">
+          <mxGeometry height="60" width="180" x="40" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="imgenc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="&lt;b&gt;CLIP image encoder&lt;/b&gt;&lt;br&gt;FROZEN (never changes)" vertex="1">
+          <mxGeometry height="60" width="180" x="40" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="nograd" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontColor=#CC0000;fontStyle=2;" value="no gradients reach here" vertex="1">
+          <mxGeometry height="20" width="180" x="40" y="282" as="geometry" />
+        </mxCell>
+        <mxCell id="cache" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;size=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;Cached image vectors&lt;/b&gt;&lt;br&gt;8,000 × 512&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;computed ONCE, saved in runs/cache/&lt;/font&gt;" vertex="1">
+          <mxGeometry height="80" width="180" x="40" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="batch" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;Batch of image vectors v&lt;/b&gt;&lt;br&gt;B × 512 (shuffled)" vertex="1">
+          <mxGeometry height="60" width="180" x="40" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="tmpl" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="&lt;b&gt;Prompt templates&lt;/b&gt; (fixed text, &lt;b&gt;x&lt;/b&gt; = placeholder)&lt;br&gt;&lt;div style=&quot;text-align:left&quot;&gt;• pair (323): a photo of &lt;b&gt;x&lt;/b&gt; leaves with &lt;b&gt;x&lt;/b&gt;: &amp;lt;description&amp;gt;.&lt;br&gt;• crop (55): a photo of &lt;b&gt;x&lt;/b&gt; leaves.&lt;br&gt;• disease (175): a photo of leaves with &lt;b&gt;x&lt;/b&gt;: &amp;lt;description&amp;gt;.&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="330" x="300" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="subst" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;b&gt;Fill the placeholders&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;each x&#39;s token embedding is replaced by the current crop / disease vector&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="330" x="300" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="txtenc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="&lt;b&gt;CLIP text encoder&lt;/b&gt;&lt;br&gt;FROZEN (weights fixed, but gradients pass THROUGH it)" vertex="1">
+          <mxGeometry height="60" width="330" x="300" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="tpair" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;b&gt;t_pair&lt;/b&gt;&lt;br&gt;323 × 512" vertex="1">
+          <mxGeometry height="50" width="106" x="300" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="tcrop" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;b&gt;t_crop&lt;/b&gt;&lt;br&gt;55 × 512" vertex="1">
+          <mxGeometry height="50" width="106" x="412" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="tdis" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;b&gt;t_disease&lt;/b&gt;&lt;br&gt;175 × 512" vertex="1">
+          <mxGeometry height="50" width="106" x="524" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="learn" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#fffaf3;strokeColor=#d79b00;verticalAlign=top;fontStyle=1;fontSize=11;fontColor=#994C00;arcSize=4;" value="LEARNABLE: the only trained parameters" vertex="1">
+          <mxGeometry height="220" width="200" x="670" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="cropv" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;b&gt;crop vectors&lt;/b&gt;&lt;br&gt;55 × 512" vertex="1">
+          <mxGeometry height="50" width="150" x="695" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="disv" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;b&gt;disease vectors&lt;/b&gt;&lt;br&gt;175 × 512" vertex="1">
+          <mxGeometry height="50" width="150" x="695" y="375" as="geometry" />
+        </mxCell>
+        <mxCell id="initnote" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=10;fontColor=#994C00;" value="230 vectors ≈ 118k numbers.&lt;br&gt;Start = CLIP&#39;s own embedding of the name (e.g. mean of &quot;early&quot;, &quot;blight&quot;)" vertex="1">
+          <mxGeometry height="60" width="180" x="680" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="scores" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;b&gt;Similarity scores = 100 × cos(v, t)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;pair: B × 323 | crop: B × 55 | disease: B × 175&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="330" x="300" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="lpair" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;b&gt;pair loss&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;CE: true pair&#39;s sentence highest&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="106" x="300" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="lcrop" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;b&gt;crop loss&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;CE: true crop highest&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="106" x="412" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="ldis" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;b&gt;disease loss&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;CE: true disease highest&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="106" x="524" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="total" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;b&gt;Total loss = pair + 0.5 × crop + 0.5 × disease&lt;/b&gt;" vertex="1">
+          <mxGeometry height="50" width="330" x="300" y="870" as="geometry" />
+        </mxCell>
+        <mxCell id="whyaux" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=10;fontStyle=2;fontColor=#666666;" value="crop/disease losses make each vector mean something ON ITS OWN, so it still works in pairs it never appeared in" vertex="1">
+          <mxGeometry height="60" width="200" x="640" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="img" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="imgenc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="imgenc" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="cache">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="cache" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontSize=10;" target="batch" value="sample">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="batch" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontSize=10;exitX=0.5;exitY=1;entryX=0;entryY=0.5;" target="scores" value="v (same for all three)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="tmpl" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="subst">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="cropv" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;strokeColor=#d79b00;exitX=0;exitY=0.5;entryX=1;entryY=0.25;" target="subst">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="disv" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;strokeColor=#d79b00;exitX=0;exitY=0.5;entryX=1;entryY=0.75;" target="subst">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="subst" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontSize=10;" target="txtenc" value="323 + 55 + 175 sentences">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="txtenc" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;exitX=0.16;exitY=1;" target="tpair">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="txtenc" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="tcrop">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="txtenc" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;exitX=0.84;exitY=1;" target="tdis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="tpair" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;entryX=0.16;entryY=0;" target="scores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="tcrop" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="scores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="tdis" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;entryX=0.84;entryY=0;" target="scores">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="scores" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;exitX=0.16;exitY=1;" target="lpair">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="scores" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="lcrop">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="scores" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;exitX=0.84;exitY=1;" target="ldis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="lpair" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontSize=10;entryX=0.16;entryY=0;" target="total" value="× 1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="lcrop" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontSize=10;" target="total" value="× 0.5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e20" edge="1" parent="1" source="ldis" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontSize=10;entryX=0.84;entryY=0;" target="total" value="× 0.5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="grad" edge="1" parent="1" source="total" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;strokeColor=#CC0000;dashed=1;strokeWidth=2;fontSize=10;fontColor=#CC0000;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=1;entryY=0.5;" target="learn" value="&lt;b&gt;backward&lt;/b&gt;: gradients flow back&lt;br&gt;through the frozen text encoder&lt;br&gt;into the 230 vectors only;&lt;br&gt;AdamW (cosine LR) updates them">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-20" y="80" as="offset" />
+            <Array as="points">
+              <mxPoint x="895" y="895" />
+              <mxPoint x="895" y="390" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="keyidea" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;align=left;spacingLeft=8;spacingRight=8;fontSize=11;arcSize=4;" value="&lt;b&gt;Key idea&lt;/b&gt;&lt;br&gt;CLIP&#39;s 150M weights never change. Only the &lt;i&gt;input words&lt;/i&gt; of the prompt move: each crop/disease vector is nudged from CLIP&#39;s generic word towards whatever separates that class from the others in DPD field photos. Images stay put; the sentence points move to land on their images." vertex="1">
+          <mxGeometry height="120" width="390" x="950" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="unseen" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;align=left;spacingLeft=8;spacingRight=8;fontSize=11;arcSize=4;" value="&lt;b&gt;Why unseen pairs work (test time)&lt;/b&gt;&lt;br&gt;Build all 333 pair sentences, including the 10 unseen ones, e.g.&lt;br&gt;&quot;a photo of [apple] leaves with [aphis_spp]: ...&quot;&lt;br&gt;Both vectors were trained in OTHER pairs; they are just combined. No new parameters. Seen-pair scores are lowered by gamma so unseen pairs can win." vertex="1">
+          <mxGeometry height="130" width="390" x="950" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="limit" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;align=left;spacingLeft=8;spacingRight=8;fontSize=11;arcSize=4;" value="&lt;b&gt;Limit&lt;/b&gt;&lt;br&gt;Because the image vectors are fixed, two diseases that look the same to CLIP&#39;s image encoder cannot be separated by any choice of text vectors." vertex="1">
+          <mxGeometry height="80" width="390" x="950" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1;fontSize=11;arcSize=4;" value="Legend" vertex="1">
+          <mxGeometry height="190" width="390" x="950" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" value="frozen CLIP part" vertex="1">
+          <mxGeometry height="30" width="170" x="965" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" value="learnable parameters" vertex="1">
+          <mxGeometry height="30" width="170" x="1155" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="image data" vertex="1">
+          <mxGeometry height="30" width="170" x="965" y="565" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" value="text / prompts" vertex="1">
+          <mxGeometry height="30" width="170" x="1155" y="565" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="scores" vertex="1">
+          <mxGeometry height="30" width="170" x="965" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="lg6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" value="losses" vertex="1">
+          <mxGeometry height="30" width="170" x="1155" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="lg7" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#CC0000;" value="red dashed arrow = gradient (backward pass)" vertex="1">
+          <mxGeometry height="24" width="360" x="965" y="648" as="geometry" />
+        </mxCell>
+        <mxCell id="stages" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontColor=#666666;arcSize=4;" value="AROUND THE LOOP: choosing epochs and gamma without touching the test sets" vertex="1">
+          <mxGeometry height="140" width="1320" x="20" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="&lt;b&gt;Stage 1: make validation splits&lt;/b&gt;&lt;br&gt;hold out whole seen pairs as pseudo-unseen + some images as val-seen (several random splits)" vertex="1">
+          <mxGeometry height="80" width="230" x="40" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="&lt;b&gt;Train with the loop above&lt;/b&gt;&lt;br&gt;after every epoch, score the val images and try every gamma" vertex="1">
+          <mxGeometry height="80" width="230" x="300" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="&lt;b&gt;Pick (epoch, gamma)&lt;/b&gt;&lt;br&gt;with the best harmonic mean, averaged over the splits" vertex="1">
+          <mxGeometry height="80" width="230" x="560" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="&lt;b&gt;Stage 2: refit&lt;/b&gt;&lt;br&gt;reset the vectors, retrain on ALL 8,000 train images for the chosen epochs" vertex="1">
+          <mxGeometry height="80" width="230" x="820" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="&lt;b&gt;Test once&lt;/b&gt;&lt;br&gt;test seen + test unseen, ranked over all 333 pairs, chosen gamma applied" vertex="1">
+          <mxGeometry height="80" width="240" x="1080" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="es1" edge="1" parent="1" source="s1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="s2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="es2" edge="1" parent="1" source="s2" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="es3" edge="1" parent="1" source="s3" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="s4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="es4" edge="1" parent="1" source="s4" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="s5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xx38-Bh-AtQllX_fLkr_-1" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;score(seen pair)&amp;nbsp; &amp;nbsp;= score − γ&lt;/div&gt;&lt;div&gt;score(unseen pair) = score&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; (unchanged)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="310" x="1205" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="Xx38-Bh-AtQllX_fLkr_-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Cosine similarity between the image vector and the pair’s sentence vector" vertex="1">
+          <mxGeometry height="30" width="260" x="1230" y="820" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,163 @@
+{
+  "_note": "v9 (LoRA on the CLIP image encoder): v6's prompt model (learnable crop/disease vectors + symptom descriptions, frozen text encoder) plus trainable LoRA adapters in the last 4 blocks of the image encoder. Why: against the CNN baselines (aniq_baseline_independent_cnn HM 59.7% vs v5 52.9%), the CLIP models lose on SEEN pairs (44% vs 55% top-1; seen disease 49% vs 63%) because their image encoder is frozen, while they transfer disease knowledge to unseen crops better (unseen disease at gamma 0: 22-31% vs 13-15%). LoRA lets the image features adapt to leaf lesions with few parameters (393k, vs 86M in the encoder), keeping CLIP's pretrained features and the text side intact. Consequences: image embeddings can no longer be cached, so images are read every epoch (from the 256 px resize cache) with augmentation; that makes each run far slower, so validation uses 1 split instead of v6's 3, and max_epochs is 15.",
+  "_result": "Best model so far, and the first proposed model to beat the CNN baselines. With gamma 0.0725 (validation, epoch 13): harmonic mean 65.1% top-1 / 92.1% top-5 (aniq_baseline_independent_cnn 59.7% / 87.7%; v5 52.9% / 87.1%). Seen top-1 53.4% (baseline 54.8%, v5 44.2%), unseen top-1 83.2% (baseline 65.5%, v5 65.7%). LoRA closed most of the seen gap, as intended: seen disease 57.7% (v5 48.9%, baseline 62.5%), seen crop 83.2%; uncalibrated seen top-1 67.1% equals the baseline's 67.2%. The unseen gain comes mainly from better CROP recognition, not better disease transfer: unseen-only diagnostic 86.7% (v6 75.6%, baseline 75.8%), unseen crop 86.6% (74.3% uncalibrated, baseline 66.6%), while unseen disease at gamma 0 is 21.1% (v5 22.7%, v4 30.9%): adapting the image encoder did not improve, and slightly reduced, disease transfer. Same caveat as before: with 10 unseen pairs over 9 crops, routing an image to the unseen group plus recognising the crop nearly decides the pair (95.4% of unseen images routed to an unseen pair). Calibration transferred better than in v5/v6: 29.2% of seen-test images go to unseen pairs (v5 35.2%), and a diagnostic test sweep (not used for selection) peaks at HM 67.0% near gamma 0.06, close to the chosen 0.0725. Validation: 1 split (seed 42), val HM 51.2% at epoch 13 (v5 45.8% on the same split); val HM rose steadily while pseudo-unseen accuracy peaked at epoch 2. Per unseen pair: cherry_aphis_spp 100%, mango_anthracnose 98%, cucumber_downy_mildew 94%, grape_black_rot 87%, cucumber_powdery_mildew 86%, tomato_early_blight 84%, sugarcane_rust 81%, pepper_bell_bacterial_spot 81%, cotton_bacterial_blight 64%, corn_brown_spot 40% (lowest).",
+  "version": "v9",
+  "method": "clip_prompt_lora",
+  "seed": 42,
+  "data": {
+    "_note": "Unchanged from v6.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Same OpenAI CLIP ViT-B/16 (QuickGELU) as v5/v6; the text encoder stays frozen.",
+    "library": "open_clip",
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai"
+  },
+  "image_encoder": {
+    "_note": "LoRA (dpd/lora.py) on the last 4 of 12 transformer blocks: attention q/k/v and output projections and both MLP layers. Rank 8, alpha 16 (scale 2). B starts at zero, so training starts exactly from pretrained CLIP. Earlier blocks stay frozen and get no gradient. lr 1e-4 (adapters), weight decay 0 like the prompt vectors.",
+    "lora": {
+      "last_n_blocks": 4,
+      "rank": 8,
+      "alpha": 16,
+      "targets": [
+        "attn_qkv",
+        "attn_out",
+        "mlp_in",
+        "mlp_out"
+      ],
+      "lr": 0.0001
+    }
+  },
+  "input": {
+    "_note": "Images come from the 256 px resize cache (runs/cache/resized_256, shared with the CNN baselines). Test: CLIP's resize 224 + centre crop + CLIP mean/std. The app must standardise uploads the same way (dpd/resize_cache.standardise).",
+    "resize_cache": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "Same as the CNN baselines except a milder crop scale (0.5-1 instead of 0.25-1), because CLIP's pretrained features expect whole-object views. No hue jitter: colour is diagnostic.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "names": {
+    "_note": "Unchanged from v6.",
+    "underscore_to_space": true,
+    "crop_overrides": {
+      "pepper_bell": "bell pepper",
+      "paddy": "rice",
+      "blackgram": "black gram"
+    },
+    "disease_overrides": {
+      "xamthomonas": "xanthomonas bacterial blight",
+      "verticulium_wilt": "verticillium wilt",
+      "crinckle": "crinkle",
+      "monillia_laxa": "monilinia brown rot",
+      "leafblast": "leaf blast",
+      "die_back": "dieback",
+      "gray_light": "gray blight",
+      "curl": "leaf curl",
+      "viral": "viral disease",
+      "miner": "leaf miner damage",
+      "slug": "slug feeding damage",
+      "caterpillar": "caterpillar feeding damage",
+      "insects_damages": "insect damage",
+      "nutrition_deficiency": "nutrient deficiency",
+      "scorch": "leaf scorch",
+      "pox_virus": "plum pox virus",
+      "pocket_disease": "plum pocket disease",
+      "cercospora": "cercospora leaf spot",
+      "tungro": "tungro virus",
+      "hispa": "rice hispa beetle damage",
+      "aphis_spp": "aphids",
+      "eriosoma_lanigerum": "woolly apple aphids",
+      "icerya_seychellarum": "fluted scale insects",
+      "parthenolecanium_corni": "lecanium scale insects",
+      "ceroplastes_rubens": "red wax scale insects",
+      "aulacaspis_tubercularis": "white mango scale insects",
+      "ischnaspis_longirostris": "black thread scale insects",
+      "procontarinia_matteiana": "mango leaf gall midge galls",
+      "procontarinia_rubus": "gall midge galls",
+      "erosomyia_sp": "gall midge damage",
+      "venturia_inaequalis": "apple scab",
+      "gnomonia_leptostyla": "walnut anthracnose",
+      "erwinia_amylovora": "erwinia fire blight",
+      "aculus_olearius": "olive bud mites",
+      "cisaberoptus_kenyae": "leaf coating mites",
+      "dialeuropora_decempuncta": "whiteflies",
+      "neomelicharia_sparsa": "planthoppers",
+      "valanga_nigricornis": "grasshopper feeding damage",
+      "mictis_longicornis": "leaf-footed bug damage",
+      "apoderus_javanicus": "leaf-rolling weevil damage",
+      "orthaga_euadrusalis": "leaf webber caterpillars",
+      "dappula_tertia": "bagworms",
+      "diabrotica_speciosa": "cucumber beetle feeding damage"
+    }
+  },
+  "prompts": {
+    "_note": "Unchanged from v6.",
+    "descriptions_file": "knowledge/disease_descriptions_v1.json",
+    "pair_template": "a photo of {crop} leaves with {disease}: {description}.",
+    "crop_template": "a photo of {crop} leaves.",
+    "disease_template": "a photo of leaves with {disease}: {description}."
+  },
+  "validation": {
+    "_note": "Same procedure as v6 but 1 split instead of 3: each split is now a full training run with the image encoder in the loop (images instead of cached embeddings). Note v6 showed one split can mis-set gamma, so treat v9's gamma with that caveat.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      0.1,
+      0.0025
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 1
+  },
+  "training": {
+    "_note": "Prompt vectors as v6 (AdamW lr 2e-4, weight decay 0, logit scale 100, loss weights pair 1 / crop 0.5 / disease 0.5). max_epochs 30 -> 15 (v5/v6 selected epochs 13-18 with cached features; each epoch now re-encodes every image). Batch 256 -> 64 for GPU memory with gradients through 4 image-encoder blocks.",
+    "lr": 0.0002,
+    "weight_decay": 0.0,
+    "batch_size": 64,
+    "max_epochs": 15,
+    "logit_scale": 100.0,
+    "loss_weights": {
+      "pair": 1.0,
+      "crop": 0.5,
+      "disease": 0.5
+    },
+    "final_fit": "all_train"
+  },
+  "evaluation": {
+    "_note": "Unchanged from v6.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "Gradient checkpointing on the text encoder as before. 4 dataloader workers read the resize cache.",
+    "device": "cuda",
+    "amp": true,
+    "grad_checkpointing": true,
+    "num_workers": 4
+  },
+  "output_dir": "runs/vlm/v9"
+}
