@@ -1,0 +1,33 @@
+{
+  "name": "independent_cnn_baseline_r0_finalization_seed42",
+  "output_dir": "runs/baseline/independent_cnn_baseline_r0_finalization_seed42",
+  "source_study": "runs/baseline/independent_cnn_baseline_study_seed42",
+  "source_spec": "independent_cnn_baseline/configs/study_seed42.json",
+  "source_spec_sha256": "958d2c7a739a07bd64a0eac127396714947db636e2a5f743aed1745802c8ca82",
+  "seed": 42,
+  "selection_policy": "completed_r0_only",
+  "window_hours": 10,
+  "models": [
+    {
+      "name": "bit50",
+      "trial": "independent_cnn_baseline_bit50_r0_seed42",
+      "selected_epoch": 3,
+      "gamma": 6.6,
+      "complete_sha256": "c5a5f322961a1fa403c5741466f60a3c4cb09593e13cf05cff78213bc18d1381"
+    },
+    {
+      "name": "convnext_base",
+      "trial": "independent_cnn_baseline_convnext_base_r0_seed42",
+      "selected_epoch": 15,
+      "gamma": 6.2,
+      "complete_sha256": "c6ab42e8aa04243214e18507d64b8c6cadd557a5eb57611c678c1a3190013d05"
+    },
+    {
+      "name": "efficientnetv2_l",
+      "trial": "independent_cnn_baseline_efficientnetv2_l_r0_seed42",
+      "selected_epoch": 3,
+      "gamma": 6.6,
+      "complete_sha256": "7c3735f28b00bfa89c5ab53c86abf7ae60370c7722cbef2c769d2bcb83dc5d28"
+    }
+  ]
+}

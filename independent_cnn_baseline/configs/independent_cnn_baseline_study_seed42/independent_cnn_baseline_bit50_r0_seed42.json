@@ -1,0 +1,78 @@
+{
+  "seed": 42,
+  "input": {
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224,
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "interpolation": "bilinear"
+  },
+  "augmentation": {
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "optimizer": {
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08
+  },
+  "training": {
+    "max_epochs": 30,
+    "warmup_epochs": 3,
+    "min_lr_ratio": 0.01,
+    "patience": 8,
+    "effective_batch_size": 32,
+    "initial_batch_size": 4,
+    "head_dropout": 0.2,
+    "label_smoothing": 0.1,
+    "gradient_clip": 1.0,
+    "batch_size": 4,
+    "accumulation_steps": 8
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2,
+    "inference_batch_size": 1,
+    "torch_threads": 2
+  },
+  "method": "cnn_independent",
+  "implementation": "independent_cnn_baseline",
+  "display_name": "Independent CNN Baseline",
+  "model": {
+    "name": "bit50",
+    "backbone": "resnetv2_50x1_bit.goog_in21k_ft_in1k",
+    "drop_path_rate": 0.0,
+    "freeze_bn_stats": false,
+    "pretrained_file": "runs/cache/independent_cnn_baseline/huggingface/hub/models--timm--resnetv2_50x1_bit.goog_in21k_ft_in1k/snapshots/567d3c97765b738389474d8dc8eaf0af38ebc83a/model.safetensors",
+    "pretrained_sha256": "04687d0e44324a1f162e5346a021fb0c5e927b3e515b8ae300096b818ac711fe",
+    "pretrained_revision": "567d3c97765b738389474d8dc8eaf0af38ebc83a",
+    "head_dropout": 0.2
+  },
+  "version": "independent_cnn_baseline_bit50_r0_seed42",
+  "output_dir": "runs/baseline/independent_cnn_baseline_study_seed42/trials/independent_cnn_baseline_bit50_r0_seed42"
+}

@@ -1,0 +1,78 @@
+{
+  "seed": 42,
+  "input": {
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224,
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "interpolation": "bicubic"
+  },
+  "augmentation": {
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "optimizer": {
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08
+  },
+  "training": {
+    "max_epochs": 30,
+    "warmup_epochs": 3,
+    "min_lr_ratio": 0.01,
+    "patience": 8,
+    "effective_batch_size": 32,
+    "initial_batch_size": 4,
+    "head_dropout": 0.2,
+    "label_smoothing": 0.1,
+    "gradient_clip": 1.0,
+    "batch_size": 4,
+    "accumulation_steps": 8
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2,
+    "inference_batch_size": 1,
+    "torch_threads": 2
+  },
+  "method": "cnn_independent",
+  "implementation": "independent_cnn_baseline",
+  "display_name": "Independent CNN Baseline",
+  "model": {
+    "name": "efficientnetv2_l",
+    "backbone": "tf_efficientnetv2_l.in21k_ft_in1k",
+    "drop_path_rate": 0.1,
+    "freeze_bn_stats": true,
+    "pretrained_file": "runs/cache/independent_cnn_baseline/huggingface/hub/models--timm--tf_efficientnetv2_l.in21k_ft_in1k/snapshots/6c44709e23420722b5b195738875471dcc34d260/model.safetensors",
+    "pretrained_sha256": "e52f8ca1958ec63b4001232206824b9946d64e17ff9f941e2aa2bbd0df9d7e66",
+    "pretrained_revision": "6c44709e23420722b5b195738875471dcc34d260",
+    "head_dropout": 0.2
+  },
+  "version": "independent_cnn_baseline_efficientnetv2_l_r0_seed42",
+  "output_dir": "runs/baseline/independent_cnn_baseline_study_seed42/trials/independent_cnn_baseline_efficientnetv2_l_r0_seed42"
+}

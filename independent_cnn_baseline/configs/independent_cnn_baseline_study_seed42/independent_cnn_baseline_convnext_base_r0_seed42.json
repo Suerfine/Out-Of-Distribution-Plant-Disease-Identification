@@ -1,0 +1,78 @@
+{
+  "seed": 42,
+  "input": {
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224,
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "interpolation": "bicubic"
+  },
+  "augmentation": {
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "optimizer": {
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08
+  },
+  "training": {
+    "max_epochs": 30,
+    "warmup_epochs": 3,
+    "min_lr_ratio": 0.01,
+    "patience": 8,
+    "effective_batch_size": 32,
+    "initial_batch_size": 4,
+    "head_dropout": 0.2,
+    "label_smoothing": 0.1,
+    "gradient_clip": 1.0,
+    "batch_size": 4,
+    "accumulation_steps": 8
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2,
+    "inference_batch_size": 1,
+    "torch_threads": 2
+  },
+  "method": "cnn_independent",
+  "implementation": "independent_cnn_baseline",
+  "display_name": "Independent CNN Baseline",
+  "model": {
+    "name": "convnext_base",
+    "backbone": "convnext_base.fb_in22k_ft_in1k",
+    "drop_path_rate": 0.1,
+    "freeze_bn_stats": false,
+    "pretrained_file": "runs/cache/independent_cnn_baseline/huggingface/hub/models--timm--convnext_base.fb_in22k_ft_in1k/snapshots/67758fcbcf9f007ec7630bf8636b74a8f24e52a0/model.safetensors",
+    "pretrained_sha256": "4853efc8d5dd3ed9b0f888a9c601d7556373599f944f9ac79af8b8ec81aa7381",
+    "pretrained_revision": "67758fcbcf9f007ec7630bf8636b74a8f24e52a0",
+    "head_dropout": 0.2
+  },
+  "version": "independent_cnn_baseline_convnext_base_r0_seed42",
+  "output_dir": "runs/baseline/independent_cnn_baseline_study_seed42/trials/independent_cnn_baseline_convnext_base_r0_seed42"
+}

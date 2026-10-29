@@ -11,6 +11,7 @@ from PIL import Image
 
 from dpd.clip_utils import build_prompts, encode_images, encode_prompts, load_clip
 from dpd.data import PROJECT_ROOT, pair_table
+from dpd.evaluate import ranked_indices
 
 RUNS_DIR = PROJECT_ROOT / "runs"
 SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "cnn_independent", "cnn_multitask", "ensemble")
@@ -79,7 +80,7 @@ def rank_scores(scores: np.ndarray, unseen_mask: np.ndarray, gamma: float, logit
     scores = scores - gamma * (~unseen_mask)
     probs = np.exp(logit_scale * (scores - scores.max()))
     probs /= probs.sum()
-    return np.argsort(-scores), scores, probs
+    return ranked_indices(scores), scores, probs
 
 
 def nearest(image_emb: np.ndarray, bank: np.ndarray, k: int) -> tuple[np.ndarray, np.ndarray]:
@@ -248,7 +249,7 @@ class EnsembleRunModel:
         self.gamma = float(run["metrics"].get("gamma", 0.0))
         self.weight = float(run["metrics"]["weight"])
         self.members = [member_run(m["run"]) for m in run["cfg"]["members"]]
-        self.models = [model_class(m["method"])(m, pairs) for m in self.members]
+        self.models = [build_run_model(m, pairs) for m in self.members]
 
     def predict(self, src):
         from dpd.ensemble import to_logprob
@@ -276,6 +277,14 @@ def model_class(method: str):
     raise ValueError(f"unsupported method {method!r}")
 
 
+def build_run_model(run: dict, pairs):
+    if run["cfg"].get("implementation") == "independent_cnn_baseline":
+        from independent_cnn_baseline.inference import IndependentCnnRunModel
+
+        return IndependentCnnRunModel(run, pairs)
+    return model_class(run["method"])(run, pairs)
+
+
 def load_run_model(run: dict, df):
     """A model object with .predict(path or file-like), .train_bank(train_df), .pairs, .gamma, .logit_scale, .score_help."""
-    return model_class(run["method"])(run, pair_table(df))
+    return build_run_model(run, pair_table(df))
