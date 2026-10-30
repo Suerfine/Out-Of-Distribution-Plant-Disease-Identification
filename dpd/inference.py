@@ -33,8 +33,8 @@ def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
         runs.append({"dir": d, "family": d.parent.name, "version": cfg["version"], "method": cfg["method"], "cfg": cfg, "metrics": metrics})
 
     def order(r):
-        m = re.fullmatch(r"v(\d+)", r["version"])
-        return (0, -int(m.group(1))) if m else (1, r["version"])
+        m = re.fullmatch(r"v(\d+)(?:\.(\d+))?", r["version"])  # v9, v3.1 (a variant of v3), ...
+        return (0, -int(m.group(1)), -int(m.group(2) or 0)) if m else (1, r["version"])
 
     return sorted(runs, key=order)
 
@@ -51,7 +51,8 @@ def pair_text_embeddings(run_dir: Path, clip_model, tokenizer, pairs) -> np.ndar
         return np.load(saved)
     cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
     if cfg["method"] == "clip_zeroshot":
-        return encode_prompts(clip_model, tokenizer, build_prompts(pairs, cfg["names"], cfg["prompts"]), device())
+        renormalize = cfg["prompts"].get("class_score", "normalized_mean") != "mean_of_scores"
+        return encode_prompts(clip_model, tokenizer, build_prompts(pairs, cfg["names"], cfg["prompts"]), device(), renormalize)
     # Older prompt-learning runs only saved the vectors: rebuild the prompts and re-encode.
     from dpd.prompt_learner import build_model
 
@@ -169,16 +170,26 @@ class ClipLoraRunModel(ClipRunModel):
 
 
 class CnnRunModel:
-    """A CNN baseline run: score = log P(crop) + log P(disease) from the saved network(s)."""
+    """A CNN run: score = log P(crop) + log P(disease) from the saved network(s), optionally weighted and logit-adjusted."""
 
     logit_scale = 1.0  # scores are already log-probabilities
-    score_help = "log P(crop) + log P(disease), after calibration"
+    score_help = "log P(crop) + log P(disease) (weighted and logit-adjusted if the run chose so), after calibration"
 
     def __init__(self, run: dict, pairs):
         from dpd.cnn import HEAD_SIZES, NETWORKS, MultiHeadNet, build_transforms
 
         self.run, self.pairs = run, pairs
         self.gamma = float(run["metrics"].get("gamma", 0.0))
+        # Scoring chosen on validation (train_cnn "composition"); runs without it used the plain sum (w 0.5, tau 0).
+        self.crop_weight = float(run["metrics"].get("crop_weight", 0.5))
+        self.tau = float(run["metrics"].get("tau", 0.0))
+        if self.tau:
+            from dpd.cnn import log_priors
+            from dpd.data import read_metadata
+
+            self.log_prior = log_priors(read_metadata().query("split == 'train'"))  # the final fit trains on all train
+        else:
+            self.log_prior = None
         cfg = run["cfg"]
         self.transform = build_transforms(cfg["input"], cfg["augmentation"])[1]
         self.nets = {}
@@ -208,7 +219,8 @@ class CnnRunModel:
         # Same downscale + JPEG round trip as the training/evaluation cache, so scores match the evaluated model.
         x = self.transform(standardise(src, self.run["cfg"]["input"]["resize_cache"])).unsqueeze(0).to(device())
         emb, logp = self._forward(x)
-        return emb[0], compose_pair_scores(logp["crop"], logp["disease"], self.pairs)[0]
+        scores = compose_pair_scores(logp["crop"], logp["disease"], self.pairs, self.crop_weight, self.tau, self.log_prior)
+        return emb[0], scores[0]
 
     def train_bank(self, train) -> np.ndarray:
         """Backbone features of every training image, computed once and saved in the run folder."""

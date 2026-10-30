@@ -1,6 +1,6 @@
 {
   "_note": "v14: v9 + class-balanced (square-root) sampling. Ablation of ONE change against v9 (everything else identical, same validation split: seed 42, 1 split). Keep the change only if validation HM beats v9's 51.2% by more than 2 points (v11 measured run-to-run noise of about 3 points: v9 retrained on the same split scored 48.3% vs 51.2%); the test result is recorded but must not decide.",
-  "_result": "Pending.",
+  "_result": "Not kept (excluded from v15): validation HM 49.0% (epoch 9, gamma 0.0725) vs v9's 51.2%, -2.2 points; from epoch 10 on it stayed about 2 points below v9 every epoch, so it is a consistent effect, not noise in one epoch. Test (recorded, not used for the decision): HM 62.3% top-1 / 91.4% top-5 (v9 65.1% / 92.1%); seen 49.6%, unseen 83.8%; per-class mean seen top-1 33.5% (v9 33.4%). Likely reason: square-root balancing draws pairs with 5 or fewer training images about 4x more often (16.7% vs 4.5% of draws), so the model repeats the same few photos of rare pairs rather than seeing new ones, while the common pairs that make up most test images (and 55% of v9's seen errors) get less training.",
   "version": "v14",
   "method": "clip_prompt_lora",
   "seed": 42,

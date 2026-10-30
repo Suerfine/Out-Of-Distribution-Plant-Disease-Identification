@@ -5,6 +5,9 @@ A pair's prompt is a fixed sentence with two placeholder words swapped for those
     "a photo of [CROP] leaves with [DISEASE]: <fixed symptom description>."
 so an unseen pair's prompt is assembled from vectors that were trained on other pairs. Both CLIP encoders stay
 frozen; gradients flow through the frozen text encoder into the 55 + 175 vectors only.
+
+A description may also be a list (e.g. [taxonomy, visual symptoms], as in zero-shot v3.6): the class then gets one
+sentence per entry, and its embedding is the renormalised mean of those sentences' embeddings.
 """
 
 import numpy as np
@@ -41,9 +44,11 @@ class CompositionalPrompts(nn.Module):
         return torch.stack(vecs).float()
 
     @torch.no_grad()
-    def add_group(self, name: str, texts: list[str], crop_idx: list[int | None], disease_idx: list[int | None]):
+    def add_group(self, name: str, texts: list[str], crop_idx: list[int | None], disease_idx: list[int | None],
+                  owner: list[int] | None = None):
         """Register a set of prompt sentences. Each text has a placeholder for the crop and/or disease (in that order)
-        wherever crop_idx / disease_idx is not None. Token embeddings are precomputed; only placeholders change."""
+        wherever crop_idx / disease_idx is not None. Token embeddings are precomputed; only placeholders change.
+        owner[i] is the output row of sentence i (several sentences per row are averaged); default one row each."""
         device = self.clip.token_embedding.weight.device
         tokens = self.tokenizer(texts).to(device)
         if (tokens[:, -1] != 0).any():
@@ -65,6 +70,7 @@ class CompositionalPrompts(nn.Module):
             "eot": eot,
             "crop_idx": as_t(crop_idx), "crop_pos": torch.tensor(crop_pos, device=device),
             "disease_idx": as_t(disease_idx), "disease_pos": torch.tensor(disease_pos, device=device),
+            "owner": None if owner is None else torch.tensor(owner, device=device),
         }
 
     def encode(self, name: str) -> torch.Tensor:
@@ -80,8 +86,11 @@ class CompositionalPrompts(nn.Module):
         x = x + self.clip.positional_embedding[:length]
         x = self.clip.transformer(x, attn_mask=self.clip.attn_mask[:length, :length])
         x = self.clip.ln_final(x)
-        x = x[rows, g["eot"]] @ self.clip.text_projection
-        return F.normalize(x.float(), dim=-1)
+        x = F.normalize((x[rows, g["eot"]] @ self.clip.text_projection).float(), dim=-1)
+        if g["owner"] is not None:  # renormalised mean of each row's sentences
+            n_rows = int(g["owner"].max()) + 1
+            x = F.normalize(x.new_zeros(n_rows, x.shape[1]).index_add(0, g["owner"], x), dim=-1)
+        return x
 
 
 def build_model(cfg, clip_model, tokenizer, pairs):
@@ -99,18 +108,27 @@ def build_model(cfg, clip_model, tokenizer, pairs):
         [display_name(d, names["disease_overrides"], u2s) for d in diseases["disease"]],
     )
     desc = load_descriptions(prompts)
-    fill = lambda t, disease: t.format(crop=PLACEHOLDER, disease=PLACEHOLDER, description=desc.get(disease, ""))
+
+    def sentences(template, disease_names):
+        """Every filled sentence, with its output row (one row per disease name; several if its description is a list)."""
+        texts, owner = [], []
+        for row, d in enumerate(disease_names):
+            ds = desc.get(d, "")
+            for one in ds if isinstance(ds, list) else [ds]:
+                texts.append(template.format(crop=PLACEHOLDER, disease=PLACEHOLDER, description=one))
+                owner.append(row)
+        return texts, owner
+
+    expand = lambda values, owner: [values[i] for i in owner]
+    texts, owner = sentences(prompts["pair_template"], pairs["disease"].tolist())
     model.add_group(
-        "pairs",
-        [fill(prompts["pair_template"], d) for d in pairs["disease"]],
-        pairs["crop_id"].tolist(),
-        pairs["disease_id"].tolist(),
+        "pairs", texts, expand(pairs["crop_id"].tolist(), owner), expand(pairs["disease_id"].tolist(), owner),
+        owner if len(owner) > len(pairs) else None,
     )
     model.add_group("crops", [prompts["crop_template"].format(crop=PLACEHOLDER)] * len(crops), crops["crop_id"].tolist(), [None] * len(crops))
+    texts, owner = sentences(prompts["disease_template"], diseases["disease"].tolist())
     model.add_group(
-        "diseases",
-        [fill(prompts["disease_template"], d) for d in diseases["disease"]],
-        [None] * len(diseases),
-        diseases["disease_id"].tolist(),
+        "diseases", texts, [None] * len(texts), expand(diseases["disease_id"].tolist(), owner),
+        owner if len(owner) > len(diseases) else None,
     )
     return model

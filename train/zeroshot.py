@@ -49,7 +49,9 @@ def main():
     if too_long:
         raise SystemExit(f"{len(too_long)} prompts exceed CLIP's 77 tokens, e.g. {too_long[0]!r}")
     print("Example prompts:", *[p[0] for p in prompts[:3]], sep="\n  ")
-    text = encode_prompts(model, tokenizer, prompts, runtime["device"])
+    # prompts.class_score "mean_of_scores": average the cosine scores of a class's prompts (classification by description)
+    renormalize = cfg["prompts"].get("class_score", "normalized_mean") != "mean_of_scores"
+    text = encode_prompts(model, tokenizer, prompts, runtime["device"], renormalize)
 
     scores, labels, files = {}, {}, {}
     for split in ("test_seen", "test_unseen"):

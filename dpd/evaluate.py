@@ -73,6 +73,28 @@ def evaluate(
     return result
 
 
+def top1_over_gammas(scores: np.ndarray, labels: np.ndarray, unseen_mask: np.ndarray, gammas: np.ndarray) -> np.ndarray:
+    """Top-1 accuracy for every gamma at once; same ranking as calibrate() + argmax (up to exact ties).
+
+    Calibration only shifts seen against unseen columns, so the prediction is either the best seen pair or the best
+    unseen pair: the unseen one wins when its score beats the best seen score minus gamma.
+    """
+    seen_ids, unseen_ids = np.flatnonzero(~unseen_mask), np.flatnonzero(unseen_mask)
+    s, u = scores[:, seen_ids], scores[:, unseen_ids]
+    ok_seen = seen_ids[s.argmax(axis=1)] == labels
+    ok_unseen = unseen_ids[u.argmax(axis=1)] == labels
+    pick_unseen = u.max(axis=1)[None, :] > s.max(axis=1)[None, :] - np.asarray(gammas)[:, None]
+    return np.where(pick_unseen, ok_unseen[None, :], ok_seen[None, :]).mean(axis=1)
+
+
+def hm_top1_over_gammas(scores_seen, labels_seen, scores_unseen, labels_unseen, pairs: pd.DataFrame, gammas) -> np.ndarray:
+    """Top-1 harmonic mean for every gamma; a fast equivalent of evaluate(...)["harmonic_mean_top1"] for sweeps."""
+    unseen_mask = pairs["is_unseen"].to_numpy()
+    a = top1_over_gammas(scores_seen, labels_seen, unseen_mask, gammas)
+    b = top1_over_gammas(scores_unseen, labels_unseen, unseen_mask, gammas)
+    return np.where(a + b > 0, 2 * a * b / np.maximum(a + b, 1e-12), 0.0)
+
+
 def seen_confusion_matrix(scores_seen: np.ndarray, labels_seen: np.ndarray, pairs: pd.DataFrame, gamma: float = 0.0) -> pd.DataFrame:
     """Counts with rows = true seen pair, columns = predicted pair (all 333), labelled by pair name."""
     pred = calibrate(scores_seen, pairs["is_unseen"].to_numpy(), gamma).argmax(axis=1)

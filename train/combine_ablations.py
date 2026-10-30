@@ -13,6 +13,7 @@ other member) is written as well. Exits with code 2 if nothing improved (no conf
 import argparse
 import copy
 import json
+import shutil
 import sys
 
 from dpd.data import PROJECT_ROOT
@@ -56,6 +57,8 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--ensemble-out")
     ap.add_argument("--margin", type=float, default=0.01)
+    ap.add_argument("--alias-if-identical", action="store_true",
+                    help="if only one variant qualified, copy its finished run folder instead of retraining the same model")
     ap.add_argument("--force-ensemble", action="store_true",
                     help="write the ensemble config on top of --out even if the ensemble variant did not clear the margin")
     args = ap.parse_args()
@@ -103,6 +106,19 @@ def main():
                          f"{args.margin * 100:.0f} point (decided on validation only, by train/combine_ablations.py). "
                          f"Included: {', '.join(included)}. Decision log: " + " | ".join(lines)
                          + " Changes may not add up: compare this run's validation HM with the best single variant.")
+    if args.alias_if_identical and len(included) == 1:
+        # Only one variant qualified, so the combined config IS that variant's (apart from version, output_dir and
+        # notes). Copy its finished run instead of training an identical model again.
+        twin = included[0]
+        combined["_note"] += (f" Identical settings to {twin}, so {twin}'s finished run was copied here instead of retraining "
+                              f"(identical configs reproduce bit-for-bit in this project: v12's training matched v9's every epoch).")
+        dst = RUNS / args.out
+        shutil.copytree(RUNS / twin, dst)
+        (dst / "config.json").write_text(json.dumps(combined, indent=2, ensure_ascii=False), encoding="utf-8")
+        m = json.loads((dst / "metrics.json").read_text())
+        m["version"], m["copied_from"] = args.out, twin
+        (dst / "metrics.json").write_text(json.dumps(m, indent=2))
+        print(f"\n{args.out} has the same settings as {twin}: copied runs/vlm/{twin} to runs/vlm/{args.out} (no retraining)")
     (CFG / f"{args.out}_config.json").write_text(json.dumps(combined, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\nwrote config/vlm/{args.out}_config.json with {', '.join(included)}")
 

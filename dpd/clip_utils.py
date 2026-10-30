@@ -85,7 +85,8 @@ def load_descriptions(prompts_cfg: dict) -> dict:
 def build_prompts(pairs: pd.DataFrame, names_cfg: dict, prompts_cfg: dict) -> list[list[str]]:
     """One list of prompt strings per pair id (one per template); the class embedding is their mean.
 
-    Templates may use {crop}, {disease} and {description}; the last needs prompts.descriptions_file.
+    Templates may use {crop}, {disease} and {description}; the last needs prompts.descriptions_file. A description
+    may also be a list of descriptors: then every template is filled once per descriptor (templates x descriptors).
     """
     u2s = names_cfg["underscore_to_space"]
     descriptions = load_descriptions(prompts_cfg)
@@ -96,7 +97,9 @@ def build_prompts(pairs: pd.DataFrame, names_cfg: dict, prompts_cfg: dict) -> li
         templates = prompts_cfg["healthy_templates"] if r.disease == "healthy" else prompts_cfg["templates"]
         if any("{description}" in t for t in templates) and r.disease not in descriptions:
             raise KeyError(f"No description for disease '{r.disease}' in {prompts_cfg.get('descriptions_file')}")
-        out.append([t.format(crop=crop, disease=disease, description=descriptions.get(r.disease, "")) for t in templates])
+        desc = descriptions.get(r.disease, "")
+        descs = desc if isinstance(desc, list) else [desc]
+        out.append([t.format(crop=crop, disease=disease, description=d) for t in templates for d in descs])
     return out
 
 
@@ -108,13 +111,18 @@ def truncated_prompts(tokenizer, prompts: list[list[str]]) -> list[str]:
 
 
 @torch.no_grad()
-def encode_prompts(model, tokenizer, prompts: list[list[str]], device: str) -> np.ndarray:
-    """L2-normalised class embeddings (n_classes x dim): mean of each class's normalised template embeddings."""
+def encode_prompts(model, tokenizer, prompts: list[list[str]], device: str, renormalize: bool = True) -> np.ndarray:
+    """Class embeddings (n_classes x dim): mean of each class's normalised prompt embeddings.
+
+    renormalize=True (default, v1-v8): the mean is L2-normalised again, so a class score is a cosine similarity.
+    renormalize=False: the mean is kept as is, so image @ class_embedding equals the MEAN of the image's cosine
+    scores with the class's prompts ("classification by description", Menon & Vondrick 2023).
+    """
     embs = []
     for class_prompts in prompts:
         t = model.encode_text(tokenizer(class_prompts).to(device)).float()
         t = torch.nn.functional.normalize(t, dim=-1).mean(dim=0)
-        embs.append(torch.nn.functional.normalize(t, dim=-1).cpu())
+        embs.append((torch.nn.functional.normalize(t, dim=-1) if renormalize else t).cpu())
     return torch.stack(embs).numpy()
 
 

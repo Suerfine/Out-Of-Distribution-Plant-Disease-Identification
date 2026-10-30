@@ -1,0 +1,113 @@
+{
+  "_note": "v3.4: official DPD taxonomy AND visual symptoms in each prompt, instead of visual symptoms alone (v3). v3.3 (taxonomy only) was better on seen pairs (9.8% vs 7.8%), top-5 HM (31.1% vs 30.0%) and ranking among the unseen pairs (56.6% vs 48.5%), but worse on unseen top-1 (6.7% vs 14.6%), so the two kinds of text help different things. Zero-shot ablation of ONE change against v3 (everything else identical; v3: HM 10.2% top-1 / 30.0% top-5). Zero-shot has no validation split (nothing is trained or tuned), so v3 vs this run on the same test images is the comparison; differences of a point or less are within what template wording alone can shift.",
+  "_result": "Combining does not beat v3 on top-1, but gives the best top-5 of any zero-shot run. Harmonic mean 8.4% top-1 / 33.0% top-5 (v3 10.2% / 30.0%; v3.3 taxonomy only 8.0% / 31.1%); seen 9.5%, unseen 7.6%. It behaves like the taxonomy-only run with a little of v3's unseen benefit back (grape_black_rot 59% in v3, 13% in v3.3, 25% here): the taxonomic text, placed first, dominates the prompt embedding. Ranking among the 10 unseen pairs stays strong (55.5%, v3 48.5%), so what costs unseen top-1 is the seen/unseen balance, which zero-shot cannot correct. Interpretation for trained models: calibration (gamma) fixes exactly that balance, so the better ranking and top-5 of taxonomy + symptoms might pay off once trained; that needs a trained run (e.g. v13's recipe with these descriptions) to settle.",
+  "version": "v3.4",
+  "method": "clip_zeroshot",
+  "seed": 42,
+  "data": {
+    "_note": "Unchanged from v3.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Unchanged from v3.",
+    "library": "open_clip",
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai"
+  },
+  "input": {
+    "_note": "Unchanged from v3.",
+    "preprocess": "model_default"
+  },
+  "names": {
+    "_note": "Unchanged from v3.",
+    "underscore_to_space": true,
+    "crop_overrides": {
+      "pepper_bell": "bell pepper",
+      "paddy": "rice",
+      "blackgram": "black gram"
+    },
+    "disease_overrides": {
+      "xamthomonas": "xanthomonas bacterial blight",
+      "verticulium_wilt": "verticillium wilt",
+      "crinckle": "crinkle",
+      "monillia_laxa": "monilinia brown rot",
+      "leafblast": "leaf blast",
+      "die_back": "dieback",
+      "gray_light": "gray blight",
+      "curl": "leaf curl",
+      "viral": "viral disease",
+      "miner": "leaf miner damage",
+      "slug": "slug feeding damage",
+      "caterpillar": "caterpillar feeding damage",
+      "insects_damages": "insect damage",
+      "nutrition_deficiency": "nutrient deficiency",
+      "scorch": "leaf scorch",
+      "pox_virus": "plum pox virus",
+      "pocket_disease": "plum pocket disease",
+      "cercospora": "cercospora leaf spot",
+      "tungro": "tungro virus",
+      "hispa": "rice hispa beetle damage",
+      "aphis_spp": "aphids",
+      "eriosoma_lanigerum": "woolly apple aphids",
+      "icerya_seychellarum": "fluted scale insects",
+      "parthenolecanium_corni": "lecanium scale insects",
+      "ceroplastes_rubens": "red wax scale insects",
+      "aulacaspis_tubercularis": "white mango scale insects",
+      "ischnaspis_longirostris": "black thread scale insects",
+      "procontarinia_matteiana": "mango leaf gall midge galls",
+      "procontarinia_rubus": "gall midge galls",
+      "erosomyia_sp": "gall midge damage",
+      "venturia_inaequalis": "apple scab",
+      "gnomonia_leptostyla": "walnut anthracnose",
+      "erwinia_amylovora": "erwinia fire blight",
+      "aculus_olearius": "olive bud mites",
+      "cisaberoptus_kenyae": "leaf coating mites",
+      "dialeuropora_decempuncta": "whiteflies",
+      "neomelicharia_sparsa": "planthoppers",
+      "valanga_nigricornis": "grasshopper feeding damage",
+      "mictis_longicornis": "leaf-footed bug damage",
+      "apoderus_javanicus": "leaf-rolling weevil damage",
+      "orthaga_euadrusalis": "leaf webber caterpillars",
+      "dappula_tertia": "bagworms",
+      "diabrotica_speciosa": "cucumber beetle feeding damage"
+    }
+  },
+  "prompts": {
+    "_note": "v3's templates; each description = official taxonomic description + '; ' + v3's visual symptom description.",
+    "descriptions_file": "knowledge/disease_descriptions_combined_v1.json",
+    "templates": [
+      "a photo of {crop} leaves with {disease}: {description}.",
+      "a close-up photo of a {crop} leaf showing {disease}: {description}.",
+      "a {crop} plant affected by {disease}: {description}.",
+      "{disease} on a {crop} leaf: {description}.",
+      "a field photo of {crop} leaves with {disease}: {description}."
+    ],
+    "healthy_templates": [
+      "a photo of healthy {crop} leaves: {description}.",
+      "a close-up photo of a healthy {crop} leaf: {description}.",
+      "a healthy {crop} plant: {description}.",
+      "a healthy green {crop} leaf: {description}.",
+      "a field photo of healthy {crop} leaves: {description}."
+    ]
+  },
+  "evaluation": {
+    "_note": "Unchanged from v3.",
+    "top_k": [
+      1,
+      5
+    ],
+    "calibration_gamma": 0.0
+  },
+  "runtime": {
+    "_note": "Runs on the CPU only to leave memory for the overnight training queue running at the same time (two GPU jobs crashed v10 before). Image embeddings come from the shared cache (computed on the GPU for v1-v3), text encoding is fp32 either way, so results match a GPU run up to float rounding.",
+    "device": "cpu",
+    "amp": false,
+    "batch_size": 64,
+    "num_workers": 4
+  },
+  "output_dir": "runs/vlm/v3.4"
+}

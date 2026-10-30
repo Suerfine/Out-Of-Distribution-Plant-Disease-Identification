@@ -154,11 +154,11 @@
     ]
   },
   "runtime": {
-    "_note": "Gradient checkpointing also on the image encoder so batch 64 fits at 336 px (2.25x more patches). It recomputes activations in the backward pass: same maths, slower, so batch size is NOT a second variable.",
+    "_note": "Gradient checkpointing also on the image encoder so batch 64 fits at 336 px (2.25x more patches). It recomputes activations in the backward pass: same maths, slower, so batch size is NOT a second variable. Data-loading workers 4 -> 2 (re-run): the first v10 attempt crashed at validation epoch 8 with Windows error 1455 (paging file too small) while another training job ran alongside; each Windows worker process commits ~1.4 GB. Workers only affect loading speed, not the results.",
     "device": "cuda",
     "amp": true,
     "grad_checkpointing": true,
-    "num_workers": 4,
+    "num_workers": 2,
     "grad_checkpointing_image": true
   },
   "output_dir": "runs/vlm/v10"
