@@ -1,7 +1,8 @@
 {
-  "_note": "v3.1: random-text control for the symptom descriptions (WaffleCLIP, Roth et al. 2023): does v3's gain come from what the descriptions SAY, or just from adding text? Zero-shot ablation of ONE change against v3 (everything else identical; v3: HM 10.2% top-1 / 30.0% top-5). Zero-shot has no validation split (nothing is trained or tuned), so v3 vs this run on the same test images is the comparison; differences of a point or less are within what template wording alone can shift.",
-  "_result": "The description gain is entirely due to MEANING: with random letter strings of the same length the harmonic mean is 5.5% top-1 / 20.3% top-5, the same as v2 without descriptions (5.6% / 22.2%) and far below v3 (10.2% / 30.0%). Random text even hurts seen pairs (seen top-1 4.4% vs v2 7.2%; seen disease 6.2% vs 10.5%). Per unseen pair the clearest case is grape_black_rot: 59% with its real description, 16% with random text (cucumber_downy_mildew 22% vs 0%). Unlike WaffleCLIP's finding on general benchmarks, random text recovers none of the gain here: fine-grained disease recognition needs the symptom content.",
-  "version": "v3.1",
+  "_note": "v3.6: taxonomy and visual symptoms as two SEPARATE prompts per template, averaged with equal weight (renormalised mean, like template averaging), instead of one combined sentence: balances the two kinds of text by construction. Zero-shot ablation of ONE change against v3.4 (v3.4: HM 8.4% top-1 / 33.0% top-5; v3: 10.2% / 30.0%) (everything else identical; v3: HM 10.2% top-1 / 30.0% top-5). Zero-shot has no validation split (nothing is trained or tuned), so v3 vs this run on the same test images is the comparison; differences of a point or less are within what template wording alone can shift.",
+  "_result": "Best zero-shot result so far. Taxonomy and symptoms as two separate, equally weighted prompts: harmonic mean 11.9% top-1 / 38.1% top-5 (v3 10.2% / 30.0%, v3.4 8.4% / 33.0%). It keeps v3's unseen accuracy (14.1% vs 14.6%) AND gains taxonomy's seen accuracy (10.3%, the best zero-shot value; v3 7.8%), with the best unseen disease accuracy (18.4%), the best ranking among the 10 unseen pairs (58.7%) and by far the best top-5 HM (+8.1 points over v3). Per unseen pair it recovers most of the visual wins lost in v3.3/v3.4 (cucumber_downy_mildew 25%, v3 22%; grape_black_rot 39%, v3 59%, v3.4 25%). Conclusion with v3.4/v3.5: the two kinds of knowledge are complementary, but only when kept in separate prompts; in one sentence the taxonomy dominates regardless of position. Next: carry this into the trained recipe (v5.3), which needs the prompt learner to average several sentences per pair.",
+  "version": "v3.6",
+  "title": "separate_prompts",
   "method": "clip_zeroshot",
   "seed": 42,
   "data": {
@@ -77,8 +78,8 @@
     }
   },
   "prompts": {
-    "_note": "v3's templates with each description replaced by random letter strings of the same word count and lengths (WaffleCLIP-style control).",
-    "descriptions_file": "knowledge/disease_descriptions_random_v1.json",
+    "_note": "v3's templates, each filled once with the taxonomic and once with the visual description (10 prompts per class); renormalised mean embedding.",
+    "descriptions_file": "knowledge/disease_descriptions_taxonomy_and_visual_v1.json",
     "templates": [
       "a photo of {crop} leaves with {disease}: {description}.",
       "a close-up photo of a {crop} leaf showing {disease}: {description}.",
@@ -103,11 +104,11 @@
     "calibration_gamma": 0.0
   },
   "runtime": {
-    "_note": "Runs on the CPU only to leave memory for the overnight training queue running at the same time (two GPU jobs crashed v10 before). Image embeddings come from the shared cache (computed on the GPU for v1-v3), text encoding is fp32 either way, so results match a GPU run up to float rounding.",
+    "_note": "Runs on the CPU only to leave memory for the overnight training queue running at the same time (two GPU jobs crashed v5.1 before). Image embeddings come from the shared cache (computed on the GPU for v1-v3), text encoding is fp32 either way, so results match a GPU run up to float rounding.",
     "device": "cpu",
     "amp": false,
     "batch_size": 64,
     "num_workers": 4
   },
-  "output_dir": "runs/vlm/v3.1"
+  "output_dir": "runs/vlm/v3.6"
 }

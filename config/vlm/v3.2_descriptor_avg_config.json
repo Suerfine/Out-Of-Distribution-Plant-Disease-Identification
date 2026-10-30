@@ -1,7 +1,8 @@
 {
-  "_note": "v3.3: official DPD descriptions (taxonomic) instead of the visual symptom descriptions written for v3: expert taxonomy vs what the disease looks like. Zero-shot ablation of ONE change against v3 (everything else identical; v3: HM 10.2% top-1 / 30.0% top-5). Zero-shot has no validation split (nothing is trained or tuned), so v3 vs this run on the same test images is the comparison; differences of a point or less are within what template wording alone can shift.",
-  "_result": "Official taxonomic descriptions are a different trade-off, not a replacement: harmonic mean 8.0% top-1 (v3 10.2%) but the best top-5 HM of the zero-shot runs, 31.1% (v3 30.0%). They help SEEN pairs (seen top-1 9.8% vs 7.8%, seen disease 16.3% vs 15.0%) and ranking among the 10 unseen pairs (unseen-only diagnostic 56.6%, the best zero-shot value; v3 48.5%), but lose unseen top-1 (6.7% vs 14.6%), mostly where a visual description was decisive: grape_black_rot 59% -> 13%, cucumber_downy_mildew 22% -> 0%. Pathogen names carry real information for CLIP (better than no description, v2 5.6%) but describe what causes the disease, not what it looks like; visual symptoms transfer better to unseen pairs. Combining both in one prompt is the natural next test.",
-  "version": "v3.3",
+  "_note": "v3.2: separate descriptors scored and averaged (classification by description) instead of one long description per prompt; same description content as v3. Zero-shot ablation of ONE change against v3 (everything else identical; v3: HM 10.2% top-1 / 30.0% top-5). Zero-shot has no validation split (nothing is trained or tuned), so v3 vs this run on the same test images is the comparison; differences of a point or less are within what template wording alone can shift.",
+  "_result": "Worse than v3: harmonic mean 3.8% top-1 / 24.1% top-5 (v3 10.2% / 30.0%); seen 7.2%, unseen 2.6% (v3 7.8% / 14.6%). The ranking AMONG the 10 unseen pairs is as good as v3 (unseen-only diagnostic 49.0% vs 48.5%), so the descriptors carry the same information; what breaks is the balance between classes: averaging scores without renormalising scales each class by the length of its mean prompt embedding, which is smaller for classes whose prompts are more diverse (more descriptors), so split classes are pushed down (grape_black_rot, split into 3 descriptors: 59% in v3 -> 4%). Zero-shot runs have no calibration to absorb such per-class scale differences. Conclusion: with these descriptors, one combined description per prompt (v3) is better than separately scored descriptors; a fair test of the idea would need equally many descriptors per class or a renormalised class embedding.",
+  "version": "v3.2",
+  "title": "descriptor_avg",
   "method": "clip_zeroshot",
   "seed": 42,
   "data": {
@@ -77,8 +78,8 @@
     }
   },
   "prompts": {
-    "_note": "v3's templates with the official DPD disease descriptions (taxonomic: pathogen or pest scientific name plus common name, e.g. 'Alternaria solani, known as early blight') instead of v3's visual symptom descriptions.",
-    "descriptions_file": "knowledge/disease_descriptions_dpd_official.json",
+    "_note": "Classification by description (Menon & Vondrick, ICLR 2023): the same v1 description text, split into separate descriptors; every template is filled once per descriptor and a class's score is the MEAN of its prompts' cosine scores (no renormalisation). Only 53 of 175 diseases split into more than one descriptor, so most classes see only the scoring rule change (mean of 5 template scores instead of the renormalised mean embedding).",
+    "descriptions_file": "knowledge/disease_descriptors_v1.json",
     "templates": [
       "a photo of {crop} leaves with {disease}: {description}.",
       "a close-up photo of a {crop} leaf showing {disease}: {description}.",
@@ -92,7 +93,8 @@
       "a healthy {crop} plant: {description}.",
       "a healthy green {crop} leaf: {description}.",
       "a field photo of healthy {crop} leaves: {description}."
-    ]
+    ],
+    "class_score": "mean_of_scores"
   },
   "evaluation": {
     "_note": "Unchanged from v3.",
@@ -103,11 +105,11 @@
     "calibration_gamma": 0.0
   },
   "runtime": {
-    "_note": "Runs on the CPU only to leave memory for the overnight training queue running at the same time (two GPU jobs crashed v10 before). Image embeddings come from the shared cache (computed on the GPU for v1-v3), text encoding is fp32 either way, so results match a GPU run up to float rounding.",
+    "_note": "Runs on the CPU only to leave memory for the overnight training queue running at the same time (two GPU jobs crashed v5.1 before). Image embeddings come from the shared cache (computed on the GPU for v1-v3), text encoding is fp32 either way, so results match a GPU run up to float rounding.",
     "device": "cpu",
     "amp": false,
     "batch_size": 64,
     "num_workers": 4
   },
-  "output_dir": "runs/vlm/v3.3"
+  "output_dir": "runs/vlm/v3.2"
 }

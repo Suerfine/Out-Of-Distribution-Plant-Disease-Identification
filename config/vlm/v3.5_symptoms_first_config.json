@@ -2,6 +2,7 @@
   "_note": "v3.5: same taxonomy + symptoms text as v3.4 but with the visual symptoms FIRST: tests whether v3.4's taxonomy dominated because of its position. Zero-shot ablation of ONE change against v3.4 (v3.4: HM 8.4% top-1 / 33.0% top-5; v3: 10.2% / 30.0%) (everything else identical; v3: HM 10.2% top-1 / 30.0% top-5). Zero-shot has no validation split (nothing is trained or tuned), so v3 vs this run on the same test images is the comparison; differences of a point or less are within what template wording alone can shift.",
   "_result": "Order is not the cause: putting the visual symptoms first gives the same result as v3.4 (HM 8.5% vs 8.4% top-1, 33.0% top-5 both; seen 9.4%, unseen 7.7%; grape_black_rot 21% vs 25%). Whatever the order, mixing taxonomy and symptoms in ONE sentence lets the taxonomy dominate the embedding.",
   "version": "v3.5",
+  "title": "symptoms_first",
   "method": "clip_zeroshot",
   "seed": 42,
   "data": {
@@ -103,7 +104,7 @@
     "calibration_gamma": 0.0
   },
   "runtime": {
-    "_note": "Runs on the CPU only to leave memory for the overnight training queue running at the same time (two GPU jobs crashed v10 before). Image embeddings come from the shared cache (computed on the GPU for v1-v3), text encoding is fp32 either way, so results match a GPU run up to float rounding.",
+    "_note": "Runs on the CPU only to leave memory for the overnight training queue running at the same time (two GPU jobs crashed v5.1 before). Image embeddings come from the shared cache (computed on the GPU for v1-v3), text encoding is fp32 either way, so results match a GPU run up to float rounding.",
     "device": "cpu",
     "amp": false,
     "batch_size": 64,

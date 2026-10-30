@@ -1,7 +1,8 @@
 {
-  "_note": "v3.6: taxonomy and visual symptoms as two SEPARATE prompts per template, averaged with equal weight (renormalised mean, like template averaging), instead of one combined sentence: balances the two kinds of text by construction. Zero-shot ablation of ONE change against v3.4 (v3.4: HM 8.4% top-1 / 33.0% top-5; v3: 10.2% / 30.0%) (everything else identical; v3: HM 10.2% top-1 / 30.0% top-5). Zero-shot has no validation split (nothing is trained or tuned), so v3 vs this run on the same test images is the comparison; differences of a point or less are within what template wording alone can shift.",
-  "_result": "Best zero-shot result so far. Taxonomy and symptoms as two separate, equally weighted prompts: harmonic mean 11.9% top-1 / 38.1% top-5 (v3 10.2% / 30.0%, v3.4 8.4% / 33.0%). It keeps v3's unseen accuracy (14.1% vs 14.6%) AND gains taxonomy's seen accuracy (10.3%, the best zero-shot value; v3 7.8%), with the best unseen disease accuracy (18.4%), the best ranking among the 10 unseen pairs (58.7%) and by far the best top-5 HM (+8.1 points over v3). Per unseen pair it recovers most of the visual wins lost in v3.3/v3.4 (cucumber_downy_mildew 25%, v3 22%; grape_black_rot 39%, v3 59%, v3.4 25%). Conclusion with v3.4/v3.5: the two kinds of knowledge are complementary, but only when kept in separate prompts; in one sentence the taxonomy dominates regardless of position. Next: carry this into the trained recipe (v13), which needs the prompt learner to average several sentences per pair.",
-  "version": "v3.6",
+  "_note": "v3.8: longer visual descriptions alone, without taxonomy: does description length help by itself? Single change from v3 (HM 10.2% top-1 / 30.0% top-5): the visual descriptions are replaced by longer ones (knowledge/disease_descriptions_long_v1.json, mean 20.9 words vs 8.4; written from general knowledge, unverified). Zero-shot has no validation split, so the comparison is on the same test images; about a point either way is within what wording alone can shift.",
+  "_result": "Longer is not better on its own: harmonic mean 7.9% top-1 / 30.6% top-5 vs v3's 10.2% / 30.0%. Seen improves slightly (8.9% vs 7.8%) but unseen top-1 halves (7.1% vs 14.6%) and unseen disease accuracy drops (9.2% vs 17.4%); grape_black_rot falls from 59% to 22%. The longer texts share more generic phrases (leaves yellowing, drying, dropping), so descriptions of different diseases become more alike and the distinctive cue that decided an unseen pair is diluted.",
+  "version": "v3.8",
+  "title": "long_symptoms",
   "method": "clip_zeroshot",
   "seed": 42,
   "data": {
@@ -77,8 +78,8 @@
     }
   },
   "prompts": {
-    "_note": "v3's templates, each filled once with the taxonomic and once with the visual description (10 prompts per class); renormalised mean embedding.",
-    "descriptions_file": "knowledge/disease_descriptions_taxonomy_and_visual_v1.json",
+    "_note": "v3's templates with the LONG visual descriptions.",
+    "descriptions_file": "knowledge/disease_descriptions_long_v1.json",
     "templates": [
       "a photo of {crop} leaves with {disease}: {description}.",
       "a close-up photo of a {crop} leaf showing {disease}: {description}.",
@@ -103,11 +104,11 @@
     "calibration_gamma": 0.0
   },
   "runtime": {
-    "_note": "Runs on the CPU only to leave memory for the overnight training queue running at the same time (two GPU jobs crashed v10 before). Image embeddings come from the shared cache (computed on the GPU for v1-v3), text encoding is fp32 either way, so results match a GPU run up to float rounding.",
+    "_note": "CPU only to leave memory for the overnight training queue; image embeddings come from the shared cache.",
     "device": "cpu",
     "amp": false,
     "batch_size": 64,
     "num_workers": 4
   },
-  "output_dir": "runs/vlm/v3.6"
+  "output_dir": "runs/vlm/v3.8"
 }

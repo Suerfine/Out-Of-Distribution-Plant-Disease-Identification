@@ -114,7 +114,7 @@ def truncated_prompts(tokenizer, prompts: list[list[str]]) -> list[str]:
 def encode_prompts(model, tokenizer, prompts: list[list[str]], device: str, renormalize: bool = True) -> np.ndarray:
     """Class embeddings (n_classes x dim): mean of each class's normalised prompt embeddings.
 
-    renormalize=True (default, v1-v8): the mean is L2-normalised again, so a class score is a cosine similarity.
+    renormalize=True (default, v1-v4.3): the mean is L2-normalised again, so a class score is a cosine similarity.
     renormalize=False: the mean is kept as is, so image @ class_embedding equals the MEAN of the image's cosine
     scores with the class's prompts ("classification by description", Menon & Vondrick 2023).
     """

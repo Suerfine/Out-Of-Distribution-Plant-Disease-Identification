@@ -1,6 +1,6 @@
 """Re-score a finished clip_prompt_lora run with different prompt text, WITHOUT retraining (exploratory probe).
 
-Usage:  python -m train.prompt_swap --config config/vlm/v15.1_config.json
+Usage:  python -m train.prompt_swap --config config/vlm/v5.6_prompt_swap_config.json
 
 The config is the source run's config with changed `prompts` and a `prompt_swap.source_run` entry. The source run's
 learned crop/disease vectors and LoRA adapters are loaded unchanged; only the pair text embeddings are rebuilt from the

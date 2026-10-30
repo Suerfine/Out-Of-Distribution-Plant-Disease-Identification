@@ -1,6 +1,6 @@
 """Zero-shot CLIP: score every test image against a text prompt for each of the 333 pairs. No training.
 
-Usage:  python zeroshot.py --config config/vlm/v3_config.json
+Usage:  python zeroshot.py --config config/vlm/v3_knowledge_base_config.json
 Writes to the config's output_dir: metrics.json, confusion_test_seen.csv, predictions_<split>.csv,
 scores.npz (raw cosine scores, for later calibration analysis) and a copy of the config.
 """

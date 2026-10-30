@@ -1,6 +1,6 @@
 """Compositional prompts + LoRA on the CLIP image encoder, evaluated with the shared protocol.
 
-Usage:  python -m train.train_lora --config config/vlm/v9_config.json
+Usage:  python -m train.train_lora --config config/vlm/v5_lora_config.json
 
 Same prompt model as train.py (one learnable vector per crop and per disease inside fixed sentences, frozen text
 encoder), but the image encoder is no longer frozen: LoRA adapters (dpd/lora.py) in its last blocks are trained

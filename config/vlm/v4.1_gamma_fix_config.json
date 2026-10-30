@@ -1,0 +1,134 @@
+{
+  "_note": "v4.1 (fix gamma selection + steadier training): same model and prompts as v4. v4's validation chose gamma 0.045, which on test sent 53% of seen images to unseen pairs (seen top-1 50.8% -> 30.1%); a diagnostic test sweep put the best gamma near 0.02. Two causes in the validation split, fixed here: (1) validation ranked against 30 untrained pairs (20 pseudo-unseen + the 10 real unseen) but test has only 10, so the real unseen pairs are now hidden from the validation label space; (2) pseudo-unseen images were dominated by cassava_mosaic (544 of 1,340), now capped at 40 images per held-out pair. Also lr 1e-3 -> 2e-4: in v4 validation unseen accuracy peaked at epoch 1-3 and val HM jumped around between epochs, so a smaller step should give a smoother curve and a less noisy epoch choice.",
+  "_result": "Best so far. With gamma 0.0375 (from validation): harmonic mean 52.9% top-1 / 87.1% top-5 (v4: 43.6% / 84.7%); seen top-1 44.3% / top-5 80.8%, unseen top-1 65.7% / top-5 94.6%. The validation fixes worked as intended: the chosen gamma moved from 0.045 to 0.0375 and the seen/unseen balance is much closer (v4 was 30% / 79%), landing near the HM that v4's test diagnostic said was reachable (~53%). Still too high: 35% of seen-test images go to unseen pairs. Training is steadier: val HM rose to ~45% by epoch 5 and stayed within 44-46% (v4 swung 22-36%); selected epoch 18 of 40. Pseudo-unseen accuracy still drifts down with training (~45% peak -> 37% at epoch 40) but much less than v4 (39% -> 15%). Trade-off from the longer training: uncalibrated, seen top-1 is higher (57.6% vs v4 50.8%; disease correct 60%) but the model is more biased to seen pairs (uncalibrated HM 26.1% vs 34.9%; unseen-only diagnostic 73.8% vs 80.7%), and calibration recovers it. Per unseen pair: cucumber_downy_mildew 97%, sugarcane_rust 93%, corn_brown_spot 89%, grape_black_rot 83%, mango_anthracnose 82%, cherry_aphis_spp 67%, tomato_early_blight 64%, cucumber_powdery_mildew 60%, cotton_bacterial_blight 54%, pepper_bell_bacterial_spot 30% (lowest; was 73% in v4).",
+  "version": "v4.1",
+  "title": "gamma_fix",
+  "method": "clip_prompt_learning",
+  "seed": 42,
+  "data": {
+    "_note": "Unchanged from v4.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Unchanged from v4.",
+    "library": "open_clip",
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai"
+  },
+  "input": {
+    "_note": "Unchanged from v4.",
+    "preprocess": "model_default"
+  },
+  "names": {
+    "_note": "Unchanged from v4.",
+    "underscore_to_space": true,
+    "crop_overrides": {
+      "pepper_bell": "bell pepper",
+      "paddy": "rice",
+      "blackgram": "black gram"
+    },
+    "disease_overrides": {
+      "xamthomonas": "xanthomonas bacterial blight",
+      "verticulium_wilt": "verticillium wilt",
+      "crinckle": "crinkle",
+      "monillia_laxa": "monilinia brown rot",
+      "leafblast": "leaf blast",
+      "die_back": "dieback",
+      "gray_light": "gray blight",
+      "curl": "leaf curl",
+      "viral": "viral disease",
+      "miner": "leaf miner damage",
+      "slug": "slug feeding damage",
+      "caterpillar": "caterpillar feeding damage",
+      "insects_damages": "insect damage",
+      "nutrition_deficiency": "nutrient deficiency",
+      "scorch": "leaf scorch",
+      "pox_virus": "plum pox virus",
+      "pocket_disease": "plum pocket disease",
+      "cercospora": "cercospora leaf spot",
+      "tungro": "tungro virus",
+      "hispa": "rice hispa beetle damage",
+      "aphis_spp": "aphids",
+      "eriosoma_lanigerum": "woolly apple aphids",
+      "icerya_seychellarum": "fluted scale insects",
+      "parthenolecanium_corni": "lecanium scale insects",
+      "ceroplastes_rubens": "red wax scale insects",
+      "aulacaspis_tubercularis": "white mango scale insects",
+      "ischnaspis_longirostris": "black thread scale insects",
+      "procontarinia_matteiana": "mango leaf gall midge galls",
+      "procontarinia_rubus": "gall midge galls",
+      "erosomyia_sp": "gall midge damage",
+      "venturia_inaequalis": "apple scab",
+      "gnomonia_leptostyla": "walnut anthracnose",
+      "erwinia_amylovora": "erwinia fire blight",
+      "aculus_olearius": "olive bud mites",
+      "cisaberoptus_kenyae": "leaf coating mites",
+      "dialeuropora_decempuncta": "whiteflies",
+      "neomelicharia_sparsa": "planthoppers",
+      "valanga_nigricornis": "grasshopper feeding damage",
+      "mictis_longicornis": "leaf-footed bug damage",
+      "apoderus_javanicus": "leaf-rolling weevil damage",
+      "orthaga_euadrusalis": "leaf webber caterpillars",
+      "dappula_tertia": "bagworms",
+      "diabrotica_speciosa": "cucumber beetle feeding damage"
+    }
+  },
+  "prompts": {
+    "_note": "Unchanged from v4.",
+    "descriptions_file": "knowledge/disease_descriptions_v1.json",
+    "pair_template": "a photo of {crop} leaves with {disease}: {description}.",
+    "crop_template": "a photo of {crop} leaves.",
+    "disease_template": "a photo of leaves with {disease}: {description}."
+  },
+  "validation": {
+    "_note": "From train: 20 whole seen pairs (each with >= 8 images) held out as pseudo-unseen, chosen so their crop and disease still occur in training (like the real unseen pairs), plus 15% of the remaining images as val-seen. Picks the epoch and gamma (grid 0 to 0.1, step 0.0025, in cosine-similarity units). 'healthy' pairs are not held out: none of the real unseen pairs is healthy, and without this exclusion 6 of the 20 held-out pairs were healthy (corn_healthy alone has 223 images), which would tune gamma on the wrong kind of class. v4.1: real unseen pairs hidden during validation (exclude_real_unseen_from_label_space), and at most 40 images per pseudo-unseen pair.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      0.1,
+      0.0025
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 1
+  },
+  "training": {
+    "_note": "AdamW on the 230 vectors only; weight_decay 0 because decay would pull the vectors towards zero rather than towards their name initialisation. logit_scale 100 = CLIP's own temperature. Cosine LR over the run. final_fit 'all_train': after selection, refit on every training image (the held-out pairs are real seen classes in the test set) for the selected epoch count. v4.1: lr 1e-3 -> 2e-4 (v4 peaked by epoch 3 with noisy validation).",
+    "lr": 0.0002,
+    "weight_decay": 0.0,
+    "batch_size": 256,
+    "max_epochs": 40,
+    "logit_scale": 100.0,
+    "loss_weights": {
+      "pair": 1.0,
+      "crop": 0.5,
+      "disease": 0.5
+    },
+    "final_fit": "all_train"
+  },
+  "evaluation": {
+    "_note": "Unchanged from v4.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "Unchanged from v4.",
+    "device": "cuda",
+    "amp": true,
+    "grad_checkpointing": true,
+    "batch_size": 64,
+    "num_workers": 4
+  },
+  "output_dir": "runs/vlm/v4.1"
+}

@@ -1,6 +1,6 @@
 """Train compositional prompts on a frozen CLIP, then evaluate with the shared protocol.
 
-Usage:  python train.py --config config/vlm/v6_config.json
+Usage:  python train.py --config config/vlm/v4.2_multi_split_val_config.json
 
 Stage 1 (selection): for each of validation.n_splits splits (dpd/splits.py, one seed each), fit on train minus
 the split; after every epoch, score the validation images and sweep the calibration gamma. Pick the (epoch, gamma)

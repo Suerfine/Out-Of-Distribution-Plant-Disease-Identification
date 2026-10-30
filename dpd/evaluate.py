@@ -24,6 +24,15 @@ def topk_hits(scores: np.ndarray, labels: np.ndarray, k: int) -> np.ndarray:
     return (topk == labels[:, None]).any(axis=1)
 
 
+TIE_BREAK_POLICY = ("ranked_indices: exact score ties go to the lower pair id (stable argsort, same as argmax); "
+                    "topk_hits uses np.argpartition, whose order among exact ties is unspecified")
+
+
+def ranked_indices(scores: np.ndarray) -> np.ndarray:
+    """Pair ids from highest to lowest score along the last axis; exact ties keep the lower pair id first."""
+    return np.argsort(-scores, axis=-1, kind="stable")
+
+
 def harmonic_mean(a: float, b: float) -> float:
     return 0.0 if a + b == 0 else 2 * a * b / (a + b)
 

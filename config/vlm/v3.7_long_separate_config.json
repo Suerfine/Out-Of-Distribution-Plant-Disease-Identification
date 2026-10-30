@@ -1,11 +1,12 @@
 {
-  "_note": "v3.8: longer visual descriptions alone, without taxonomy: does description length help by itself? Single change from v3 (HM 10.2% top-1 / 30.0% top-5): the visual descriptions are replaced by longer ones (knowledge/disease_descriptions_long_v1.json, mean 20.9 words vs 8.4; written from general knowledge, unverified). Zero-shot has no validation split, so the comparison is on the same test images; about a point either way is within what wording alone can shift.",
-  "_result": "Longer is not better on its own: harmonic mean 7.9% top-1 / 30.6% top-5 vs v3's 10.2% / 30.0%. Seen improves slightly (8.9% vs 7.8%) but unseen top-1 halves (7.1% vs 14.6%) and unseen disease accuracy drops (9.2% vs 17.4%); grape_black_rot falls from 59% to 22%. The longer texts share more generic phrases (leaves yellowing, drying, dropping), so descriptions of different diseases become more alike and the distinctive cue that decided an unseen pair is diluted.",
-  "version": "v3.8",
+  "_note": "v3.7: longer visual descriptions in the best zero-shot setup (taxonomy and symptoms as separate, equally weighted prompts). Single change from v3.6 (HM 11.9% top-1 / 38.1% top-5): the visual descriptions are replaced by longer ones (knowledge/disease_descriptions_long_v1.json, mean 20.9 words vs 8.4; written from general knowledge, unverified). Zero-shot has no validation split, so the comparison is on the same test images; about a point either way is within what wording alone can shift.",
+  "_result": "Longer visual descriptions also hurt the best setup: harmonic mean 10.1% top-1 / 37.8% top-5 vs v3.6's 11.9% / 38.1%. Same pattern as v3.8: the best SEEN zero-shot accuracy so far (12.0%, seen disease 18.4%) but unseen top-1 drops (8.7% vs 14.1%; grape_black_rot 39% -> 14%). Conclusion from v3.7/v3.8: short, distinctive symptom descriptions transfer better to unseen pairs than long detailed ones; extra detail helps recognise seen pairs but makes descriptions of different diseases more alike. v3.6 (short symptoms + taxonomy as separate prompts) stays the best zero-shot configuration.",
+  "version": "v3.7",
+  "title": "long_separate",
   "method": "clip_zeroshot",
   "seed": 42,
   "data": {
-    "_note": "Unchanged from v3.",
+    "_note": "Unchanged from v3.6.",
     "eval_splits": [
       "test_seen",
       "test_unseen"
@@ -13,17 +14,17 @@
     "label_space": "all_pairs"
   },
   "model": {
-    "_note": "Unchanged from v3.",
+    "_note": "Unchanged from v3.6.",
     "library": "open_clip",
     "arch": "ViT-B-16-quickgelu",
     "pretrained": "openai"
   },
   "input": {
-    "_note": "Unchanged from v3.",
+    "_note": "Unchanged from v3.6.",
     "preprocess": "model_default"
   },
   "names": {
-    "_note": "Unchanged from v3.",
+    "_note": "Unchanged from v3.6.",
     "underscore_to_space": true,
     "crop_overrides": {
       "pepper_bell": "bell pepper",
@@ -77,8 +78,8 @@
     }
   },
   "prompts": {
-    "_note": "v3's templates with the LONG visual descriptions.",
-    "descriptions_file": "knowledge/disease_descriptions_long_v1.json",
+    "_note": "v3's templates, each filled once with the taxonomic and once with the LONG visual description (10 prompts per class); renormalised mean embedding.",
+    "descriptions_file": "knowledge/disease_descriptions_taxonomy_and_long_visual_v1.json",
     "templates": [
       "a photo of {crop} leaves with {disease}: {description}.",
       "a close-up photo of a {crop} leaf showing {disease}: {description}.",
@@ -95,7 +96,7 @@
     ]
   },
   "evaluation": {
-    "_note": "Unchanged from v3.",
+    "_note": "Unchanged from v3.6.",
     "top_k": [
       1,
       5
@@ -109,5 +110,5 @@
     "batch_size": 64,
     "num_workers": 4
   },
-  "output_dir": "runs/vlm/v3.8"
+  "output_dir": "runs/vlm/v3.7"
 }

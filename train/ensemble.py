@@ -1,6 +1,6 @@
-"""Score-level ensemble of finished runs (e.g. v9 + the independent-CNN baseline), evaluated with the shared protocol.
+"""Score-level ensemble of finished runs (e.g. v5 + the independent-CNN baseline), evaluated with the shared protocol.
 
-Usage:  python -m train.ensemble --config config/vlm/v11_config.json
+Usage:  python -m train.ensemble --config config/vlm/v6_cnn_ensemble_config.json
 
 Each member's scores are put on a common scale, log-probabilities over the 333 pairs:
     CLIP runs:  log_softmax(logit_scale * cosine)

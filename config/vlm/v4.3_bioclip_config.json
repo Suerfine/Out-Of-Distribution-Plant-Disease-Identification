@@ -1,11 +1,12 @@
 {
-  "_note": "v7 (zero-shot, BioCLIP backbone): v3 with ONLY the backbone changed, OpenAI CLIP ViT-B/16 -> BioCLIP (imageomics/bioclip, also ViT-B/16, CLIP fine-tuned on TreeOfLife-10M biology images). Question: does biology-specific pretraining know crops and plant diseases better before any training? Same prompts, names and descriptions as v3 (HM 10.2%), so the difference is the backbone alone. Pairs with v8 (BioCLIP + v6 training recipe).",
-  "_result": "BioCLIP is much worse than OpenAI CLIP zero-shot: harmonic mean 3.3% (v3, same prompts on OpenAI CLIP: 10.2%), top-5 HM 7.6% (v3 30.0%); seen top-1 3.1%, unseen top-1 3.5%. Even the crop is right only 23% of the time on test_seen (v3 43%) and disease 4.5% (v3 15%); the unseen-only diagnostic is 13.5% (v3 48.5%), barely above the 10% chance level. Likely cause: BioCLIP's text encoder was trained mostly on taxonomic captions (Latin names and taxonomic ranks), so common-name sentences with long symptom descriptions are far from its training text; biology-specific pretraining does not help zero-shot here. Whether its image features help once the prompt vectors are trained is tested in v8.",
-  "version": "v7",
-  "method": "clip_zeroshot",
+  "_note": "v4.3 (trained, BioCLIP backbone): v4.2 with ONLY the backbone changed to BioCLIP (see v3.9). Same prompts, descriptions, validation (3 splits) and training settings, so the difference from v4.2 is the backbone alone. Tests whether biology pretraining helps once the crop/disease vectors are trained.",
+  "_result": "BioCLIP does not help: harmonic mean 48.6% top-1 / 83.3% top-5, vs 51.8% / 87.1% for v4.2 (identical recipe on OpenAI CLIP). Seen top-1 is similar (43.7% vs 41.2%; uncalibrated 56.9% vs 55.5%), so BioCLIP's image features learn the seen pairs as well, but unseen is clearly worse: 54.7% vs 69.7% top-1, and the unseen-only diagnostic 59.6% vs 75.6%. So composing a new pair from separately learned crop and disease vectors works less well on BioCLIP, consistent with v3.9 (zero-shot HM 3.3%): its text encoder, trained on taxonomic captions, is a weaker base for common-name prompts with symptom descriptions. Validation also needed a much larger gamma (0.07; per split 0.075 / 0.0575 / 0.0725), i.e. a stronger seen bias to correct. OpenAI CLIP stays the backbone.",
+  "version": "v4.3",
+  "title": "bioclip",
+  "method": "clip_prompt_learning",
   "seed": 42,
   "data": {
-    "_note": "Unchanged from v3.",
+    "_note": "Unchanged from v4.2.",
     "eval_splits": [
       "test_seen",
       "test_unseen"
@@ -13,17 +14,17 @@
     "label_space": "all_pairs"
   },
   "model": {
-    "_note": "BioCLIP via open_clip's hf-hub loader (pretrained null). Same architecture as v1-v6 (ViT-B/16 image encoder, 77-token CLIP text encoder, argmax pooling, 512-d), so prompts and code are unchanged. Its preprocessing is the same resize 224 / centre crop / CLIP mean-std.",
+    "_note": "Same as v3.9: BioCLIP (hf-hub:imageomics/bioclip), ViT-B/16, same CLIP text encoder layout, so CompositionalPrompts works unchanged.",
     "library": "open_clip",
     "arch": "hf-hub:imageomics/bioclip",
     "pretrained": null
   },
   "input": {
-    "_note": "Unchanged from v3.",
+    "_note": "Unchanged from v4.2.",
     "preprocess": "model_default"
   },
   "names": {
-    "_note": "Unchanged from v3.",
+    "_note": "Unchanged from v4.2.",
     "underscore_to_space": true,
     "crop_overrides": {
       "pepper_bell": "bell pepper",
@@ -77,37 +78,57 @@
     }
   },
   "prompts": {
-    "_note": "Unchanged from v3.",
+    "_note": "Unchanged from v4.2.",
     "descriptions_file": "knowledge/disease_descriptions_v1.json",
-    "templates": [
-      "a photo of {crop} leaves with {disease}: {description}.",
-      "a close-up photo of a {crop} leaf showing {disease}: {description}.",
-      "a {crop} plant affected by {disease}: {description}.",
-      "{disease} on a {crop} leaf: {description}.",
-      "a field photo of {crop} leaves with {disease}: {description}."
+    "pair_template": "a photo of {crop} leaves with {disease}: {description}.",
+    "crop_template": "a photo of {crop} leaves.",
+    "disease_template": "a photo of leaves with {disease}: {description}."
+  },
+  "validation": {
+    "_note": "Unchanged from v4.2.",
+    "exclude_holdout_diseases": [
+      "healthy"
     ],
-    "healthy_templates": [
-      "a photo of healthy {crop} leaves: {description}.",
-      "a close-up photo of a healthy {crop} leaf: {description}.",
-      "a healthy {crop} plant: {description}.",
-      "a healthy green {crop} leaf: {description}.",
-      "a field photo of healthy {crop} leaves: {description}."
-    ]
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      0.1,
+      0.0025
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "Unchanged from v4.2.",
+    "lr": 0.0002,
+    "weight_decay": 0.0,
+    "batch_size": 256,
+    "max_epochs": 30,
+    "logit_scale": 100.0,
+    "loss_weights": {
+      "pair": 1.0,
+      "crop": 0.5,
+      "disease": 0.5
+    },
+    "final_fit": "all_train"
   },
   "evaluation": {
-    "_note": "Unchanged from v3.",
+    "_note": "Unchanged from v4.2.",
     "top_k": [
       1,
       5
-    ],
-    "calibration_gamma": 0.0
+    ]
   },
   "runtime": {
-    "_note": "Unchanged from v3.",
+    "_note": "Unchanged from v4.2.",
     "device": "cuda",
     "amp": true,
+    "grad_checkpointing": true,
     "batch_size": 64,
     "num_workers": 4
   },
-  "output_dir": "runs/vlm/v7"
+  "output_dir": "runs/vlm/v4.3"
 }

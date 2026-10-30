@@ -33,7 +33,7 @@ def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
         runs.append({"dir": d, "family": d.parent.name, "version": cfg["version"], "method": cfg["method"], "cfg": cfg, "metrics": metrics})
 
     def order(r):
-        m = re.fullmatch(r"v(\d+)(?:\.(\d+))?", r["version"])  # v9, v3.1 (a variant of v3), ...
+        m = re.fullmatch(r"v(\d+)(?:\.(\d+))?", r["version"])  # v5, v3.1 (a variant of v3), ...
         return (0, -int(m.group(1)), -int(m.group(2) or 0)) if m else (1, r["version"])
 
     return sorted(runs, key=order)
