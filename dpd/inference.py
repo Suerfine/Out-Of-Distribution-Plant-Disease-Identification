@@ -131,24 +131,37 @@ class ClipLoraRunModel(ClipRunModel):
         load_lora(self.clip.visual, state, lcfg["last_n_blocks"], lcfg["rank"], lcfg["alpha"], lcfg["targets"])
         self.clip.to(device()).eval()
         self.transform = clip_transforms(cfg["input"], cfg["augmentation"])[1]
+        # Patch-level disease scoring (v7+): needs the run's disease text embeddings, saved by train_lora.py.
+        self.patch = cfg["model"].get("patch_disease")
+        if self.patch:
+            self.disease_emb = torch.as_tensor(np.load(run["dir"] / "disease_text_embeddings.npy"), device=device())
+            self.pair_disease = pairs["disease_id"].to_numpy()
 
     @torch.no_grad()
-    def _encode(self, x):
-        """Same as evaluation: mean of the normalised embeddings over the run's TTA views (default: none)."""
+    def _encode(self, x, with_patch=False):
+        """Same as evaluation: mean of the normalised embeddings over the run's TTA views (default: none); with
+        `with_patch`, also the mean per-disease patch scores (None for runs without patch scoring)."""
         from dpd.clip_utils import TTA_VIEWS
+        from dpd.patch_disease import image_features
 
         x = x.to(device())
+        dt = self.disease_emb if (with_patch and self.patch) else None
         views = []
         for v in self.run["cfg"]["evaluation"].get("tta", ["identity"]):
             with torch.autocast(device(), enabled=device() == "cuda"):
-                views.append(torch.nn.functional.normalize(self.clip.encode_image(TTA_VIEWS[v](x)).float(), dim=-1))
-        return torch.nn.functional.normalize(torch.stack(views).mean(0), dim=-1).cpu().numpy()
+                views.append(image_features(self.clip, TTA_VIEWS[v](x), dt, self.patch and self.patch["top_k"]))
+        emb = torch.nn.functional.normalize(torch.stack([c for c, _ in views]).mean(0), dim=-1).cpu().numpy()
+        if not with_patch:
+            return emb
+        return emb, (torch.stack([p for _, p in views]).mean(0).cpu().numpy() if dt is not None else None)
 
     def predict(self, src):
+        from dpd.patch_disease import combine
         from dpd.resize_cache import standardise
 
-        emb = self._encode(self.transform(standardise(src, self.run["cfg"]["input"]["resize_cache"])).unsqueeze(0))[0]
-        return emb, self.pair_emb @ emb
+        emb, patch = self._encode(self.transform(standardise(src, self.run["cfg"]["input"]["resize_cache"])).unsqueeze(0), with_patch=True)
+        lam = self.patch["lambda"] if self.patch else 0.0
+        return emb[0], combine((emb @ self.pair_emb.T), patch, getattr(self, "pair_disease", None), lam)[0]
 
     def train_bank(self, train) -> np.ndarray:
         """Adapted-encoder embeddings of every training image, computed once and saved in the run folder."""

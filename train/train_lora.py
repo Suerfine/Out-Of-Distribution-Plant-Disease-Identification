@@ -12,6 +12,8 @@ Options (all in the config, each off by default so older configs behave exactly 
   runtime.grad_checkpointing_image   recompute image-encoder activations in backward to save memory
   evaluation.tta              test-time augmentation views averaged at validation and test time
   training.sampling           {"type": "class_balanced", "power": p}: sample images with weight n_pair^-p
+  model.patch_disease         {"top_k": k, "lambda": l}: add patch-level disease scores (dpd/patch_disease.py); the
+                              disease loss is then computed on the patch scores
 
 Stage 1: train on train minus the validation split(s); after every epoch score the validation images and sweep
 gamma; pick the (epoch, gamma) with the best mean validation HM. Stage 2: refit a fresh model on all training
@@ -35,6 +37,7 @@ from dpd.config import load_config, output_dir
 from dpd.data import pair_table, read_metadata
 from dpd.evaluate import evaluate, format_summary
 from dpd.lora import apply_lora, lora_state
+from dpd.patch_disease import combine, image_features
 from dpd.prompt_learner import build_model
 from dpd.report import save_test_outputs
 from dpd.resize_cache import cached_name, ensure_resized
@@ -77,29 +80,44 @@ def build(cfg, pairs, device):
     model = build_model(cfg, clip_model, tokenizer, pairs).to(device)  # freezes all of CLIP
     lcfg = cfg["image_encoder"]["lora"]
     lora_params = apply_lora(clip_model.visual, lcfg["last_n_blocks"], lcfg["rank"], lcfg["alpha"], lcfg["targets"])
+    model.patch = cfg["model"].get("patch_disease")
+    model.pair_disease = torch.as_tensor(pairs["disease_id"].to_numpy(), device=device)
     return model, lora_params
 
 
+def disease_text(model, amp):
+    """Disease text embeddings for patch scoring, or None when the run scores with CLS only."""
+    return text_embeddings(model, "diseases", amp).float() if model.patch else None
+
+
 @torch.no_grad()
-def encode(model, dl, device, amp, tta=("identity",)) -> np.ndarray:
-    """L2-normalised image embeddings; with several TTA views, the mean of the views' normalised embeddings."""
+def encode(model, dl, device, amp, tta=("identity",)):
+    """(L2-normalised image embeddings, per-disease patch scores or None); with several TTA views, the mean of the
+    views' normalised embeddings (and of their patch scores)."""
     model.eval()
-    feats = []
+    dt = disease_text(model, amp)
+    top_k = model.patch["top_k"] if model.patch else None
+    feats, patch = [], []
     for x, _ in dl:
         x = x.to(device, non_blocking=True)
         views = []
         for v in tta:
             with torch.autocast(device, enabled=amp):
-                views.append(F.normalize(model.clip.encode_image(TTA_VIEWS[v](x)).float(), dim=-1))
-        feats.append(F.normalize(torch.stack(views).mean(0), dim=-1).cpu())
-    return torch.cat(feats).numpy()
+                views.append(image_features(model.clip, TTA_VIEWS[v](x), dt, top_k))
+        feats.append(F.normalize(torch.stack([c for c, _ in views]).mean(0), dim=-1).cpu())
+        if dt is not None:
+            patch.append(torch.stack([p for _, p in views]).mean(0).cpu())
+    return torch.cat(feats).numpy(), (torch.cat(patch).numpy() if patch else None)
 
 
 @torch.no_grad()
 def pair_scores(model, img_feats, amp) -> np.ndarray:
+    """Pair scores from encode()'s output (CLS cosine, plus lambda * patch disease score when enabled)."""
     model.eval()
+    cls, patch = img_feats
     t = text_embeddings(model, "pairs", amp).float().cpu().numpy()
-    return img_feats @ t.T
+    lam = model.patch["lambda"] if model.patch else 0.0
+    return combine(cls @ t.T, patch, model.pair_disease.cpu().numpy(), lam)
 
 
 def fit(model, lora_params, train_df, trained_pairs, epochs, cfg, image_dir, tfs, on_epoch_end=None, log=None):
@@ -123,13 +141,17 @@ def fit(model, lora_params, train_df, trained_pairs, epochs, cfg, image_dir, tfs
         t0, totals, n_batches = time.time(), {"loss": 0.0, "pair": 0.0, "crop": 0.0, "disease": 0.0}, 0
         for x, idx in dl:
             idx = idx.to(device)
+            dt = disease_text(model, amp)
             with torch.autocast(device, enabled=amp):
-                v = F.normalize(model.clip.encode_image(x.to(device, non_blocking=True)).float(), dim=-1)
-            losses = {"pair": F.cross_entropy(scale * v @ text_embeddings(model, "pairs", amp)[trained].T, col[y_pair[idx]])}
+                v, patch = image_features(model.clip, x.to(device, non_blocking=True), dt, model.patch and model.patch["top_k"])
+            lam = model.patch["lambda"] if model.patch else 0.0
+            pair_logits = combine(v @ text_embeddings(model, "pairs", amp).float().T, patch, model.pair_disease, lam)[:, trained]
+            losses = {"pair": F.cross_entropy(scale * pair_logits, col[y_pair[idx]])}
             if lw["crop"] > 0:
                 losses["crop"] = F.cross_entropy(scale * v @ text_embeddings(model, "crops", amp).T, y_crop[idx])
             if lw["disease"] > 0:
-                losses["disease"] = F.cross_entropy(scale * v @ text_embeddings(model, "diseases", amp).T, y_dis[idx])
+                dis_logits = patch if patch is not None else v @ text_embeddings(model, "diseases", amp).T
+                losses["disease"] = F.cross_entropy(scale * dis_logits, y_dis[idx])
             loss = sum(lw[k] * l for k, l in losses.items())
             opt.zero_grad(set_to_none=True)
             loss.backward()
@@ -238,6 +260,8 @@ def main():
     np.save(out / "val_hm_grid.npy", hm_grid)
     with torch.no_grad():
         np.save(out / "pair_text_embeddings.npy", text_embeddings(model, "pairs", amp).float().cpu().numpy())
+        if model.patch:
+            np.save(out / "disease_text_embeddings.npy", disease_text(model, amp).cpu().numpy())
     torch.save({"crop_vecs": model.crop_vecs.detach().cpu(), "disease_vecs": model.disease_vecs.detach().cpu(), "gamma": gamma},
                out / "prompt_vectors.pt")
     torch.save(lora_state(model.clip.visual), out / "lora_image_encoder.pt")
