@@ -14,13 +14,13 @@ from dpd.data import PROJECT_ROOT, pair_table
 from dpd.evaluate import ranked_indices
 
 RUNS_DIR = PROJECT_ROOT / "runs"
-SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "cnn_independent", "cnn_multitask", "cnn_crop_norm", "ensemble")
+SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "cnn_independent", "cnn_multitask", "multi_task_cnn", "cnn_crop_norm", "ensemble")
 
 
 def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
     """Finished runs (config.json + metrics.json present) under runs/<family>/<name>/ whose method is in `methods`.
 
-    Families are runs/vlm (versions vN, newest first) and runs/baseline (named runs, after the VLM runs).
+    Families are runs/vlm (versions vN, newest first), runs/baseline, and runs/multitask.
     """
     runs = []
     for d in RUNS_DIR.glob("*/*"):
@@ -370,7 +370,7 @@ def model_class(method: str):
         return ClipRunModel
     if method == "clip_prompt_lora":
         return ClipLoraRunModel
-    if method in ("cnn_independent", "cnn_multitask"):
+    if method in ("cnn_independent", "cnn_multitask", "multi_task_cnn"):
         return CnnRunModel
     if method == "cnn_crop_norm":
         return CropNormRunModel

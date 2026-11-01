@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 COS30082 Applied Machine Learning (Sem 2, 2026) group project: **zero-shot / out-of-distribution plant disease identification**. The spec is `docs/Out of Distributon Plant Disease Identification v2.pdf`; it is the source of truth, so re-read it when in doubt. Due 27/11/2026, 11:59pm.
 
-The repo holds a dataset explorer / inference app, shared evaluation code, the required CNN baselines, and several proposed models: CLIP-based (zero-shot, prompt learning, LoRA, ensembles; `config/vlm/`) and a disentangled multi-task CNN (`config/disentangle/`). Each config's `_result` records its outcome.
+The repo holds a dataset explorer / inference app, shared evaluation code, the required CNN baselines, and several proposed models: CLIP-based (zero-shot, prompt learning, LoRA, ensembles; `config/vlm/`), a disentangled multi-task CNN (`config/disentangle/`), and a multi-task CNN (`config/multitask/`). Each config's `_result` records its outcome.
 
 ## Commands
 
@@ -23,6 +23,7 @@ Training scripts live in `train/` and are run as modules from the project root s
 | Script | Method(s) | Configs |
 |---|---|---|
 | `train.train_cnn` | `cnn_independent`, `cnn_multitask` | `config/baseline/` |
+| `train.train_multi_task_cnn` | `multi_task_cnn` | `config/multitask/` |
 | `train.train_disentangle` | `cnn_disentangle` | `config/disentangle/` |
 | `train.zeroshot`, `train.train`, `train.train_lora`, `train.ensemble` | CLIP methods | `config/vlm/` |
 
@@ -32,6 +33,7 @@ Training scripts live in `train/` and are run as modules from the project root s
 - Keys starting with `_` are documentation: `_note` explains what changed and why, `_result` records the outcome after the run (filled in by hand). Each section can carry its own `_note`.
 - `config/baseline/` holds the required baselines (`aniq_baseline_independent_cnn`, `aniq_baseline_multitask_cnn`). Keep them unchanged.
 - `config/vlm/vN[.M]_<title>_config.json`: CLIP versions; the main number is a branch (one idea), the decimal a variant.
+- `config/multitask/<name>.json`: multi-task CNN experiments (`nat_multitask_v1`, ...). Outputs go to `runs/multitask/<name>/`. Supports `--set` CLI overrides, backbone selection, custom scheduler/loss weighting, and checkpointing.
 - Outputs go to `runs/<family>/<name>/` (`output_dir` must match the family folder), with a copy of the config. `runs/` is gitignored; `runs/cache/` holds shared embeddings and resized images.
 - Choose epochs, thresholds and gamma on a validation split carved from train (`dpd/splits.py`), never on the test sets.
 
@@ -39,9 +41,12 @@ Training scripts live in `train/` and are run as modules from the project root s
 
 - `dpd/data.py`: the single place that knows the dataset layout. `read_metadata()` returns all splits in one DataFrame (`split`, `source`, `is_unseen` columns); `pair_table()` maps pair id 0..332 to crop/disease ids and names. Dataset root defaults to `./DPD_Small`, override with `DPD_ROOT`.
 - `dpd/evaluate.py`: the shared protocol. Every model produces a score matrix (images × 333 pairs) per test split and calls `evaluate()`, which ranks against all 333 pairs (generalised zero-shot) and returns Top-1/Top-5, per-class means, crop/disease accuracy, harmonic mean, and an unseen-only diagnostic. `calibrate()` subtracts `gamma` from seen-pair scores. `seen_confusion_matrix()` is 323 seen rows × 333 predicted columns. `hm_top1_over_gammas()` is a fast gamma sweep.
+- `dpd/clip_utils.py`: open_clip loading, prompt building from the config's `names`/`prompts` sections, and image/text embedding. Image embeddings from a frozen encoder are cached in `runs/cache/`.
 - `dpd/report.py`: writes `metrics.json`, `confusion_test_seen.csv`, `predictions_<split>.csv`, `scores.npz` identically for every method. Use it so the app and dashboard can read any run.
 - `dpd/resize_cache.py`: one-off copies at shorter side 256 in `runs/cache/resized_256/`, shared by the image-based models.
 - `dpd/inference.py`: loads any finished run for the app. `list_runs` scans `runs/<family>/<name>/`; `load_run_model` returns a model with `.predict(path or file-like)` -> (retrieval embedding, uncalibrated pair scores), `.train_bank(train_df)`, `.pairs`, `.gamma`, `.logit_scale`. Models take the image source rather than a decoded image, because inference must reproduce the training cache's downscale + JPEG round trip (`dpd/resize_cache.standardise`); fed full-size originals, predictions disagreed with the evaluated scores on 10-20% of images.
+- `train_cnn.py` + `dpd/cnn.py`: the CNN baselines (torchvision ResNet-50, one linear head per target). Pair scores = log P(crop) + log P(disease), so they go through the same 333-pair evaluation and gamma selection (gamma in log-prob units, hence a different `gamma_grid`). Images come from `dpd/resize_cache.py` (one-off copies at shorter side 256 in `runs/cache/resized_256/`). Do not use `channels_last`: on this machine (RTX 4050 Laptop, torch 2.11) it made ResNet-50 training 4.5x slower.
+- `train/train_multi_task_cnn.py`: tunable multi-task CNN trainer (method `multi_task_cnn`). One shared backbone (resnet, efficientnet, convnext, vit) with joint crop and disease heads, early stopping, periodic checkpointing every N epochs (`runtime.checkpoint_every_n_epochs`) with atomic `last.pt` and `--resume`. Notebook at `notebooks/train_multi_task_cnn_colab.ipynb`.
 - `dpd/disentangle.py` + `train/train_disentangle.py`: disentangled multi-task CNN (crop and disease branches, adversarial "spy" heads behind gradient reversal), evaluated with the same protocol as the baselines.
 - `streamlit_app.py` + `app_pages/`: multipage Streamlit app (`st.navigation`; pages are plain scripts). `dpd/ui.py` holds the Streamlit-only helpers (cached metadata, thumbnails, models, training banks, per-image test outcomes read from `scores.npz`). `app_pages/inference.py` is the required UI and the default page; `app_pages/dashboard.py` compares every run.
 
