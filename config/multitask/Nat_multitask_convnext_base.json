@@ -92,7 +92,7 @@
     "accum_steps": 1,
     "grad_clip_norm": 0.0,
     "early_stopping": {
-      "patience": 0,
+      "patience": 8,
       "min_epochs": 5
     },
     "refit_schedule": "compress"

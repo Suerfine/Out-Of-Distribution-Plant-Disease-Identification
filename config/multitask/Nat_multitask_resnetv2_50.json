@@ -1,10 +1,11 @@
 {
-  "_note": "Nat_multitask_resnetv2_50 (multi-task CNN, trainer train/train_multi_task_cnn.py): BiT (Big Transfer) ResNetV2-50x1 pretrained on ImageNet-21k and fine-tuned on ImageNet-1k (resnetv2_50x1_bit.goog_in21k_ft_in1k via timm) with two linear heads (crop 55, disease 175) and CE + label smoothing 0.1 summed with fixed equal weights.",
+  "_note": "Nat_multitask_resnetv2_50 (multi-task CNN, trainer train/train_multi_task_cnn.py): BiT (Big Transfer) ResNetV2-50x1 pretrained on ImageNet-21k and fine-tuned on ImageNet-1k (resnetv2_50x1_bit.goog_in21k_ft_in1k via timm) with two linear heads (crop 55, disease 175) and CE + label smoothing 0.1. Direct port of hyperparameters from independent_cnn_baseline_bit50_r1_seed42 to multitask (lr_backbone 2e-5, lr_head 2e-4, weight_decay 0.05, warmup_epochs 3, min_lr_ratio 0.01, random_resized_crop_scale [0.5, 1.0], effective batch size 32 via batch_size 16 x accum_steps 2, grad_clip_norm 1.0, head_dropout 0.2, patience 8 over 30 epochs).",
   "_result": "Not run yet.",
   "version": "Nat_multitask_resnetv2_50",
   "method": "multi_task_cnn",
   "seed": 42,
   "data": {
+    "_note": "Evaluation on test seen (2,000) and test unseen (1,448) across all 333 composition pairs.",
     "eval_splits": [
       "test_seen",
       "test_unseen"
@@ -12,19 +13,21 @@
     "label_space": "all_pairs"
   },
   "model": {
-    "_note": "backbone: resnetv2_50x1_bit.goog_in21k_ft_in1k (BiT ResNetV2-50x1 pretrained on ImageNet-21k and fine-tuned on ImageNet-1k via timm).",
+    "_note": "BiT ResNetV2-50x1 pretrained backbone with dual linear heads (crop 55, disease 175). Head dropout tuned to 0.2 matching R1 baseline for optimal regularization on long-tailed classes.",
     "backbone": "resnetv2_50x1_bit.goog_in21k_ft_in1k",
     "pretrained": true,
-    "head_dropout": 0.3
+    "head_dropout": 0.2
   },
   "input": {
+    "_note": "256x256 standardized resized cache with 224x224 center crop for evaluation.",
     "resize_cache": 256,
     "resize": 256,
     "crop_size": 224
   },
   "augmentation": {
+    "_note": "Augmentation aligned with R1: random_resized_crop_scale [0.5, 1.0] preserves local plant disease lesions (avoiding overly aggressive crops down to 0.25 that remove symptom context) with flips and subtle color jitter.",
     "random_resized_crop_scale": [
-      0.25,
+      0.5,
       1.0
     ],
     "horizontal_flip_p": 0.5,
@@ -37,7 +40,7 @@
     }
   },
   "loss": {
-    "_note": "weighting: 'fixed' = sum of weights[h] * CE_h; 'uncertainty' = Kendall et al. 2018, sum of exp(-s_h) * CE_h + s_h with learnable log-variances s_h (init init_log_var; weights ignored). v1: fixed 1.0 / 1.0 like the baseline.",
+    "_note": "Joint cross-entropy with label smoothing 0.1 on both heads. Equal weighting (1.0 / 1.0) provides a balanced multi-task objective.",
     "label_smoothing": 0.1,
     "weighting": "fixed",
     "weights": {
@@ -47,23 +50,24 @@
     "init_log_var": 0.0
   },
   "optimizer": {
-    "_note": "name: adamw or sgd (momentum/nesterov only used by sgd). Same LRs and weight decay as aniq_baseline_multitask_cnn.",
+    "_note": "AdamW with conservative learning rates ported from R1: lr_backbone 2e-5 and lr_head 2e-4. These lower rates prevent destructive updates to the shared feature extractor from dual-head gradient interference.",
     "name": "adamw",
-    "lr_backbone": 0.0001,
-    "lr_head": 0.001,
+    "lr_backbone": 2e-05,
+    "lr_head": 0.0002,
     "weight_decay": 0.05,
     "momentum": 0.9,
     "nesterov": true
   },
   "scheduler": {
-    "_note": "Per optimizer step. name: cosine (decays to min_lr_ratio x base LR), step (x step_factor every step_size_epochs) or none; linear warmup over warmup_epochs first. v1: cosine, no warmup, as the baseline.",
+    "_note": "Cosine annealing scheduler with 3 warmup epochs (matching R1) decaying to min_lr_ratio 0.01 over 30 epochs.",
     "name": "cosine",
-    "warmup_epochs": 0,
-    "min_lr_ratio": 0.0,
+    "warmup_epochs": 3,
+    "min_lr_ratio": 0.01,
     "step_size_epochs": 7,
     "step_factor": 0.1
   },
   "validation": {
+    "_note": "Held-out pseudo-unseen validation (15% split, 20 holdout pairs, max 40 images/pair) sweeping gamma [0.0, 10.0] in 0.1 increments to choose optimal stopping epoch and calibration gamma.",
     "exclude_holdout_diseases": [
       "healthy"
     ],
@@ -80,24 +84,28 @@
     "n_splits": 1
   },
   "training": {
-    "_note": "freeze_backbone_epochs: heads-only warm-up epochs (BN frozen). accum_steps: effective batch = batch_size x accum_steps. grad_clip_norm: 0 = off. early_stopping.patience: stop a split after this many epochs without a better best-gamma val HM (0 = off, never before min_epochs). refit_schedule: 'compress' (schedule over the selected epoch count, as train_cnn.py) or 'match_stage1' (schedule over max_epochs, stop at the selected epoch).",
-    "batch_size": 32,
-    "max_epochs": 20,
+    "_note": "Direct port of independent_cnn_baseline_bit50_r1_seed42 hyperparameters to multi-task: effective batch size 32 (batch_size 16 x accum_steps 2), gradient clipping 1.0, patience 8 over 30 max epochs.",
+    "batch_size": 16,
+    "max_epochs": 30,
     "final_fit": "all_train",
     "freeze_backbone_epochs": 0,
-    "accum_steps": 1,
-    "grad_clip_norm": 0.0,
+    "accum_steps": 2,
+    "grad_clip_norm": 1.0,
     "early_stopping": {
-      "patience": 0,
+      "patience": 8,
       "min_epochs": 5
     },
     "refit_schedule": "compress"
   },
   "evaluation": {
-    "top_k": [1,5]
+    "_note": "Standard DPD benchmark metrics: Top-1, Top-5, per-class means, and Harmonic Mean (HM).",
+    "top_k": [
+      1,
+      5
+    ]
   },
   "runtime": {
-    "_note": "Local RTX 4050 settings. On Colab override with --set runtime.num_workers=2. checkpoint_every_n_epochs: save runs/.../checkpoints/last.pt every N epochs and at the end of each split/refit (0 = off), used by --resume; 5 limits Drive writes while losing at most 4 epochs on a disconnect. keep_checkpoints=false deletes it after a successful run.",
+    "_note": "AMP mixed precision on CUDA with 4 workers. Periodic checkpoints every 5 epochs for resume support.",
     "device": "cuda",
     "amp": true,
     "num_workers": 4,

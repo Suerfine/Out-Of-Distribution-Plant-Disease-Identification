@@ -1,5 +1,5 @@
 {
-  "_note": "Nat_multitask_efficientnetv2_l (multi-task CNN, trainer train/train_multi_task_cnn.py): EfficientNetV2-L pretrained on ImageNet-21k and fine-tuned on ImageNet-1k (tf_efficientnetv2_l.in21k_ft_in1k via timm) with two linear heads (crop 55, disease 175) and CE + label smoothing 0.1 summed with fixed equal weights.",
+  "_note": "Nat_multitask_efficientnetv2_l (multi-task CNN, trainer train/train_multi_task_cnn.py): EfficientNetV2-L pretrained on ImageNet-21k and fine-tuned on ImageNet-1k (tf_efficientnetv2_l.in21k_ft_in1k via timm) with two linear heads (crop 55, disease 175) and CE + label smoothing 0.1 summed with fixed equal weights. Single validation fold (n_splits=1) with 15% validation fraction.",
   "_result": "Not run yet.",
   "version": "Nat_multitask_efficientnetv2_l",
   "method": "multi_task_cnn",
@@ -67,7 +67,7 @@
     "step_factor": 0.1
   },
   "validation": {
-    "_note": "Same as aniq_baseline_multitask_cnn.",
+    "_note": "Single validation split (n_splits=1) using 15% of the training set (val_fraction=0.15).",
     "exclude_holdout_diseases": [
       "healthy"
     ],
@@ -81,7 +81,7 @@
     ],
     "exclude_real_unseen_from_label_space": true,
     "max_images_per_holdout_pair": 40,
-    "n_splits": 3
+    "n_splits": 1
   },
   "training": {
     "_note": "freeze_backbone_epochs: heads-only warm-up epochs (BN frozen). accum_steps: effective batch = batch_size x accum_steps. grad_clip_norm: 0 = off. early_stopping.patience: stop a split after this many epochs without a better best-gamma val HM (0 = off, never before min_epochs). refit_schedule: 'compress' (schedule over the selected epoch count, as train_cnn.py) or 'match_stage1' (schedule over max_epochs, stop at the selected epoch).",
@@ -92,7 +92,7 @@
     "accum_steps": 1,
     "grad_clip_norm": 0.0,
     "early_stopping": {
-      "patience": 0,
+      "patience": 8,
       "min_epochs": 5
     },
     "refit_schedule": "compress"
