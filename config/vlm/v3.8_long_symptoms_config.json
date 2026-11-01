@@ -1,0 +1,114 @@
+{
+  "_note": "v3.8: longer visual descriptions alone, without taxonomy: does description length help by itself? Single change from v3 (HM 10.2% top-1 / 30.0% top-5): the visual descriptions are replaced by longer ones (knowledge/disease_descriptions_long_v1.json, mean 20.9 words vs 8.4; written from general knowledge, unverified). Zero-shot has no validation split, so the comparison is on the same test images; about a point either way is within what wording alone can shift.",
+  "_result": "Longer is not better on its own: harmonic mean 7.9% top-1 / 30.6% top-5 vs v3's 10.2% / 30.0%. Seen improves slightly (8.9% vs 7.8%) but unseen top-1 halves (7.1% vs 14.6%) and unseen disease accuracy drops (9.2% vs 17.4%); grape_black_rot falls from 59% to 22%. The longer texts share more generic phrases (leaves yellowing, drying, dropping), so descriptions of different diseases become more alike and the distinctive cue that decided an unseen pair is diluted.",
+  "version": "v3.8",
+  "title": "long_symptoms",
+  "method": "clip_zeroshot",
+  "seed": 42,
+  "data": {
+    "_note": "Unchanged from v3.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Unchanged from v3.",
+    "library": "open_clip",
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai"
+  },
+  "input": {
+    "_note": "Unchanged from v3.",
+    "preprocess": "model_default"
+  },
+  "names": {
+    "_note": "Unchanged from v3.",
+    "underscore_to_space": true,
+    "crop_overrides": {
+      "pepper_bell": "bell pepper",
+      "paddy": "rice",
+      "blackgram": "black gram"
+    },
+    "disease_overrides": {
+      "xamthomonas": "xanthomonas bacterial blight",
+      "verticulium_wilt": "verticillium wilt",
+      "crinckle": "crinkle",
+      "monillia_laxa": "monilinia brown rot",
+      "leafblast": "leaf blast",
+      "die_back": "dieback",
+      "gray_light": "gray blight",
+      "curl": "leaf curl",
+      "viral": "viral disease",
+      "miner": "leaf miner damage",
+      "slug": "slug feeding damage",
+      "caterpillar": "caterpillar feeding damage",
+      "insects_damages": "insect damage",
+      "nutrition_deficiency": "nutrient deficiency",
+      "scorch": "leaf scorch",
+      "pox_virus": "plum pox virus",
+      "pocket_disease": "plum pocket disease",
+      "cercospora": "cercospora leaf spot",
+      "tungro": "tungro virus",
+      "hispa": "rice hispa beetle damage",
+      "aphis_spp": "aphids",
+      "eriosoma_lanigerum": "woolly apple aphids",
+      "icerya_seychellarum": "fluted scale insects",
+      "parthenolecanium_corni": "lecanium scale insects",
+      "ceroplastes_rubens": "red wax scale insects",
+      "aulacaspis_tubercularis": "white mango scale insects",
+      "ischnaspis_longirostris": "black thread scale insects",
+      "procontarinia_matteiana": "mango leaf gall midge galls",
+      "procontarinia_rubus": "gall midge galls",
+      "erosomyia_sp": "gall midge damage",
+      "venturia_inaequalis": "apple scab",
+      "gnomonia_leptostyla": "walnut anthracnose",
+      "erwinia_amylovora": "erwinia fire blight",
+      "aculus_olearius": "olive bud mites",
+      "cisaberoptus_kenyae": "leaf coating mites",
+      "dialeuropora_decempuncta": "whiteflies",
+      "neomelicharia_sparsa": "planthoppers",
+      "valanga_nigricornis": "grasshopper feeding damage",
+      "mictis_longicornis": "leaf-footed bug damage",
+      "apoderus_javanicus": "leaf-rolling weevil damage",
+      "orthaga_euadrusalis": "leaf webber caterpillars",
+      "dappula_tertia": "bagworms",
+      "diabrotica_speciosa": "cucumber beetle feeding damage"
+    }
+  },
+  "prompts": {
+    "_note": "v3's templates with the LONG visual descriptions.",
+    "descriptions_file": "knowledge/disease_descriptions_long_v1.json",
+    "templates": [
+      "a photo of {crop} leaves with {disease}: {description}.",
+      "a close-up photo of a {crop} leaf showing {disease}: {description}.",
+      "a {crop} plant affected by {disease}: {description}.",
+      "{disease} on a {crop} leaf: {description}.",
+      "a field photo of {crop} leaves with {disease}: {description}."
+    ],
+    "healthy_templates": [
+      "a photo of healthy {crop} leaves: {description}.",
+      "a close-up photo of a healthy {crop} leaf: {description}.",
+      "a healthy {crop} plant: {description}.",
+      "a healthy green {crop} leaf: {description}.",
+      "a field photo of healthy {crop} leaves: {description}."
+    ]
+  },
+  "evaluation": {
+    "_note": "Unchanged from v3.",
+    "top_k": [
+      1,
+      5
+    ],
+    "calibration_gamma": 0.0
+  },
+  "runtime": {
+    "_note": "CPU only to leave memory for the overnight training queue; image embeddings come from the shared cache.",
+    "device": "cpu",
+    "amp": false,
+    "batch_size": 64,
+    "num_workers": 4
+  },
+  "output_dir": "runs/vlm/v3.8"
+}

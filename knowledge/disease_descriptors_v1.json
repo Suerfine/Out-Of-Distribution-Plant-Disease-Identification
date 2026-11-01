@@ -1,0 +1,587 @@
+{
+ "_note": "Descriptors for 'classification by description' (Menon & Vondrick, ICLR 2023): each description in disease_descriptions_v1.json split into separate short descriptors (on commas, and on ' and ' when both sides have at least 3 words). Same content as v1, so only the scoring changes: each descriptor is its own prompt and the class score is the mean of their scores. Only 53 of 175 diseases split into more than one descriptor, so the scoring change affects a minority of classes.",
+ "aculus_olearius": [
+  "curled",
+  "distorted leaves with small yellow or silvery speckles from mites"
+ ],
+ "algal_leaf": [
+  "raised velvety orange-rust or grey-green circular spots on the leaf surface"
+ ],
+ "alternaria_blotch": [
+  "brown circular blotches with darker margins and faint rings",
+  "merging into patches"
+ ],
+ "alternaria_leaf_blight": [
+  "brown to black lesions with concentric rings and yellow halos",
+  "dying leaf tips"
+ ],
+ "alternaria_leaf_spot": [
+  "small round brown spots with concentric rings",
+  "a yellow halo"
+ ],
+ "angular_leaf_spot": [
+  "angular water-soaked brown spots bounded by the leaf veins"
+ ],
+ "anthracnose": [
+  "dark brown to black sunken irregular spots along leaf margins and tips"
+ ],
+ "aphis_spp": [
+  "clusters of small soft aphids",
+  "curled leaves",
+  "sticky honeydew and black sooty mould"
+ ],
+ "apoderus_javanicus": [
+  "leaves rolled into tight cigar-like tubes with chewed edges"
+ ],
+ "aulacaspis_tubercularis": [
+  "tiny white scale insects crowded on the leaf with yellow blotches"
+ ],
+ "bacterial_blight": [
+  "water-soaked angular lesions turning brown with yellow margins"
+ ],
+ "bacterial_canker": [
+  "dark raised lesions with yellow halos and cracked cankers"
+ ],
+ "bacterial_leaf_spot": [
+  "small dark water-soaked spots with yellow halos"
+ ],
+ "bacterial_leaf_streak": [
+  "narrow translucent water-soaked streaks between veins turning yellow-brown"
+ ],
+ "bacterial_panicle_blight": [
+  "discoloured",
+  "unfilled grains and tan to grey panicles"
+ ],
+ "bacterial_soft_rot": [
+  "soft",
+  "wet",
+  "slimy brown decaying tissue"
+ ],
+ "bacterial_spot": [
+  "small dark brown greasy spots with yellow halos",
+  "ragged leaves"
+ ],
+ "bacterial_wilt": [
+  "wilting",
+  "drooping green leaves without spots"
+ ],
+ "banded_chlorosis": [
+  "pale yellow bands running across the leaf blade"
+ ],
+ "bean_rust": [
+  "small reddish-brown powdery pustules surrounded by yellow halos"
+ ],
+ "berry_blotch": [
+  "dark purple to brown blotches on leaves and berries"
+ ],
+ "bird_eye_spot": [
+  "small round spots with grey-white centres",
+  "dark red-brown borders"
+ ],
+ "black_leaf_streak": [
+  "black streaks along the veins widening into dark dead patches"
+ ],
+ "black_rot": [
+  "tan spots with dark brown borders",
+  "tiny black dots",
+  "V-shaped yellow lesions at the edge"
+ ],
+ "black_spot": [
+  "round black spots with feathery edges",
+  "yellowing around them"
+ ],
+ "black_stem_borer": [
+  "holes and tunnels in stems with wilting shoots"
+ ],
+ "blast": [
+  "diamond-shaped lesions with grey centres and brown margins"
+ ],
+ "blight_leaf": [
+  "large irregular brown dead areas spreading across the leaf"
+ ],
+ "blossom_end_rot": [
+  "dark sunken leathery patch on the blossom end of the fruit"
+ ],
+ "blue_mold": [
+  "blue-green powdery mould with yellow spots on the leaf"
+ ],
+ "botrytis_blight": [
+  "grey fuzzy mould on brown water-soaked decaying tissue"
+ ],
+ "brown_blight": [
+  "brown irregular lesions with concentric zones at the leaf margin"
+ ],
+ "brown_eye_spot": [
+  "round spots with light brown centres",
+  "reddish-brown rings and a yellow halo"
+ ],
+ "brown_leaf_spot": [
+  "small round to oval brown spots scattered over the leaf"
+ ],
+ "brown_rot": [
+  "brown rotting tissue covered with tan-grey spore tufts"
+ ],
+ "brown_rust": [
+  "small orange-brown powdery pustules scattered on the leaf"
+ ],
+ "brown_spot": [
+  "oval brown spots with grey or tan centres and dark margins"
+ ],
+ "brown_streak_disease": [
+  "feathery yellow patches along the veins and brown streaks"
+ ],
+ "bunchy_top": [
+  "dwarfed",
+  "bunched upright leaves with dark green streaks along the veins"
+ ],
+ "canker": [
+  "sunken dead lesions with raised corky margins"
+ ],
+ "caterpillar": [
+  "chewed holes and ragged leaf edges with caterpillars and droppings"
+ ],
+ "cavity_spot": [
+  "small sunken pits",
+  "lesions on the root surface"
+ ],
+ "cedar_apple_rust": [
+  "bright orange-yellow spots with red borders"
+ ],
+ "cercospora": [
+  "small round spots with grey-white centres and purple-brown borders"
+ ],
+ "cercospora_leaf_blight": [
+  "purple-bronze discolouration and dark angular lesions on upper leaves"
+ ],
+ "ceroplastes_rubens": [
+  "reddish-brown waxy domed scale insects with sooty mould"
+ ],
+ "chlorotic_leaf_spot": [
+  "pale yellow chlorotic spots or rings on the leaf"
+ ],
+ "cigar_end_rot": [
+  "grey ash-like dry rot at the fruit tip"
+ ],
+ "cisaberoptus_kenyae": [
+  "silvery white coating on the upper leaf surface"
+ ],
+ "common_rust": [
+  "elongated cinnamon-brown powdery pustules on both leaf surfaces"
+ ],
+ "cordana_leaf_spot": [
+  "large oval pale brown spots with dark borders",
+  "a yellow halo"
+ ],
+ "coryneum_blight": [
+  "small purple-red spots that drop out leaving shot holes"
+ ],
+ "crinckle": [
+  "crinkled",
+  "puckered and distorted leaves with mottling"
+ ],
+ "curl": [
+  "curled",
+  "puckered",
+  "thickened and distorted leaves"
+ ],
+ "curl_virus": [
+  "upward curling cupped leaves with yellowing and stunting"
+ ],
+ "cutting_weevil": [
+  "cut",
+  "wilting shoots and leaves with chewing damage"
+ ],
+ "dappula_tertia": [
+  "small bags of plant debris hanging from chewed leaves"
+ ],
+ "diabrotica_speciosa": [
+  "small round holes chewed in the leaves by spotted beetles"
+ ],
+ "dialeuropora_decempuncta": [
+  "tiny white insects",
+  "scales on leaf undersides with sooty mould"
+ ],
+ "die_back": [
+  "shoot and branch tips dying back",
+  "brown and dry"
+ ],
+ "dot_leaf": [
+  "many tiny dark dots scattered over the leaf"
+ ],
+ "downy_mildew": [
+  "angular yellow patches on top",
+  "grey-purple downy growth beneath"
+ ],
+ "early_blight": [
+  "brown target spots with concentric rings",
+  "yellow halos on older leaves"
+ ],
+ "early_leaf_spot": [
+  "round dark brown spots with a yellow halo on the upper leaf surface"
+ ],
+ "eriosoma_lanigerum": [
+  "white cottony waxy clusters of aphids on twigs and leaves"
+ ],
+ "erosomyia_sp": [
+  "small raised blister-like galls on the leaves"
+ ],
+ "erwinia_amylovora": [
+  "blackened",
+  "scorched-looking leaves and bent shoot tips"
+ ],
+ "esca": [
+  "tiger-stripe pattern of yellow",
+  "red-brown stripes between veins"
+ ],
+ "fire_blight": [
+  "scorched black-brown leaves",
+  "shoots with bent shoot tips"
+ ],
+ "frog_eye_leaf_spot": [
+  "round spots with grey-tan centres and purple-brown rings"
+ ],
+ "frogeye_leaf_spot": [
+  "round spots with grey-tan centres and purple-brown rings"
+ ],
+ "fusarium_wilt": [
+  "yellowing and wilting from the lower leaves upward"
+ ],
+ "gall_midge": [
+  "small wart-like galls or blisters on the leaves"
+ ],
+ "gnomonia_leptostyla": [
+  "irregular dark brown blotches with yellow margins"
+ ],
+ "grassy_shoot": [
+  "many thin grassy shoots with white or pale yellow leaves"
+ ],
+ "gray_leaf_spot": [
+  "rectangular grey to tan lesions bounded by the veins"
+ ],
+ "gray_light": [
+  "grey-brown lesions with dark concentric margins and black dots"
+ ],
+ "gray_mold": [
+  "grey fuzzy fungal growth on soft brown decay"
+ ],
+ "green_mite": [
+  "yellow speckling",
+  "bronzing and distorted young leaves"
+ ],
+ "green_mottle": [
+  "mottled light and dark green patches on the leaf"
+ ],
+ "greening": [
+  "blotchy uneven yellow mottling",
+  "small upright yellowed leaves"
+ ],
+ "grey_spot": [
+  "grey to tan spots with dark borders"
+ ],
+ "gummy_stem_blight": [
+  "brown wedge-shaped lesions at the leaf edge",
+  "gummy stem cankers"
+ ],
+ "halo_blight": [
+  "small water-soaked spots with wide yellow-green halos"
+ ],
+ "head_scab": [
+  "bleached",
+  "pink-orange infected spikelets on the grain head"
+ ],
+ "healthy": [
+  "uniformly green leaves with no spots",
+  "lesions or discolouration"
+ ],
+ "hispa": [
+  "white parallel streaks",
+  "blotches from scraping beetles"
+ ],
+ "icerya_seychellarum": [
+  "white fluted cottony scale insects along the veins"
+ ],
+ "insects_damages": [
+  "holes",
+  "chewed edges and feeding scars from insects"
+ ],
+ "ischnaspis_longirostris": [
+  "thin black thread-like scale insects on the leaves"
+ ],
+ "late_blight": [
+  "large dark water-soaked patches with pale margins",
+  "white mould beneath"
+ ],
+ "late_leaf_spot": [
+  "dark brown to black round spots",
+  "mostly on the lower leaf surface"
+ ],
+ "leaf_blight": [
+  "large irregular brown dead patches spreading from tips and margins"
+ ],
+ "leaf_mold": [
+  "pale yellow patches on top",
+  "olive-green velvety mould beneath"
+ ],
+ "leaf_roller": [
+  "leaves rolled and webbed together with chewing damage"
+ ],
+ "leaf_scars": [
+  "brown corky scars",
+  "scratch marks on the leaf"
+ ],
+ "leaf_yellow_virus": [
+  "yellowing along the midrib spreading over the leaf"
+ ],
+ "leafblast": [
+  "spindle-shaped lesions with grey centres and brown borders"
+ ],
+ "leafroll_disease": [
+  "downward rolled leaves turning red or yellow between green veins"
+ ],
+ "lethal_necrosis": [
+  "yellowing from the edges inward",
+  "then drying and death of the leaf"
+ ],
+ "loose_smut": [
+  "black powdery spore masses replacing the grain head"
+ ],
+ "marssonina_blotch": [
+  "dark brown blotches with yellowing around them"
+ ],
+ "melanose": [
+  "small raised dark brown specks with a sandpaper texture"
+ ],
+ "mictis_longicornis": [
+  "wilted shoots and brown feeding spots from sucking bugs"
+ ],
+ "mildew": [
+  "white powdery or downy fungal growth on the leaf"
+ ],
+ "miner": [
+  "winding pale serpentine tunnels inside the leaf"
+ ],
+ "monillia_laxa": [
+  "brown wilted blossoms",
+  "rotting fruit with grey spore tufts"
+ ],
+ "mosaic": [
+  "mosaic of light green",
+  "dark green and yellow patches with distortion"
+ ],
+ "mosaic_virus": [
+  "light and dark green mosaic mottling with puckered leaves"
+ ],
+ "mummification_leaf": [
+  "shrivelled",
+  "dried brown leaves"
+ ],
+ "mummy_berry": [
+  "wilted brown shoot tips",
+  "shrivelled grey mummified berries"
+ ],
+ "neomelicharia_sparsa": [
+  "small planthoppers with white waxy secretions and honeydew"
+ ],
+ "northern_leaf_blight": [
+  "long cigar-shaped grey-green to tan lesions"
+ ],
+ "nutrition_deficiency": [
+  "even yellowing or yellowing between the veins without spots"
+ ],
+ "orthaga_euadrusalis": [
+  "leaves webbed together with silk and droppings",
+  "skeletonized"
+ ],
+ "panama_disease": [
+  "yellowing older leaves from the margins inward and wilting"
+ ],
+ "parthenolecanium_corni": [
+  "brown domed scale insects on twigs with sticky honeydew"
+ ],
+ "peacock_spot": [
+  "dark sooty circular spots with a yellow halo"
+ ],
+ "pestalotiopsis": [
+  "grey-brown lesions with dark margins and black dots"
+ ],
+ "phoma": [
+  "brown spots with pale centres dotted with tiny black specks"
+ ],
+ "phomopsis_fruit_rot": [
+  "soft brown spreading rot on the fruit"
+ ],
+ "phytophthora": [
+  "dark water-soaked rotting lesions and wilting"
+ ],
+ "pocket_disease": [
+  "swollen",
+  "hollow",
+  "deformed bladder-like fruit"
+ ],
+ "pokkah_boeng": [
+  "twisted",
+  "crumpled young leaves with yellow bases"
+ ],
+ "powdery_mildew": [
+  "white powdery patches of fungal growth on the leaf surface"
+ ],
+ "pox_virus": [
+  "pale yellow rings",
+  "line patterns on the leaves"
+ ],
+ "procontarinia_matteiana": [
+  "many small raised wart-like galls on the leaves"
+ ],
+ "procontarinia_rubus": [
+  "small raised galls on the leaves"
+ ],
+ "purple_discoloration": [
+  "purple or reddish discoloured leaves"
+ ],
+ "red_leaf_spot": [
+  "small red to reddish-brown spots"
+ ],
+ "red_mite": [
+  "fine stippling",
+  "bronzed or reddish leaves and fine webbing"
+ ],
+ "red_rot": [
+  "red discoloured lesions along the midrib with white patches"
+ ],
+ "red_rust": [
+  "orange-red velvety spots on the leaf"
+ ],
+ "red_scab": [
+  "reddish-brown scabby lesions"
+ ],
+ "ring_spot": [
+  "circular chlorotic rings",
+  "concentric ring patterns"
+ ],
+ "root_rot": [
+  "wilting and yellowing leaves from rotting roots"
+ ],
+ "rust": [
+  "orange to reddish-brown powdery pustules"
+ ],
+ "scab": [
+  "olive-green to black velvety scabby spots"
+ ],
+ "scorch": [
+  "browning and drying of the leaf margins and tips"
+ ],
+ "segatoka": [
+  "yellow streaks becoming elongated brown-black spots with grey centres"
+ ],
+ "septoria": [
+  "small round spots with grey centres",
+  "dark borders and black dots"
+ ],
+ "septoria_blotch": [
+  "irregular tan blotches with tiny black dots"
+ ],
+ "septoria_leaf_spot": [
+  "many small circular spots with grey centres and dark margins"
+ ],
+ "sett_rot": [
+  "rotting tissue with blackened centres"
+ ],
+ "sheath_blight": [
+  "oval grey-green lesions with brown borders on the sheath"
+ ],
+ "sigatoka": [
+  "yellow streaks becoming elongated brown-black spots with grey centres"
+ ],
+ "slug": [
+  "irregular holes in the leaves with shiny slime trails"
+ ],
+ "smut": [
+  "black powdery spore masses"
+ ],
+ "sooty_mould": [
+  "black soot-like coating on the leaf surface"
+ ],
+ "spider_mites": [
+  "fine yellow stippling",
+  "bronzing and fine webbing"
+ ],
+ "spot": [
+  "small dark spots on the leaf"
+ ],
+ "streak": [
+  "narrow yellow or brown streaks along the veins"
+ ],
+ "streak_virus": [
+  "narrow broken yellow-white streaks along the veins"
+ ],
+ "stripe": [
+  "long yellow or white stripes along the leaf"
+ ],
+ "stripe_rust": [
+  "yellow-orange powdery pustules arranged in stripes"
+ ],
+ "stylar_end_rot": [
+  "brown sunken decay at the end of the fruit"
+ ],
+ "tar_spot": [
+  "raised shiny black tar-like spots"
+ ],
+ "target_spot": [
+  "brown spots with concentric rings like a target"
+ ],
+ "tungro": [
+  "yellow-orange discoloured leaves on stunted plants"
+ ],
+ "valanga_nigricornis": [
+  "large ragged chewed areas from grasshoppers"
+ ],
+ "venturia_inaequalis": [
+  "olive-green velvety scab spots"
+ ],
+ "verticulium_wilt": [
+  "V-shaped yellowing between the veins and wilting"
+ ],
+ "violet_decoloration": [
+  "violet to purple discolouration of the leaf"
+ ],
+ "viral": [
+  "mottling",
+  "mosaic",
+  "curling or yellowing of the leaves"
+ ],
+ "white_scale": [
+  "small white scale insects crowded on the leaves"
+ ],
+ "white_spot": [
+  "small round white or pale spots"
+ ],
+ "white_stem_borer": [
+  "dead central shoots",
+  "holes in the stem"
+ ],
+ "xamthomonas": [
+  "water-soaked angular lesions turning brown with yellow halos"
+ ],
+ "yellow_leaf_curl_virus": [
+  "small upward-curled leaves with yellow edges and stunting"
+ ],
+ "yellow_mosaic": [
+  "bright yellow and green mosaic patches"
+ ],
+ "yellow_mosaic_virus": [
+  "bright yellow mosaic patches on the leaf"
+ ],
+ "yellow_rust": [
+  "yellow powdery pustules in stripes along the leaf"
+ ],
+ "yellow_spots": [
+  "small yellow spots on the leaf"
+ ],
+ "yellow_stem_borer": [
+  "dead central shoots",
+  "white empty heads"
+ ],
+ "yellowing": [
+  "general yellowing of the leaves"
+ ]
+}

@@ -1,0 +1,49 @@
+{
+  "_note": "v6.2: v6.1's ensemble setup with the CLIP member swapped from v5.5 to v5.7 (v5.5 + zero-shot v3.6's taxonomy + symptom prompts): v5.7 + aniq_baseline_independent_cnn, weight and gamma chosen on validation. Run on request although v5.7 alone was 1.3 points below v5.5 on validation: its errors may differ from v5.5's (better seen, worse unseen), which could suit the CNN differently. Compare with v6.1 (val HM 58.89%) on validation.",
+  "_result": "Not kept. Validation HM 58.16% (weight 0.5, gamma 7.1) vs v6.1's 58.89%: -0.7 points, within noise. v5.7 alone 55.4%, CNN alone 43.9% on the same split. Test (record only): seen 59.8% (v6.1 60.7%), unseen 85.8% (v6.1 84.9%), HM 70.5% top-1 / 93.6% top-5 (v6.1 70.8% / 93.7%). The ensemble removes v5.7's seen/unseen shift: with the CNN the two prompt setups end up equivalent, so v3.6's prompts add nothing to the trained models. v6.1 stays the best.",
+  "version": "v6.2",
+  "title": "two_sentence_ensemble",
+  "method": "ensemble",
+  "seed": 42,  
+  "members": [
+    {
+      "run": "runs/vlm/v5.7"
+    },
+    {
+      "run": "runs/baseline/aniq_baseline_independent_cnn"
+    }
+  ],
+  "ensemble": {
+    "_note": "Weight on the first member (v5.7) from 0 to 1 in steps of 0.1; w = 1 is v5.7 alone, w = 0 the CNN alone.",
+    "weight_grid": [
+      0.0,
+      1.0001,
+      0.1
+    ]
+  },
+  "validation": {
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      15.0,
+      0.1
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 1,
+    "_note": "Same split procedure, seed and settings as v5. gamma is in log-probability units here (both members are on the log-prob scale), so the grid is 0-15 in steps of 0.1; v5's 0.0725 cosine corresponds to 7.25."
+  },
+  "evaluation": {
+    "_note": "Unchanged.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "output_dir": "runs/vlm/v6.2"
+}

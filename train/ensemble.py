@@ -1,6 +1,6 @@
-"""Score-level ensemble of finished runs (e.g. v9 + the independent-CNN baseline), evaluated with the shared protocol.
+"""Score-level ensemble of finished runs (e.g. v5 + the independent-CNN baseline), evaluated with the shared protocol.
 
-Usage:  python -m train.ensemble --config config/vlm/v11_config.json
+Usage:  python -m train.ensemble --config config/vlm/v6_cnn_ensemble_config.json
 
 Each member's scores are put on a common scale, log-probabilities over the 333 pairs:
     CLIP runs:  log_softmax(logit_scale * cosine)
@@ -29,8 +29,22 @@ from dpd.report import save_test_outputs
 from dpd.resize_cache import ensure_resized
 from dpd.splits import make_validation_split
 
-def member_val_scores(run_dir, mcfg, method, fit_df, val_df, epochs, pairs):
-    """Retrain one member on the split's fit part for `epochs` and score the validation images (all 333 pairs)."""
+def compose_cnn_member(logp: dict, pairs, metrics: dict, fit_df) -> np.ndarray:
+    """CNN member pair scores with the composition the member chose on validation (train_cnn.py "composition"):
+    crop weight and logit-adjustment tau from its metrics.json, defaulting to the plain log P(crop) + log P(disease)
+    for runs without them. Priors come from `fit_df`, the images these validation networks were trained on, just as
+    train_cnn.py uses the fit split in stage 1 (its saved test scores used all of train, matching its final fit)."""
+    from dpd.cnn import compose_pair_scores, log_priors
+
+    w, tau = float(metrics.get("crop_weight", 0.5)), float(metrics.get("tau", 0.0))
+    prior = log_priors(fit_df) if tau else None
+    return compose_pair_scores(logp["crop"], logp["disease"], pairs, w, tau, prior)
+
+
+def member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs):
+    """Retrain one member on the split's fit part for `epochs` and score the validation images (all 333 pairs),
+    scored exactly the way the member's saved test scores were."""
+    method = mcfg["method"]
     if method == "clip_prompt_lora":
         from dpd.clip_utils import clip_transforms
         from train import train_lora as tl
@@ -45,7 +59,7 @@ def member_val_scores(run_dir, mcfg, method, fit_df, val_df, epochs, pairs):
         feats = tl.encode(model, tl.loader(val_df, image_dir, tfs[1], mcfg, shuffle=False), "cuda", mcfg["runtime"]["amp"], tta)
         return tl.pair_scores(model, feats, mcfg["runtime"]["amp"])
     if method in ("cnn_independent", "cnn_multitask"):
-        from dpd.cnn import NETWORKS, build_transforms, compose_pair_scores
+        from dpd.cnn import NETWORKS, build_transforms
         from train import train_cnn as tc
 
         image_dir = ensure_resized(pd.concat([fit_df, val_df])["file"], mcfg["input"]["resize_cache"])
@@ -59,7 +73,9 @@ def member_val_scores(run_dir, mcfg, method, fit_df, val_df, epochs, pairs):
             logp.update(tc.predict(model, val_loader, mcfg["runtime"]["device"], mcfg["runtime"]["amp"]))
             del model
             torch.cuda.empty_cache()
-        return compose_pair_scores(logp["crop"], logp["disease"], pairs)
+        print(f"  {run_dir.name}: crop weight {metrics.get('crop_weight', 0.5)}, tau {metrics.get('tau', 0.0)} "
+              f"(the member's validation-chosen scoring)", flush=True)
+        return compose_cnn_member(logp, pairs, metrics, fit_df)
     raise ValueError(f"ensemble does not support member method {method!r}")
 
 
@@ -89,12 +105,14 @@ def main():
         mcfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
         metrics = json.loads((run_dir / "metrics.json").read_text())
         epochs = metrics["selected_epoch"]
-        cache = out / f"val_scores_{run_dir.name}.npy"
+        # The cache name includes the member's scoring, so a stale file can never be reused with different settings.
+        tag = f"_w{metrics['crop_weight']}_tau{metrics['tau']}" if "crop_weight" in metrics else ""
+        cache = out / f"val_scores_{run_dir.name}{tag}.npy"
         if cache.exists():
             val = np.load(cache)
         else:
             print(f"validation scores for {run_dir.name}: retraining {epochs} epochs on the validation split", flush=True)
-            val = member_val_scores(run_dir, mcfg, mcfg["method"], fit_df, val_df, epochs, pairs)
+            val = member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs)
             np.save(cache, val)
         test = np.load(run_dir / "scores.npz")
         members.append({"name": run_dir.name, "method": mcfg["method"], "val": to_logprob(val, mcfg["method"]),

@@ -1,7 +1,8 @@
 {
-  "_note": "v7 (zero-shot, BioCLIP backbone): v3 with ONLY the backbone changed, OpenAI CLIP ViT-B/16 -> BioCLIP (imageomics/bioclip, also ViT-B/16, CLIP fine-tuned on TreeOfLife-10M biology images). Question: does biology-specific pretraining know crops and plant diseases better before any training? Same prompts, names and descriptions as v3 (HM 10.2%), so the difference is the backbone alone. Pairs with v8 (BioCLIP + v6 training recipe).",
-  "_result": "BioCLIP is much worse than OpenAI CLIP zero-shot: harmonic mean 3.3% (v3, same prompts on OpenAI CLIP: 10.2%), top-5 HM 7.6% (v3 30.0%); seen top-1 3.1%, unseen top-1 3.5%. Even the crop is right only 23% of the time on test_seen (v3 43%) and disease 4.5% (v3 15%); the unseen-only diagnostic is 13.5% (v3 48.5%), barely above the 10% chance level. Likely cause: BioCLIP's text encoder was trained mostly on taxonomic captions (Latin names and taxonomic ranks), so common-name sentences with long symptom descriptions are far from its training text; biology-specific pretraining does not help zero-shot here. Whether its image features help once the prompt vectors are trained is tested in v8.",
-  "version": "v7",
+  "_note": "v3.6: taxonomy and visual symptoms as two SEPARATE prompts per template, averaged with equal weight (renormalised mean, like template averaging), instead of one combined sentence: balances the two kinds of text by construction. Zero-shot ablation of ONE change against v3.4 (v3.4: HM 8.4% top-1 / 33.0% top-5; v3: 10.2% / 30.0%) (everything else identical; v3: HM 10.2% top-1 / 30.0% top-5). Zero-shot has no validation split (nothing is trained or tuned), so v3 vs this run on the same test images is the comparison; differences of a point or less are within what template wording alone can shift.",
+  "_result": "Best zero-shot result so far. Taxonomy and symptoms as two separate, equally weighted prompts: harmonic mean 11.9% top-1 / 38.1% top-5 (v3 10.2% / 30.0%, v3.4 8.4% / 33.0%). It keeps v3's unseen accuracy (14.1% vs 14.6%) AND gains taxonomy's seen accuracy (10.3%, the best zero-shot value; v3 7.8%), with the best unseen disease accuracy (18.4%), the best ranking among the 10 unseen pairs (58.7%) and by far the best top-5 HM (+8.1 points over v3). Per unseen pair it recovers most of the visual wins lost in v3.3/v3.4 (cucumber_downy_mildew 25%, v3 22%; grape_black_rot 39%, v3 59%, v3.4 25%). Conclusion with v3.4/v3.5: the two kinds of knowledge are complementary, but only when kept in separate prompts; in one sentence the taxonomy dominates regardless of position. Next: carry this into the trained recipe (v5.3), which needs the prompt learner to average several sentences per pair.",
+  "version": "v3.6",
+  "title": "separate_prompts",
   "method": "clip_zeroshot",
   "seed": 42,
   "data": {
@@ -13,10 +14,10 @@
     "label_space": "all_pairs"
   },
   "model": {
-    "_note": "BioCLIP via open_clip's hf-hub loader (pretrained null). Same architecture as v1-v6 (ViT-B/16 image encoder, 77-token CLIP text encoder, argmax pooling, 512-d), so prompts and code are unchanged. Its preprocessing is the same resize 224 / centre crop / CLIP mean-std.",
+    "_note": "Unchanged from v3.",
     "library": "open_clip",
-    "arch": "hf-hub:imageomics/bioclip",
-    "pretrained": null
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai"
   },
   "input": {
     "_note": "Unchanged from v3.",
@@ -77,8 +78,8 @@
     }
   },
   "prompts": {
-    "_note": "Unchanged from v3.",
-    "descriptions_file": "knowledge/disease_descriptions_v1.json",
+    "_note": "v3's templates, each filled once with the taxonomic and once with the visual description (10 prompts per class); renormalised mean embedding.",
+    "descriptions_file": "knowledge/disease_descriptions_taxonomy_and_visual_v1.json",
     "templates": [
       "a photo of {crop} leaves with {disease}: {description}.",
       "a close-up photo of a {crop} leaf showing {disease}: {description}.",
@@ -103,11 +104,11 @@
     "calibration_gamma": 0.0
   },
   "runtime": {
-    "_note": "Unchanged from v3.",
-    "device": "cuda",
-    "amp": true,
+    "_note": "Runs on the CPU only to leave memory for the overnight training queue running at the same time (two GPU jobs crashed v5.1 before). Image embeddings come from the shared cache (computed on the GPU for v1-v3), text encoding is fp32 either way, so results match a GPU run up to float rounding.",
+    "device": "cpu",
+    "amp": false,
     "batch_size": 64,
     "num_workers": 4
   },
-  "output_dir": "runs/vlm/v7"
+  "output_dir": "runs/vlm/v3.6"
 }

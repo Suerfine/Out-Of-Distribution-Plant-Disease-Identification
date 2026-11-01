@@ -112,6 +112,34 @@ def build_transforms(input_cfg: dict, aug_cfg: dict):
     return T.Compose(train + norm), T.Compose(test + norm)
 
 
-def compose_pair_scores(logp_crop: np.ndarray, logp_disease: np.ndarray, pairs) -> np.ndarray:
-    """(images x 333) pair scores from per-head log-probabilities; columns follow pair_table order."""
-    return logp_crop[:, pairs["crop_id"].to_numpy()] + logp_disease[:, pairs["disease_id"].to_numpy()]
+def log_priors(df) -> dict[str, np.ndarray]:
+    """Log class frequency per head in `df` (add-one smoothed, so a class missing from `df` still has a finite prior)."""
+    return {h: np.log((np.bincount(df[f"{h}_id"], minlength=n) + 1) / (len(df) + n)) for h, n in HEAD_SIZES.items()}
+
+
+def adjust_logits(logp: np.ndarray, tau: float, log_prior: np.ndarray) -> np.ndarray:
+    """Post-hoc logit adjustment (Menon et al., 2021): log-softmax of logp - tau * log prior.
+
+    Removes (part of) the training-frequency bias from a head, so rare crops / diseases are not drowned out by
+    common ones. tau 0 returns logp unchanged; tau 1 is the full Bayes correction towards a uniform prior.
+    """
+    if not tau:
+        return logp
+    z = logp - tau * log_prior[None, :]
+    m = z.max(axis=1, keepdims=True)
+    return z - (m + np.log(np.exp(z - m).sum(axis=1, keepdims=True)))
+
+
+def compose_pair_scores(logp_crop: np.ndarray, logp_disease: np.ndarray, pairs, crop_weight: float = 0.5,
+                        tau: float = 0.0, log_prior: dict | None = None) -> np.ndarray:
+    """(images x 333) pair scores from per-head log-probabilities; columns follow pair_table order.
+
+    score = 2 * (w * log P(crop) + (1 - w) * log P(disease)), each head optionally logit-adjusted by `tau`.
+    The defaults (w 0.5, tau 0) give exactly log P(crop) + log P(disease), the baselines' score; the factor 2 keeps
+    that scale for every w, so the gamma grid means the same thing.
+    """
+    if tau:
+        logp_crop = adjust_logits(logp_crop, tau, log_prior["crop"])
+        logp_disease = adjust_logits(logp_disease, tau, log_prior["disease"])
+    return (2 * crop_weight * logp_crop[:, pairs["crop_id"].to_numpy()]
+            + 2 * (1 - crop_weight) * logp_disease[:, pairs["disease_id"].to_numpy()])

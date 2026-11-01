@@ -1,0 +1,49 @@
+{
+  "name": "independent_cnn_baseline_study_seed42",
+  "output_dir": "runs/baseline/independent_cnn_baseline_study_seed42",
+  "data_root": "../Plant_Disease",
+  "cache_dir": "runs/cache/independent_cnn_baseline",
+  "window_hours": 10,
+  "seed": 42,
+  "models": [
+    {"name": "bit50", "backbone": "resnetv2_50x1_bit.goog_in21k_ft_in1k", "drop_path_rate": 0.0, "freeze_bn_stats": false},
+    {"name": "convnext_base", "backbone": "convnext_base.fb_in22k_ft_in1k", "drop_path_rate": 0.1, "freeze_bn_stats": false},
+    {"name": "efficientnetv2_l", "backbone": "tf_efficientnetv2_l.in21k_ft_in1k", "drop_path_rate": 0.1, "freeze_bn_stats": true}
+  ],
+  "input": {"resize_cache": 256, "resize": 256, "crop_size": 224},
+  "augmentation": {
+    "random_resized_crop_scale": [0.5, 1.0],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {"brightness": 0.2, "contrast": 0.2, "saturation": 0.2, "hue": 0.0}
+  },
+  "optimizer": {"lr_backbone": 0.00005, "lr_head": 0.0005, "weight_decay": 0.05, "betas": [0.9, 0.999], "eps": 1e-8},
+  "training": {
+    "max_epochs": 30,
+    "warmup_epochs": 3,
+    "min_lr_ratio": 0.01,
+    "patience": 8,
+    "effective_batch_size": 32,
+    "initial_batch_size": 4,
+    "head_dropout": 0.2,
+    "label_smoothing": 0.1,
+    "gradient_clip": 1.0
+  },
+  "validation": {
+    "n_splits": 1,
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "exclude_holdout_diseases": ["healthy"],
+    "max_images_per_holdout_pair": 40,
+    "exclude_real_unseen_from_label_space": true,
+    "gamma_grid": [0.0, 10.0, 0.1]
+  },
+  "search": {
+    "learning_rates": [0.00005, 0.00002, 0.0001],
+    "alternative_weight_decay": 0.01,
+    "alternative_head_dropout": [0.0, 0.4]
+  },
+  "runtime": {"device": "cuda", "amp": true, "num_workers": 2, "inference_batch_size": 1, "torch_threads": 2},
+  "retention": {"completed_selection": "best_weights_and_history", "unfinished": "full_recovery"}
+}

@@ -5,9 +5,12 @@ Usage:  python train_cnn.py --config config/baseline/aniq_baseline_independent_c
 method "cnn_independent": two separate CNNs, one predicting the crop (55), one the disease (175).
 method "cnn_multitask":   one CNN backbone with a crop head and a disease head, trained jointly.
 Pair scores = log P(crop) + log P(disease) over all 333 pairs (dpd/cnn.py), so unseen pairs can be predicted.
+An optional "composition" config section adds a crop/disease weight and post-hoc logit adjustment (dpd/cnn.py),
+both chosen on validation; without it the score is the plain sum above.
 
 Stage 1: train on train minus a validation split (dpd/splits.py, same as train.py); after every epoch, score the
-validation images and sweep gamma; pick the (epoch, gamma) with the best validation HM (mean over splits).
+validation images and sweep gamma (and crop weight / tau when configured); pick the (epoch, weight, tau, gamma)
+with the best validation HM (mean over splits).
 For the independent baseline both CNNs are scored at the same epoch.
 Stage 2: refit every network on all training images for the chosen epochs, then evaluate once on test.
 """
@@ -25,10 +28,10 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from dpd.cnn import HEAD_SIZES, NETWORKS, ImageLabels, MultiHeadNet, build_transforms, compose_pair_scores
+from dpd.cnn import HEAD_SIZES, NETWORKS, ImageLabels, MultiHeadNet, build_transforms, compose_pair_scores, log_priors
 from dpd.config import load_config, output_dir
 from dpd.data import pair_table, read_metadata
-from dpd.evaluate import evaluate, format_summary
+from dpd.evaluate import evaluate, format_summary, hm_top1_over_gammas
 from dpd.report import save_test_outputs
 from dpd.resize_cache import ensure_resized
 from dpd.splits import make_validation_split
@@ -142,11 +145,15 @@ def main():
             pd.DataFrame(history).to_csv(out / "history.csv", index=False)
         return log
 
-    # ---- Stage 1: choose epoch and gamma on validation ----
+    # ---- Stage 1: choose epoch, scoring (crop weight, logit adjustment) and gamma on validation ----
     gammas = np.round(np.arange(*vcfg["gamma_grid"]), 6)
+    # Optional "composition" section; without it the score is the baselines' log P(crop) + log P(disease).
+    ccfg = cfg.get("composition", {})
+    weights = np.round(np.arange(*ccfg["crop_weight_grid"]), 6) if "crop_weight_grid" in ccfg else np.array([0.5])
+    taus = np.round(np.arange(*ccfg["tau_grid"]), 6) if "tau_grid" in ccfg else np.array([0.0])
     hidden = pairs["is_unseen"].to_numpy() if vcfg["exclude_real_unseen_from_label_space"] else np.zeros(len(pairs), bool)
     n_splits = vcfg.get("n_splits", 1)
-    hm_grid = np.zeros((n_splits, tcfg["max_epochs"], len(gammas)))
+    hm_grid = np.zeros((n_splits, tcfg["max_epochs"], len(weights), len(taus), len(gammas)))
     for k in range(n_splits):
         split_seed = cfg["seed"] + k
         fit_df, val_seen, val_unseen, holdout = make_validation_split(
@@ -165,18 +172,32 @@ def main():
                 val_logp[h] = [p[h] for p in per_epoch]
         val_pairs = pairs.assign(is_unseen=~pairs["pair_id"].isin(set(fit_df["pair_id"])))
         y_vs, y_vu = val_seen["pair_id"].to_numpy(), val_unseen["pair_id"].to_numpy()
+        prior = log_priors(fit_df)  # the frequencies the validation networks were trained on
         for e in range(tcfg["max_epochs"]):
-            s = compose_pair_scores(val_logp["crop"][e], val_logp["disease"][e], pairs)
-            s[:, hidden] = -1e9
-            hm_grid[k, e] = [evaluate(s[:n_vs], y_vs, s[n_vs:], y_vu, val_pairs, g, (1,))["harmonic_mean_top1"] for g in gammas]
-            print(f"split {k + 1} epoch {e + 1}: val HM {hm_grid[k, e, 0]:.2%} at gamma 0, best {hm_grid[k, e].max():.2%} "
-                  f"at gamma {gammas[hm_grid[k, e].argmax()]}", flush=True)
+            for i, w in enumerate(weights):
+                for j, t in enumerate(taus):
+                    s = compose_pair_scores(val_logp["crop"][e], val_logp["disease"][e], pairs, w, t, prior)
+                    s[:, hidden] = -1e9
+                    hm_grid[k, e, i, j] = hm_top1_over_gammas(s[:n_vs], y_vs, s[n_vs:], y_vu, val_pairs, gammas)
+            i, j, g = np.unravel_index(hm_grid[k, e].argmax(), hm_grid[k, e].shape)
+            print(f"split {k + 1} epoch {e + 1}: best val HM {hm_grid[k, e, i, j, g]:.2%} at crop weight {weights[i]}, "
+                  f"tau {taus[j]}, gamma {gammas[g]}", flush=True)
     mean_grid = hm_grid.mean(axis=0)
-    e, g = np.unravel_index(mean_grid.argmax(), mean_grid.shape)
-    best_epoch, gamma = int(e) + 1, float(gammas[g])
-    best = {"epoch": best_epoch, "gamma": gamma, "val_hm_mean": round(float(mean_grid[e, g]), 4),
-            "val_hm_per_split": [round(float(x), 4) for x in hm_grid[:, e, g]], "val_hm_g0_mean": round(float(mean_grid[e, 0]), 4)}
-    print(f"selected epoch {best_epoch}, gamma {gamma}: mean val HM {best['val_hm_mean']:.2%}", flush=True)
+    e, i, j, g = np.unravel_index(mean_grid.argmax(), mean_grid.shape)
+    best_epoch, crop_weight, tau, gamma = int(e) + 1, float(weights[i]), float(taus[j]), float(gammas[g])
+    best = {"epoch": best_epoch, "crop_weight": crop_weight, "tau": tau, "gamma": gamma,
+            "val_hm_mean": round(float(mean_grid[e, i, j, g]), 4),
+            "val_hm_per_split": [round(float(x), 4) for x in hm_grid[:, e, i, j, g]],
+            "val_hm_g0_mean": round(float(mean_grid[e, i, j, 0]), 4)}
+    # In-run ablation: the same networks scored the baselines' way (w 0.5, tau 0), with its own best epoch and gamma.
+    if 0.5 in weights and 0.0 in taus:
+        plain = mean_grid[:, list(weights).index(0.5), list(taus).index(0.0)]
+        pe, pg = np.unravel_index(plain.argmax(), plain.shape)
+        best["plain_scoring"] = {"epoch": int(pe) + 1, "gamma": float(gammas[pg]), "val_hm_mean": round(float(plain[pe, pg]), 4)}
+    print(f"selected epoch {best_epoch}, crop weight {crop_weight}, tau {tau}, gamma {gamma}: "
+          f"mean val HM {best['val_hm_mean']:.2%}", flush=True)
+    if "plain_scoring" in best:
+        print(f"  (plain log P(crop) + log P(disease) scoring: {best['plain_scoring']})", flush=True)
 
     # ---- Stage 2: refit on all training images, evaluate once on test ----
     test_loaders = {s: make_loader(df[df["split"] == s], image_dir, tfs[1], cfg, shuffle=False) for s in ("test_seen", "test_unseen")}
@@ -191,18 +212,20 @@ def main():
         torch.cuda.empty_cache()
 
     scores, labels, files = {}, {}, {}
+    prior = log_priors(train)
     for s in test_loaders:
         sub = df[df["split"] == s]
-        scores[s] = compose_pair_scores(test_logp[s]["crop"], test_logp[s]["disease"], pairs)
+        scores[s] = compose_pair_scores(test_logp[s]["crop"], test_logp[s]["disease"], pairs, crop_weight, tau, prior)
         labels[s], files[s] = sub["pair_id"].to_numpy(), sub["file"].to_numpy()
     top_k = tuple(ev["top_k"])
     result = evaluate(scores["test_seen"], labels["test_seen"], scores["test_unseen"], labels["test_unseen"], pairs, gamma, top_k)
     no_cal = evaluate(scores["test_seen"], labels["test_seen"], scores["test_unseen"], labels["test_unseen"], pairs, 0.0, top_k)
-    result.update(version=cfg["version"], selected_epoch=best_epoch, val=best, harmonic_mean_top1_gamma0=no_cal["harmonic_mean_top1"])
+    result.update(version=cfg["version"], selected_epoch=best_epoch, crop_weight=crop_weight, tau=tau, val=best,
+                  harmonic_mean_top1_gamma0=no_cal["harmonic_mean_top1"])
     print("\nTest, uncalibrated:\n" + format_summary(no_cal))
     print("\nTest, gamma from validation:\n" + format_summary(result))
     save_test_outputs(out, result, scores, labels, files, pairs, gamma)
-    np.save(out / "val_hm_grid.npy", hm_grid)
+    np.save(out / "val_hm_grid.npy", hm_grid)  # splits x epochs x crop weights x taus x gammas
     print(f"Saved to {out}")
 
 

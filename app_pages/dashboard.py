@@ -37,11 +37,14 @@ if not runs:
 pct = lambda label, **kw: st.column_config.ProgressColumn(label, format="percent", min_value=0.0, max_value=1.0, **kw)
 gamma_of = lambda r: float(r["metrics"].get("gamma", 0.0))
 
+# runs/<family> folder -> label; anything else (runs/baseline) is a baseline.
+FAMILY_LABELS = {"vlm": "proposed (VLM)", "cnn": "proposed (CNN)"}
+
 table = pd.DataFrame(
     [
         {
             "model": r["version"],
-            "family": "proposed (VLM)" if r["family"] == "vlm" else "baseline",
+            "family": FAMILY_LABELS.get(r["family"], "baseline"),
             "method": KIND[r["method"]],
             "backbone": backbone(r),
             "seen_top1": r["metrics"]["test_seen"]["top1"],
@@ -71,7 +74,7 @@ best = best_of(table)
 best_vlm, best_base = best_of(table[table["family"] != "baseline"]), best_of(table[table["family"] == "baseline"])
 with st.container(horizontal=True):
     st.metric("Models", len(table), border=True,
-              help=f"{(table['family'] != 'baseline').sum()} proposed (VLM) runs and {(table['family'] == 'baseline').sum()} baselines")
+              help=f"{(table['family'] != 'baseline').sum()} proposed runs and {(table['family'] == 'baseline').sum()} baselines")
     st.metric("Best overall (HM Top-1)", f"{best['hm_top1']:.1%}", border=True, help=f"{best['model']} · {best['method']}")
     for label, b in (("Best proposed", best_vlm), ("Best baseline", best_base)):
         if b is not None:
@@ -80,7 +83,7 @@ with st.container(horizontal=True):
         st.metric("Proposed − baseline", f"{best_vlm['hm_top1'] - best_base['hm_top1']:+.1%}", border=True,
                   help="Best proposed HM Top-1 minus the best baseline's, in percentage points")
 
-family_color = alt.Color("family:N", title="Family", scale=alt.Scale(domain=["proposed (VLM)", "baseline"]))
+family_color = alt.Color("family:N", title="Family", scale=alt.Scale(domain=[*FAMILY_LABELS.values(), "baseline"]))
 c1, c2 = st.columns(2)
 with c1, st.container(border=True):
     st.markdown("**Top-1 accuracy by model**")

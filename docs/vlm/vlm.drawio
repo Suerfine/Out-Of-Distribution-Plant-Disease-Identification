@@ -1,10 +1,10 @@
 <mxfile host="app.diagrams.net">
-  <diagram name="Training (v4-v6, v8)" id="mWjACX2QDCIm8KMyKjaQ">
+  <diagram name="Training (v4-v4.2, v4.3)" id="mWjACX2QDCIm8KMyKjaQ">
     <mxGraphModel dx="852" dy="369" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1120" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="title" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;" value="&lt;b&gt;Training: compositional prompt learning on a frozen CLIP&lt;/b&gt; (v4-v6, v8; train/train.py + dpd/prompt_learner.py)" vertex="1">
+        <mxCell id="title" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;" value="&lt;b&gt;Training: compositional prompt learning on a frozen CLIP&lt;/b&gt; (v4-v4.2, v4.3; train/train.py + dpd/prompt_learner.py)" vertex="1">
           <mxGeometry height="40" width="1320" x="20" y="20" as="geometry" />
         </mxCell>
         <mxCell id="loop" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontColor=#666666;arcSize=2;" value="ONE TRAINING STEP (repeated for every batch, every epoch)" vertex="1">

@@ -1,0 +1,703 @@
+{
+ "_note": "Like disease_descriptions_taxonomy_and_visual_v1.json (v3.6) but with the LONGER visual descriptions: [official taxonomic description, long visual description] per disease. Inherits the official file's licence caveat.",
+ "aculus_olearius": [
+  "Aculus olearius, known as olive rust mite",
+  "olive bud mite damage: young leaves curled, twisted and distorted, with small yellow to silvery speckles and rough scarred surfaces; shoots stunted, the tiny mites barely visible"
+ ],
+ "algal_leaf": [
+  "Cephaleuros spp., known as algal leaf spot",
+  "raised velvety circular spots of orange-rust or greyish-green algal growth on the upper leaf surface, a few millimetres wide with feathery edges, on otherwise green leaves"
+ ],
+ "alternaria_blotch": [
+  "Alternaria spp., commonly known as leaf blotch",
+  "round to irregular brown blotches with darker brown margins and faint concentric rings, merging into large dead patches, with yellowing around them and early leaf drop"
+ ],
+ "alternaria_leaf_blight": [
+  "Alternaria spp., known as leaf blight",
+  "brown to black lesions with concentric rings and yellow halos, starting at older leaves and leaf margins and spreading until whole leaflets turn brown, dry and blighted"
+ ],
+ "alternaria_leaf_spot": [
+  "Alternaria spp., commonly known as leaf spot",
+  "small round brown to dark brown spots with concentric target-like rings and a yellow halo, scattered over the leaf, sometimes with a dark sooty centre of spores"
+ ],
+ "angular_leaf_spot": [
+  "Xanthomonas spp., known as angular leaf spot",
+  "small angular water-soaked spots confined between the leaf veins, turning tan to brown and dry, sometimes tearing out to leave ragged holes, with yellow tissue around them"
+ ],
+ "anthracnose": [
+  "Colletotrichum spp., commonly known as anthracnose",
+  "dark brown to black sunken irregular lesions along leaf margins, tips and veins, sometimes with pinkish spore masses, causing tip dieback and dark sunken spots on fruit"
+ ],
+ "aphis_spp": [
+  "Aphis spp., commonly known as aphids",
+  "colonies of small soft-bodied green or black aphids on young shoots and leaf undersides, with curled distorted leaves, sticky shiny honeydew and black sooty mould"
+ ],
+ "apoderus_javanicus": [
+  "Apoderus javanicus, known as leaf-rolling weevil",
+  "leaf-rolling weevil damage: leaves cut and rolled into tight cigar-shaped tubes hanging from the shoot, with chewed edges and brown dried leaf rolls"
+ ],
+ "aulacaspis_tubercularis": [
+  "Aulacaspis tubercularis, known as mango scale",
+  "masses of tiny white flat scale insects crowded along the veins and on the leaf surface, with yellow chlorotic blotches beneath them and sticky honeydew"
+ ],
+ "bacterial_blight": [
+  "Xanthomonas or Pseudomonas, known as blight",
+  "water-soaked angular lesions enlarging into brown dead areas with yellow margins, often along the veins and leaf edges, leaves drying and withering from the tips"
+ ],
+ "bacterial_canker": [
+  "Clavibacter michiganensis, known as bacterial canker",
+  "dark brown raised or cracked lesions with yellow halos on leaves, stems and fruit, corky canker spots, and leaf margins turning brown and dry"
+ ],
+ "bacterial_leaf_spot": [
+  "Xanthomonas spp., known as bacterial leaf spot",
+  "small dark brown to black water-soaked spots with yellow halos, scattered or merging across the leaf, their centres sometimes drying and falling out"
+ ],
+ "bacterial_leaf_streak": [
+  "Xanthomonas oryzae, known as bacterial leaf streak",
+  "narrow translucent water-soaked streaks between the veins turning yellow-orange to brown and merging into long stripes, sometimes with small beads of bacterial ooze"
+ ],
+ "bacterial_panicle_blight": [
+  "Burkholderia glumae, known as panicle blight",
+  "rice panicles with discoloured, unfilled or partly filled grains, tan to grey glumes with dark margins, panicles staying upright because the grains are empty"
+ ],
+ "bacterial_soft_rot": [
+  "Erwinia spp., known as bacterial soft rot",
+  "soft wet slimy brown to black decaying tissue that collapses and spreads quickly from wounds on heads, stems or leaves, leaving mushy foul-smelling rot"
+ ],
+ "bacterial_spot": [
+  "Xanthomonas spp., commonly known as bacterial spot",
+  "many small dark brown greasy-looking spots with yellow halos on leaves and fruit, merging as leaves yellow, the dead tissue tearing to give a ragged look"
+ ],
+ "bacterial_wilt": [
+  "Ralstonia solanacearum, known as bacterial wilt",
+  "sudden wilting and drooping of green leaves without spots, starting in the upper leaves, plants collapsing while still green, with brown discoloured vascular tissue inside stems"
+ ],
+ "banded_chlorosis": [
+  "Viral/fungal symptom, known as banded chlorosis",
+  "pale yellow to white chlorotic bands running across the leaf blade, alternating with normal green tissue, giving a regular banded striped appearance"
+ ],
+ "bean_rust": [
+  "Uromyces appendiculatus, known as bean rust",
+  "many small reddish-brown powdery pustules on the leaf, mostly on the underside, each surrounded by a pale yellow halo, leaves yellowing and dropping when heavily infected"
+ ],
+ "berry_blotch": [
+  "Mycosphaerella spp., known as berry blotch",
+  "dark purple to brown irregular blotches with reddish margins on leaves and berries, enlarging and merging, the affected tissue drying and turning brown"
+ ],
+ "bird_eye_spot": [
+  "Cercospora spp., known as bird's eye spot",
+  "small round spots with light grey to white centres and dark reddish-brown borders like a bird's eye, scattered over the leaf, often with a faint yellow halo"
+ ],
+ "black_leaf_streak": [
+  "Mycosphaerella fijiensis, known as black leaf streak",
+  "small reddish-brown streaks parallel to the leaf veins widening into black elongated lesions that merge into large dark dead areas with yellow edges"
+ ],
+ "black_rot": [
+  "Xanthomonas campestris, commonly known as black rot",
+  "round tan to brown spots with dark brown borders and tiny black dots inside, or V-shaped yellow lesions from the leaf edge with blackened veins"
+ ],
+ "black_spot": [
+  "Diplocarpon rosae, known as black spot",
+  "round black spots with fringed feathery edges on the upper leaf surface, surrounded by yellowing tissue, leaves turning yellow and dropping early"
+ ],
+ "black_stem_borer": [
+  "Xylosandrus compactus, known as black stem borer",
+  "small holes and tunnels in stems and branches with sawdust-like frass, wilting and dying shoots, and branches breaking above the bored tunnels"
+ ],
+ "blast": [
+  "Magnaporthe oryzae, commonly known as rice blast",
+  "diamond or spindle-shaped lesions with grey to white centres and brown to reddish margins, enlarging and merging until whole leaves dry and die"
+ ],
+ "blight_leaf": [
+  "Alternaria spp., commonly known as leaf blight",
+  "large irregular brown dead areas spreading across the leaf from the tips and margins, often with yellow edges, the leaves drying, curling and withering"
+ ],
+ "blossom_end_rot": [
+  "Calcium deficiency, known as blossom end rot",
+  "a dark brown to black sunken leathery patch on the blossom end of the fruit, starting water-soaked, then enlarging, flattening and becoming dry and firm"
+ ],
+ "blue_mold": [
+  "Penicillium expansum, commonly known as blue mold",
+  "yellow spots on the upper leaf surface with blue-grey to blue-green powdery mould growth underneath, leaves puckered, withering and dying"
+ ],
+ "botrytis_blight": [
+  "Botrytis cinerea, known as gray mold",
+  "grey fuzzy mould covering soft brown water-soaked decaying tissue on leaves, flowers and stems, with brown lesions spreading quickly in humid conditions"
+ ],
+ "brown_blight": [
+  "Alternaria alternata, known as brown blight",
+  "irregular brown lesions with concentric zones and darker margins, often starting at the leaf edge or tip, with tiny black dots in the dead tissue"
+ ],
+ "brown_eye_spot": [
+  "Cercospora coffeicola, known as brown eye spot",
+  "round spots with light brown to grey centres and reddish-brown rings, surrounded by a yellow halo, scattered over the leaf surface"
+ ],
+ "brown_leaf_spot": [
+  "Phoma or Alternaria spp., known as brown leaf spot",
+  "small round to oval brown spots with paler centres and darker edges, scattered over the leaf, the leaf yellowing around heavy spotting"
+ ],
+ "brown_rot": [
+  "Monilinia spp., commonly known as brown rot",
+  "brown rotting tissue spreading quickly over fruit and blossoms, covered in tan to grey powdery spore tufts in concentric rings, fruit shrivelling"
+ ],
+ "brown_rust": [
+  "Puccinia melanocephala, known as brown rust",
+  "many small round orange-brown powdery pustules scattered on the leaf surface, rubbing off as rusty dust, leaves yellowing and drying when heavily infected"
+ ],
+ "brown_spot": [
+  "Cercospora spp., commonly known as brown spot",
+  "oval to round brown spots with grey or tan centres and dark reddish-brown margins, sometimes with a yellow halo, scattered over the leaf"
+ ],
+ "brown_streak_disease": [
+  "Cassava brown streak virus, known as brown streak",
+  "feathery yellow chlorotic patches along the secondary veins of older leaves, brown streaks on the stems, and roots with brown corky rot"
+ ],
+ "bunchy_top": [
+  "Banana bunchy top virus, known as bunchy top",
+  "stunted plant with narrow short upright leaves bunched at the top, pale yellow leaf margins, and dark green dot-dash streaks along the veins and midrib"
+ ],
+ "canker": [
+  "Pathogenic lesions, commonly known as canker",
+  "sunken cracked dead lesions with raised corky brown margins on leaves, stems or fruit, leaf spots often surrounded by a yellow halo"
+ ],
+ "caterpillar": [
+  "Lepidoptera larvae, commonly known as caterpillars",
+  "large irregular holes and chewed ragged leaf edges, skeletonized leaves, with caterpillars, silk webbing or dark droppings on the plant"
+ ],
+ "cavity_spot": [
+  "Pythium spp., known as cavity spot",
+  "small sunken oval pits and lesions on the root surface, grey to brown, often lying across the root, sometimes cracking open"
+ ],
+ "cedar_apple_rust": [
+  "Gymnosporangium spp., commonly known as cedar apple rust",
+  "bright orange-yellow circular spots with red borders on the upper leaf, later with tiny black dots, and tube-like spore structures underneath"
+ ],
+ "cercospora": [
+  "Cercospora spp., commonly known as leaf spot",
+  "small round spots with grey to white centres and dark purple to brown borders, often with a yellow halo, scattered and merging over the leaf"
+ ],
+ "cercospora_leaf_blight": [
+  "Cercospora spp., known as leaf blight",
+  "purple-bronze discolouration of the upper leaves, with dark brown angular lesions, leaves becoming leathery, yellowing and dropping early"
+ ],
+ "ceroplastes_rubens": [
+  "Ceroplastes rubens, known as red wax scale",
+  "reddish-brown waxy domed scale insects clustered on leaves and twigs, surrounded by sticky honeydew and black sooty mould"
+ ],
+ "chlorotic_leaf_spot": [
+  "Viral symptoms, known as chlorotic leaf spot",
+  "pale yellow chlorotic spots, rings or line patterns on the green leaf, sometimes giving a mosaic look, without dead brown tissue"
+ ],
+ "cigar_end_rot": [
+  "Trachysphaera fructigena, known as cigar-end rot",
+  "a dry grey to black rot at the tip of the banana fingers, covered with ash-like powdery fungal growth, like the burnt end of a cigar"
+ ],
+ "cisaberoptus_kenyae": [
+  "Cisaberoptus kenyae, known as mango bud mite",
+  "a silvery white to greyish coating on the upper leaf surface, made of mite cast skins, making the leaves look dull and dusty"
+ ],
+ "common_rust": [
+  "Puccinia sorghi, commonly known as common rust",
+  "elongated cinnamon-brown to red-brown powdery pustules on both leaf surfaces, scattered across the leaf, turning darker as they age"
+ ],
+ "cordana_leaf_spot": [
+  "Cordana musae, known as cordana leaf spot",
+  "large oval pale brown spots with dark brown borders and a bright yellow halo, often along the leaf margin, merging into large dead areas"
+ ],
+ "coryneum_blight": [
+  "Wilsonomyces carpophilus, known as shot hole blight",
+  "small round purple-red spots with paler centres that dry and fall out, leaving shot holes in the leaves, with spots also on twigs and fruit"
+ ],
+ "crinckle": [
+  "Viral symptom, commonly known as leaf crinkle",
+  "crinkled, puckered and wrinkled leaves with mottled light and dark green patches, a distorted leaf shape and stunted growth"
+ ],
+ "curl": [
+  "Virus or mite-induced, commonly known as leaf curl",
+  "curled, puckered, thickened and distorted leaves, often reddish or yellowish, blistered and rolled, falling early from the shoots"
+ ],
+ "curl_virus": [
+  "Geminiviridae family, known as leaf curl virus",
+  "leaves curling upward and cupping, thick and leathery, with yellow margins and veins, small leaves and stunted bushy plants"
+ ],
+ "cutting_weevil": [
+  "Sternochetus spp., commonly known as cutting weevil",
+  "shoots and leaf stalks cut through and wilting, hanging or fallen leaves, with chewed notches and feeding damage on the leaf edges"
+ ],
+ "dappula_tertia": [
+  "Dappula tertia, known as oil palm leaf-eating caterpillar",
+  "bagworm damage: small bags of plant debris hanging from leaves and twigs, with chewed holes and skeletonized brown leaves"
+ ],
+ "diabrotica_speciosa": [
+  "Diabrotica speciosa, known as cucumber beetle",
+  "many small round holes chewed through the leaves by yellow-green spotted beetles, leaving ragged, lace-like leaves with brown edges"
+ ],
+ "dialeuropora_decempuncta": [
+  "Dialeuropora decempuncta, a whitefly species",
+  "tiny white winged insects and flat oval scales on the leaf undersides, with sticky honeydew and black sooty mould on the leaves below"
+ ],
+ "die_back": [
+  "Fungal/bacterial disease, known as dieback",
+  "shoots and branches dying back from the tips, leaves turning brown and dry while still attached, with dark discoloured twigs"
+ ],
+ "dot_leaf": [
+  "Small necrotic points, known as dot leaf",
+  "many tiny dark brown to black dots scattered densely over the leaf surface, sometimes with faint yellowing around them"
+ ],
+ "downy_mildew": [
+  "Peronosporaceae spp., known as downy mildew",
+  "angular yellow patches bounded by the veins on the upper leaf, with grey to purple downy fungal growth underneath, the patches turning brown and dry"
+ ],
+ "early_blight": [
+  "Alternaria solani, known as early blight",
+  "brown target-like spots with concentric rings and a yellow halo, mostly on the older lower leaves, spreading until the leaves yellow and die"
+ ],
+ "early_leaf_spot": [
+  "Cercospora arachidicola, known as early leaf spot",
+  "round dark brown spots with a bright yellow halo on the upper leaf surface, lighter brown underneath, leaves yellowing and dropping"
+ ],
+ "eriosoma_lanigerum": [
+  "Eriosoma lanigerum, commonly known as woolly aphid",
+  "white cottony waxy clusters of aphids on twigs, bark wounds and leaf axils, with knotty swellings on the wood beneath them"
+ ],
+ "erosomyia_sp": [
+  "Erosomyia spp., known as gall midges",
+  "small raised blister-like galls and spots on the leaves, yellow then brown, with tiny exit holes left by gall midge larvae"
+ ],
+ "erwinia_amylovora": [
+  "Erwinia amylovora, known as fire blight",
+  "blackened scorched-looking leaves and shoots that stay attached, shoot tips bent like a shepherd's crook, sometimes with drops of ooze"
+ ],
+ "esca": [
+  "Phaeomoniella spp., known as grapevine trunk disease",
+  "tiger-stripe pattern of yellow or red-brown stripes of dead tissue between the veins, with green bands along the veins, leaves drying and falling"
+ ],
+ "fire_blight": [
+  "Erwinia amylovora, known as fire blight",
+  "leaves, blossoms and shoots turning black-brown as if scorched by fire, staying attached, with shoot tips bent like a shepherd's crook"
+ ],
+ "frog_eye_leaf_spot": [
+  "Botryosphaeria obtusa, known as frogeye leaf spot",
+  "round spots with grey to tan centres and distinct purple-brown rings like a frog's eye, scattered over the leaf surface"
+ ],
+ "frogeye_leaf_spot": [
+  "Cercospora nicotianae, known as frogeye leaf spot",
+  "round spots with grey to tan centres and distinct purple-brown rings like a frog's eye, scattered over the leaf surface"
+ ],
+ "fusarium_wilt": [
+  "Fusarium oxysporum, known as Fusarium wilt",
+  "yellowing and wilting starting from the lower leaves and often one side of the plant, leaves drying and hanging, brown vascular tissue in the stem"
+ ],
+ "gall_midge": [
+  "Cecidomyiidae spp., commonly known as gall midges",
+  "small wart-like galls, blisters or swellings on the leaves and buds, raised and often yellow or reddish, distorting the leaves"
+ ],
+ "gnomonia_leptostyla": [
+  "Gnomonia leptostyla, known as walnut anthracnose",
+  "irregular dark brown to black blotches with yellow margins on the leaflets, merging into large patches, leaves dropping early"
+ ],
+ "grassy_shoot": [
+  "Phytoplasma disease, known as grassy shoot",
+  "many thin grassy tillers growing from the base, with narrow pale yellow to white leaves, forming a bushy grass-like clump"
+ ],
+ "gray_leaf_spot": [
+  "Cercospora spp., known as gray leaf spot",
+  "long rectangular grey to tan lesions running parallel to and bounded by the veins, merging into large blighted grey areas"
+ ],
+ "gray_light": [
+  "Grayish lesions, known as gray light",
+  "grey-brown irregular lesions with dark concentric margins and tiny black dots, often starting at the leaf tips and margins"
+ ],
+ "gray_mold": [
+  "Botrytis cinerea, commonly known as gray mold",
+  "grey fuzzy powdery fungal growth on soft brown water-soaked decay of leaves, flowers or fruit, spreading in humid conditions"
+ ],
+ "green_mite": [
+  "Mononychellus tanajoa, known as green mite",
+  "yellow speckling and stippling on young leaves, which become mottled, bronzed, distorted and smaller than normal"
+ ],
+ "green_mottle": [
+  "Zucchini yellow mosaic virus, known as green mottle",
+  "irregular mottled patches of light and dark green on the leaf, with a mild mosaic and slight distortion of the blade"
+ ],
+ "greening": [
+  "Candidatus Liberibacter spp., known as citrus greening",
+  "blotchy asymmetric yellow mottling crossing the veins, small upright yellowed leaves, sparse foliage and lopsided misshapen fruit"
+ ],
+ "grey_spot": [
+  "Cercospora zeae-maydis, commonly known as grey leaf spot",
+  "small grey to tan spots with dark brown borders, round to irregular, scattered over the leaf and sometimes merging"
+ ],
+ "gummy_stem_blight": [
+  "Didymella bryoniae, known as gummy stem blight",
+  "brown to tan wedge-shaped or round lesions at the leaf edge with dark rings, and gummy cracked cankers on the stems"
+ ],
+ "halo_blight": [
+  "Pseudomonas syringae, known as halo blight",
+  "small water-soaked spots each surrounded by a wide yellow-green halo, the spots turning brown and the leaf yellowing around them"
+ ],
+ "head_scab": [
+  "Fusarium graminearum, commonly known as head scab",
+  "bleached straw-coloured spikelets on an otherwise green grain head, sometimes with pink-orange mould at their base and shrivelled grains"
+ ],
+ "healthy": [
+  "No disease or pests, leaves are healthy",
+  "uniformly green, smooth, fully expanded leaves with a normal shape and colour, with no spots, lesions, mould, curling or discolouration"
+ ],
+ "hispa": [
+  "Dicladispa armigera, known as rice hispa",
+  "white parallel streaks and blotches where beetles scrape the upper leaf surface, and white blister-like mines made by the larvae"
+ ],
+ "icerya_seychellarum": [
+  "Icerya seychellarum, known as seychelles scale",
+  "white fluted cottony scale insects clustered along the veins and twigs, with sticky honeydew and black sooty mould"
+ ],
+ "insects_damages": [
+  "Insect feeding marks, known as insect damage",
+  "holes, chewed edges, scraped patches and feeding scars on the leaves caused by insects, with irregular missing tissue"
+ ],
+ "ischnaspis_longirostris": [
+  "Ischnaspis longirostris, known as oyster scale",
+  "thin long black thread-like scale insects scattered over the leaf surface, with yellowing and sooty mould around heavy infestations"
+ ],
+ "late_blight": [
+  "Phytophthora infestans, known as late blight",
+  "large dark brown to black water-soaked patches with pale green margins, white fuzzy mould underneath in humid conditions, leaves collapsing"
+ ],
+ "late_leaf_spot": [
+  "Cercosporidium personatum, known as late leaf spot",
+  "round dark brown to black spots, mostly on the lower leaf surface, with little or no yellow halo, leaves dropping early"
+ ],
+ "leaf_blight": [
+  "Necrotic spread, known as leaf blight",
+  "large irregular brown dead patches spreading from the leaf tips and margins, with yellow edges, the leaves drying out"
+ ],
+ "leaf_mold": [
+  "Fulvia fulva, commonly known as leaf mold",
+  "pale yellow patches on the upper leaf surface with olive-green to brown velvety mould growing on the underside"
+ ],
+ "leaf_roller": [
+  "Cnaphalocrocis medinalis, known as leaf roller",
+  "leaves rolled lengthwise or folded and webbed together with silk, with chewing damage and larvae hidden inside the rolls"
+ ],
+ "leaf_scars": [
+  "Insect/fungal damage, known as leaf scars",
+  "brown corky scars, scratches and scabby marks on the leaf surface from wind, rubbing or insect damage, otherwise green"
+ ],
+ "leaf_yellow_virus": [
+  "Chlorosis-inducing viruses, known as yellow virus",
+  "yellowing of the leaf midrib spreading into the blade, leaves turning pale yellow and sometimes reddish, plants weakened"
+ ],
+ "leafblast": [
+  "Magnaporthe spp., known as leaf blast",
+  "spindle-shaped lesions with grey centres and brown borders on the leaf blade, enlarging and merging until the leaves die"
+ ],
+ "leafroll_disease": [
+  "Grapevine leafroll virus, known as leafroll disease",
+  "leaves rolling downward, thick and brittle, turning red or yellow between green veins, mostly on the older leaves"
+ ],
+ "lethal_necrosis": [
+  "Maize chlorotic mottle virus + potyvirus, known as MLN",
+  "yellowing starting at the leaf margins and moving inward, followed by drying and death of whole leaves and eventually the plant"
+ ],
+ "loose_smut": [
+  "Ustilago tritici, known as loose smut",
+  "grain heads replaced by black powdery spore masses, leaving bare stalks once the spores blow away, the rest of the plant green"
+ ],
+ "marssonina_blotch": [
+  "Marssonina coronaria, known as blotch",
+  "dark brown irregular blotches with small black dots, surrounded by yellowing tissue, leading to early leaf drop in summer"
+ ],
+ "melanose": [
+  "Diaporthe citri, commonly known as melanose",
+  "many small raised dark brown to black specks giving a rough sandpaper-like texture to the leaves and fruit surface"
+ ],
+ "mictis_longicornis": [
+  "Mictis longicornis, a sap-sucking insect pest",
+  "wilted young shoots with brown sunken feeding spots and dried brown tips where leaf-footed bugs have pierced and fed"
+ ],
+ "mildew": [
+  "Fungal growth, commonly known as mildew",
+  "white to grey powdery or downy fungal growth on the leaf surface, with yellowing patches underneath and curling leaves"
+ ],
+ "miner": [
+  "Insect larvae, commonly known as leaf miner",
+  "winding pale serpentine tunnels or blotch mines inside the leaf, with dark lines of frass along them, visible from above"
+ ],
+ "monillia_laxa": [
+  "Monilinia laxa, commonly known as brown rot",
+  "wilted brown blossoms and dead twigs, and rotting brown fruit covered in grey powdery spore tufts arranged in rings"
+ ],
+ "mosaic": [
+  "Viral disease, known as mosaic",
+  "mosaic of light green, dark green and yellow patches over the leaf, with puckered, distorted and narrowed leaves and stunting"
+ ],
+ "mosaic_virus": [
+  "Mosaic virus spp., commonly known as mosaic disease",
+  "light and dark green mosaic mottling over the leaf, with blistered, puckered and curled leaves and stunted plant growth"
+ ],
+ "mummification_leaf": [
+  "Fungal desiccation, known as mummified fruit",
+  "shrivelled, dried, dark brown leaves or fruit that stay attached to the plant like mummies, brittle and wrinkled"
+ ],
+ "mummy_berry": [
+  "Monilinia vaccinii-corymbosi, known as mummy berry",
+  "wilted brown shoot tips and young leaves, and berries that shrivel into hard grey to white mummified berries"
+ ],
+ "neomelicharia_sparsa": [
+  "Neomelicharia sparsa, a sucking pest species",
+  "small planthoppers with white waxy threads clustered on shoots and leaves, with sticky honeydew and black sooty mould"
+ ],
+ "northern_leaf_blight": [
+  "Exserohilum turcicum, known as northern leaf blight",
+  "long cigar-shaped grey-green to tan lesions several centimetres long, merging until large parts of the leaf die and dry"
+ ],
+ "nutrition_deficiency": [
+  "Abiotic stress, known as nutrient deficiency",
+  "even pale yellowing or yellowing between the veins, sometimes purple or bronze tints, without spots, lesions or mould"
+ ],
+ "orthaga_euadrusalis": [
+  "Orthaga euadrusalis, known as mango shoot borer",
+  "leaves webbed together into clusters with silk and frass, skeletonized, brown and drying, with caterpillars hidden inside"
+ ],
+ "panama_disease": [
+  "Fusarium oxysporum, known as Panama disease",
+  "older leaves yellowing from the margins inward, wilting and collapsing to hang around the stem, with a split pseudostem"
+ ],
+ "parthenolecanium_corni": [
+  "Parthenolecanium corni, known as soft scale insect",
+  "brown domed scale insects clustered on twigs and leaves, with sticky honeydew and black sooty mould around them"
+ ],
+ "peacock_spot": [
+  "Spilocaea oleaginea, known as peacock spot",
+  "dark sooty olive-brown circular spots surrounded by a yellow halo, like the eye of a peacock feather, leaves dropping"
+ ],
+ "pestalotiopsis": [
+  "Pestalotiopsis spp., known as leaf spot",
+  "grey-brown lesions with dark brown margins and tiny black dots, often starting at the leaf tips and edges"
+ ],
+ "phoma": [
+  "Phoma spp., commonly known as leaf spot",
+  "brown spots with pale grey centres dotted with tiny black specks, sometimes with dark brown margins and yellow edges"
+ ],
+ "phomopsis_fruit_rot": [
+  "Phomopsis spp., known as fruit rot",
+  "soft brown spreading rot on the fruit, with circular sunken lesions dotted with tiny black specks, fruit shrivelling"
+ ],
+ "phytophthora": [
+  "Phytophthora spp., commonly known as late blight",
+  "dark brown water-soaked spreading lesions on leaves, stems and fruit, tissue rotting and collapsing, leaves wilting and drooping"
+ ],
+ "pocket_disease": [
+  "Taphrina deformans, known as leaf pocket disease",
+  "swollen, hollow, deformed bladder-like fruit, pale green at first and later grey and wrinkled, without a stone inside"
+ ],
+ "pokkah_boeng": [
+  "Fusarium moniliforme, known as pokkah boeng",
+  "twisted, crumpled and wrinkled young leaves with yellow chlorotic bases, knife-cut-like lesions and a distorted top of the plant"
+ ],
+ "powdery_mildew": [
+  "Erysiphales fungi, known as powdery mildew",
+  "white to grey powdery patches of fungal growth on the leaf surface, spreading to cover whole leaves, which yellow and curl"
+ ],
+ "pox_virus": [
+  "Poxviridae spp., known as pox virus",
+  "pale yellow rings, line patterns and blotches on the leaves, and pitted, bumpy, deformed fruit with brown spots"
+ ],
+ "procontarinia_matteiana": [
+  "Procontarinia matteiana, known as mango gall midge",
+  "many small raised wart-like galls on the leaves, dark brown to black, scattered over the blade and distorting it"
+ ],
+ "procontarinia_rubus": [
+  "Procontarinia rubus, known as mango bud midge",
+  "small raised wart-like galls on the leaves, brown to dark brown, scattered over the blade and distorting it as they swell"
+ ],
+ "purple_discoloration": [
+  "Stress signs, known as purple discoloration",
+  "leaves turning purple or reddish-purple, especially at the margins and on the older leaves, sometimes with stunted growth"
+ ],
+ "red_leaf_spot": [
+  "Phyllosticta spp., known as red leaf spot",
+  "small red to reddish-brown round spots scattered over the leaf, sometimes with paler centres, merging into larger patches"
+ ],
+ "red_mite": [
+  "Tetranychus spp., known as red mite",
+  "fine pale stippling on the leaves, which turn bronzed, rusty or reddish, with fine silk webbing and tiny red mites underneath"
+ ],
+ "red_rot": [
+  "Colletotrichum falcatum, known as red rot",
+  "red discoloured lesions along the leaf midrib with white or straw-coloured centres, red internal tissue and a sour smell"
+ ],
+ "red_rust": [
+  "Cephaleuros virescens, known as red rust",
+  "orange-red velvety raised spots of algal growth on the upper leaf surface, round and a few millimetres wide, sometimes merging into patches"
+ ],
+ "red_scab": [
+  "Elsinoë spp., commonly known as red scab",
+  "reddish-brown raised scabby lesions on leaves and fruit, rough and corky to the touch, sometimes cracking open in the centre"
+ ],
+ "ring_spot": [
+  "Virus-infected leaves, commonly known as ring spot",
+  "circular yellow chlorotic rings and concentric ring patterns on the leaf, sometimes with brown dead centres, on otherwise green leaves"
+ ],
+ "root_rot": [
+  "Phytophthora spp., known as root rot",
+  "wilting, yellowing and stunted plants, leaves drying from the bottom up and dropping, with brown soft rotted roots"
+ ],
+ "rust": [
+  "Puccinia spp., commonly known as rust",
+  "orange to reddish-brown powdery pustules scattered on the leaf, mostly underneath, with yellow spots on the upper surface"
+ ],
+ "scab": [
+  "Venturia spp., commonly known as scab",
+  "olive-green to black velvety scabby spots on leaves and fruit, becoming corky, raised and cracked as they age"
+ ],
+ "scorch": [
+  "Xylella fastidiosa or stress, known as scorch",
+  "browning and drying of the leaf margins and tips, the scorched edge bordered by a band of yellow"
+ ],
+ "segatoka": [
+  "Mycosphaerella spp., known as Sigatoka leaf spot",
+  "yellow streaks parallel to the veins becoming elongated brown to black spots with grey centres, leaves dying from the edges"
+ ],
+ "septoria": [
+  "Septoria spp., known as Septoria leaf blotch",
+  "many small round spots with grey to white centres and dark brown borders, with tiny black dots inside"
+ ],
+ "septoria_blotch": [
+  "Septoria tritici, known as Septoria blotch",
+  "irregular tan to brown blotches with tiny black dots inside, starting on the lower leaves and moving up the plant"
+ ],
+ "septoria_leaf_spot": [
+  "Septoria spp., known as leaf spot",
+  "many small circular spots with grey centres, dark margins and tiny black specks, on the lower leaves first"
+ ],
+ "sett_rot": [
+  "Ceratocystis paradoxa, known as sett rot",
+  "rotting cane setts with red then black discoloured internal tissue, a sweet pineapple smell, and poor or failed sprouting"
+ ],
+ "sheath_blight": [
+  "Rhizoctonia solani, known as sheath blight",
+  "oval grey-green to white lesions with brown borders on the leaf sheath, merging into irregular snake-skin patterns up the plant"
+ ],
+ "sigatoka": [
+  "Mycosphaerella fijiensis, known as Sigatoka disease",
+  "yellow streaks parallel to the veins becoming elongated brown to black spots with grey centres, leaves dying from the edges"
+ ],
+ "slug": [
+  "Mollusks from Gastropoda, known as slugs",
+  "irregular ragged holes eaten into the leaves, often between the veins, with shiny silvery slime trails across the surface"
+ ],
+ "smut": [
+  "Ustilago spp., commonly known as smut",
+  "black powdery spore masses replacing tissue, or long black whip-like structures emerging from the shoot tip, covered in dark spores"
+ ],
+ "sooty_mould": [
+  "Fungi on honeydew, known as sooty mould",
+  "black soot-like powdery coating on the upper leaf surface that can be wiped off, usually over sticky honeydew from insects"
+ ],
+ "spider_mites": [
+  "Tetranychidae spp., known as spider mites",
+  "fine yellow stippling and bronzing of the leaves, with fine silky webbing and tiny mites on the underside, leaves drying"
+ ],
+ "spot": [
+  "General necrotic lesions, known as leaf spots",
+  "small dark brown spots scattered over the leaf, sometimes with paler centres and yellow edges, occasionally merging"
+ ],
+ "streak": [
+  "Viral or fungal streaks, commonly known as leaf streak",
+  "narrow yellow or brown streaks running along the veins of the leaf, parallel and sometimes merging into broader stripes"
+ ],
+ "streak_virus": [
+  "Maize streak virus, commonly known as streak virus",
+  "narrow broken yellow-white streaks running along the veins from the leaf base, merging on young leaves, with stunted plants"
+ ],
+ "stripe": [
+  "Puccinia spp., known as stripe rust",
+  "long yellow or white stripes running along the leaf parallel to the veins, sometimes turning brown and drying in the centre"
+ ],
+ "stripe_rust": [
+  "Puccinia striiformis, commonly known as stripe rust",
+  "yellow-orange powdery pustules arranged in long narrow stripes between the veins of the leaf, leaves yellowing and drying out"
+ ],
+ "stylar_end_rot": [
+  "Fungal rot, known as stylar end rot",
+  "brown sunken leathery decay at the stylar end of the citrus fruit, enlarging and darkening, the rind softening around it"
+ ],
+ "tar_spot": [
+  "Phyllachora spp., commonly known as tar spot",
+  "raised shiny black tar-like spots scattered on the leaf, sometimes surrounded by tan or yellow halos, looking like drops of tar"
+ ],
+ "target_spot": [
+  "Corynespora cassiicola, known as target spot",
+  "brown spots with concentric rings like a target, often with a yellow halo, enlarging and merging on older leaves"
+ ],
+ "tungro": [
+  "Rice tungro virus, commonly known as tungro",
+  "yellow to orange discoloured leaves starting from the leaf tip, plants stunted with fewer tillers, the youngest leaves mottled"
+ ],
+ "valanga_nigricornis": [
+  "Valanga nigricornis, known as Javanese grasshopper",
+  "large ragged chewed areas and missing leaf tissue from the edges inward, caused by grasshopper feeding, with only veins left in places"
+ ],
+ "venturia_inaequalis": [
+  "Venturia inaequalis, known as apple scab",
+  "olive-green to black velvety scab spots on leaves and fruit, round with feathery edges, becoming corky and cracked"
+ ],
+ "verticulium_wilt": [
+  "Verticillium spp., known as Verticillium wilt",
+  "V-shaped yellowing between the veins starting at the leaf margin, leaves wilting on one side of the plant, brown vascular streaks"
+ ],
+ "violet_decoloration": [
+  "Abiotic/viral, known as violet discoloration",
+  "violet to purple discolouration spreading over the leaf blade, starting at the margins and veins, with the rest of the leaf dull green and slightly thickened"
+ ],
+ "viral": [
+  "General viral infection, known as viral disease",
+  "mottling, mosaic, curling, crinkling or yellowing of the leaves caused by a virus, with distorted shapes and stunted growth"
+ ],
+ "white_scale": [
+  "Aulacaspis tubercularis, known as white scale insect",
+  "small white scale insects crowded on leaves and stems, with yellow spots on the leaf where they feed and sticky honeydew"
+ ],
+ "white_spot": [
+  "Pseudocercospora spp., known as white spot",
+  "small round white or pale grey spots scattered on the leaf, often with thin brown borders, the centres dry and papery"
+ ],
+ "white_stem_borer": [
+  "Scirpophaga innotata, known as white stem borer",
+  "dead central shoots and wilting leaves, with holes, tunnels and frass inside the stem, and white empty heads on older plants"
+ ],
+ "xamthomonas": [
+  "Xanthomonas spp., commonly known as bacterial spot",
+  "water-soaked angular lesions that turn brown and dry, surrounded by yellow halos, often along the leaf edge and veins, leaves yellowing and withering"
+ ],
+ "yellow_leaf_curl_virus": [
+  "Begomovirus spp., known as leaf curl virus",
+  "small leaves curling upward and cupping, with bright yellow margins, plants stunted and bushy with short internodes and few flowers"
+ ],
+ "yellow_mosaic": [
+  "Mosaic virus spp., known as yellow mosaic",
+  "bright yellow and green mosaic patches over the whole leaf, irregular yellow blotches mixed with normal green tissue, leaves slightly puckered and smaller"
+ ],
+ "yellow_mosaic_virus": [
+  "Yellow mosaic virus, known as yellow mosaic",
+  "bright yellow mosaic patches spreading over the leaf between green areas, leaves mottled, puckered and smaller than normal, plants stunted with few pods"
+ ],
+ "yellow_rust": [
+  "Puccinia striiformis, known as yellow rust",
+  "small bright yellow powdery pustules arranged in long stripes along the leaf between the veins, leaves yellowing and drying when heavily infected"
+ ],
+ "yellow_spots": [
+  "Chlorotic lesions, known as yellow spots",
+  "small round yellow spots scattered over the green leaf surface, sometimes merging into larger pale patches, without dark borders or mould"
+ ],
+ "yellow_stem_borer": [
+  "Scirpophaga incertulas, known as yellow stem borer",
+  "dead central shoots that pull out easily, and white empty grain heads standing upright, with small holes and frass in the lower stem"
+ ],
+ "yellowing": [
+  "Chlorosis from stress, known as yellowing",
+  "general yellowing of the leaves, starting pale green and turning yellow over the whole blade, without spots, mould or lesions"
+ ]
+}

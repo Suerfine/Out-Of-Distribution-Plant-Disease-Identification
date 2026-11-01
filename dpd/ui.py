@@ -104,7 +104,8 @@ def backbone(run: dict) -> str:
 
 
 def run_label(run: dict) -> str:
-    return f"{run['version']} · {KIND[run['method']]} · test HM {run['metrics']['harmonic_mean_top1']:.1%}"
+    name = f"{run['version']} {run['cfg']['title']}" if run["cfg"].get("title") else run["version"]
+    return f"{name} · {KIND[run['method']]} · test HM {run['metrics']['harmonic_mean_top1']:.1%}"
 
 
 def best_run_index(runs: list[dict]) -> int:

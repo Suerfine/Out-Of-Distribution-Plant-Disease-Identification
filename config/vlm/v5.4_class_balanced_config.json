@@ -1,8 +1,9 @@
 {
-  "_note": "v6 (more robust gamma): same model, prompts and lr as v5 (HM 52.9%). v5's gamma (0.0375, from one validation split) still sent 35% of seen-test images to unseen pairs, so gamma is still over-estimated, and a single split of 20 pseudo-unseen pairs is a small, noisy sample. v6 repeats stage 1 on 3 validation splits (seeds 42, 43, 44; different pseudo-unseen pairs and val images each) and picks the (epoch, gamma) with the best validation HM averaged over the 3. max_epochs 40 -> 30: v5's val HM plateaued from epoch 5 and it chose epoch 18, so epochs 31-40 only cost time (3 splits triple stage 1).",
-  "_result": "No gain over v5: harmonic mean 51.8% top-1 / 87.1% top-5 (v5: 52.9% / 87.1%); seen top-1 41.2%, unseen top-1 69.7%; 38.6% of seen-test images still go to unseen pairs (v5 35.2%). The three splits disagree on gamma, which confirms one split is noisy: each split's own best was 0.0425, 0.0275 and 0.0375, and their mean val HM was 44.5%, 46.1% and 49.1%. But averaging landed on the same gamma as v5 (0.0375, at epoch 13), so the calibration overshoot is not split-to-split noise; it is systematic. Pseudo-unseen pairs (seen pairs held out) apparently need a larger gamma than the real unseen pairs, perhaps because the real unseen pairs' crops and diseases are better covered in training. Keep the 3-split selection (it no longer depends on one lucky split), but a different fix is needed for the overshoot. Uncalibrated: seen 55.5%, unseen 17.0%, HM 26.0% (v5 26.1%). Per unseen pair: corn_brown_spot 97%, cucumber_downy_mildew 94%, mango_anthracnose 93%, sugarcane_rust 84%, grape_black_rot 82%, tomato_early_blight 72%, cherry_aphis_spp 63%, cucumber_powdery_mildew 60%, cotton_bacterial_blight 50%, pepper_bell_bacterial_spot 42%.",
-  "version": "v6",
-  "method": "clip_prompt_learning",
+  "_note": "v5.4: v5 + class-balanced (square-root) sampling. Ablation of ONE change against v5 (everything else identical, same validation split: seed 42, 1 split). Keep the change only if validation HM beats v5's 51.2% by more than 2 points (v6 measured run-to-run noise of about 3 points: v5 retrained on the same split scored 48.3% vs 51.2%); the test result is recorded but must not decide.",
+  "_result": "Not kept (excluded from v5.5): validation HM 49.0% (epoch 9, gamma 0.0725) vs v5's 51.2%, -2.2 points; from epoch 10 on it stayed about 2 points below v5 every epoch, so it is a consistent effect, not noise in one epoch. Test (recorded, not used for the decision): HM 62.3% top-1 / 91.4% top-5 (v5 65.1% / 92.1%); seen 49.6%, unseen 83.8%; per-class mean seen top-1 33.5% (v5 33.4%). Likely reason: square-root balancing draws pairs with 5 or fewer training images about 4x more often (16.7% vs 4.5% of draws), so the model repeats the same few photos of rare pairs rather than seeing new ones, while the common pairs that make up most test images (and 55% of v5's seen errors) get less training.",
+  "version": "v5.4",
+  "title": "class_balanced",
+  "method": "clip_prompt_lora",
   "seed": 42,
   "data": {
     "_note": "Unchanged from v5.",
@@ -18,9 +19,40 @@
     "arch": "ViT-B-16-quickgelu",
     "pretrained": "openai"
   },
+  "image_encoder": {
+    "_note": "Unchanged from v5.",
+    "lora": {
+      "last_n_blocks": 4,
+      "rank": 8,
+      "alpha": 16,
+      "targets": [
+        "attn_qkv",
+        "attn_out",
+        "mlp_in",
+        "mlp_out"
+      ],
+      "lr": 0.0001
+    }
+  },
   "input": {
     "_note": "Unchanged from v5.",
-    "preprocess": "model_default"
+    "resize_cache": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "Unchanged from v5.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
   },
   "names": {
     "_note": "Unchanged from v5.",
@@ -84,7 +116,7 @@
     "disease_template": "a photo of leaves with {disease}: {description}."
   },
   "validation": {
-    "_note": "From train: 20 whole seen pairs (each with >= 8 images) held out as pseudo-unseen, chosen so their crop and disease still occur in training (like the real unseen pairs), plus 15% of the remaining images as val-seen. Picks the epoch and gamma (grid 0 to 0.1, step 0.0025, in cosine-similarity units). 'healthy' pairs are not held out: none of the real unseen pairs is healthy, and without this exclusion 6 of the 20 held-out pairs were healthy (corn_healthy alone has 223 images), which would tune gamma on the wrong kind of class. v5: real unseen pairs hidden during validation (exclude_real_unseen_from_label_space), and at most 40 images per pseudo-unseen pair. v6: n_splits 3 (seeds seed, seed+1, seed+2); selection uses the mean validation HM over splits for each (epoch, gamma).",
+    "_note": "Unchanged from v5.",
     "exclude_holdout_diseases": [
       "healthy"
     ],
@@ -98,21 +130,25 @@
     ],
     "exclude_real_unseen_from_label_space": true,
     "max_images_per_holdout_pair": 40,
-    "n_splits": 3
+    "n_splits": 1
   },
   "training": {
-    "_note": "AdamW on the 230 vectors only; weight_decay 0 because decay would pull the vectors towards zero rather than towards their name initialisation. logit_scale 100 = CLIP's own temperature. Cosine LR over the run. final_fit 'all_train': after selection, refit on every training image (the held-out pairs are real seen classes in the test set) for the selected epoch count. v5: lr 1e-3 -> 2e-4 (v4 peaked by epoch 3 with noisy validation). v6: max_epochs 40 -> 30.",
+    "_note": "v5 + class-balanced sampling: each training image is drawn with weight n_pair^-0.5 (square-root balancing: rare pairs are seen more often, but not as often as full balancing, which would repeat 1-image pairs hundreds of times per epoch). Epoch size unchanged. Motivation: pairs with 1-5 training images reach only 22-35% seen top-1 in v5.",
     "lr": 0.0002,
     "weight_decay": 0.0,
-    "batch_size": 256,
-    "max_epochs": 30,
+    "batch_size": 64,
+    "max_epochs": 15,
     "logit_scale": 100.0,
     "loss_weights": {
       "pair": 1.0,
       "crop": 0.5,
       "disease": 0.5
     },
-    "final_fit": "all_train"
+    "final_fit": "all_train",
+    "sampling": {
+      "type": "class_balanced",
+      "power": 0.5
+    }
   },
   "evaluation": {
     "_note": "Unchanged from v5.",
@@ -126,8 +162,7 @@
     "device": "cuda",
     "amp": true,
     "grad_checkpointing": true,
-    "batch_size": 64,
     "num_workers": 4
   },
-  "output_dir": "runs/vlm/v6"
+  "output_dir": "runs/vlm/v5.4"
 }

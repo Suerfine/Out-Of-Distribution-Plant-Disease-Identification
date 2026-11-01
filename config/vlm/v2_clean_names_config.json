@@ -2,6 +2,7 @@
   "_note": "v2 (zero-shot, text only): two changes vs v1, both pure text, no training. (1) Class names cleaned: typos fixed (xamthomonas, verticulium, crinckle, monillia), ambiguous dataset names expanded (paddy -> rice, pepper_bell -> bell pepper, curl -> leaf curl), and Latin pest/pathogen names replaced by the common name CLIP is likelier to have seen (eriosoma_lanigerum -> woolly apple aphids, venturia_inaequalis -> apple scab, ...). Names were left alone when the meaning was unclear (spot, streak, stripe, dot_leaf, mummification_leaf). (2) Five prompt templates averaged per class (standard CLIP prompt ensembling) instead of one. v1 showed CLIP gets the crop right far more often than the disease (43% vs 8% on test_seen), so both changes target the disease wording.",
   "_result": "Small gain over v1: harmonic mean 5.6% (v1 5.4%), top-5 HM 22.2% (v1 18.4%); seen top-1 7.2%, unseen top-1 4.6% (unchanged). Disease correct rose on test_seen (10.5% vs 8.2%) but not on test_unseen. Unseen-only diagnostic 47% (v1 43%). Cleaner names and template averaging help ranking (top-5) more than top-1. Found while running: banana_segatoka and banana_sigatoka are two separate classes for the same disease (11 and 10 train images), a label-quality issue worth noting in the report.",
   "version": "v2",
+  "title": "clean_names",
   "method": "clip_zeroshot",
   "seed": 42,
 

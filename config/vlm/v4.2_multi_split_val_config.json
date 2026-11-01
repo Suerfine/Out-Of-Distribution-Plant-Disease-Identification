@@ -1,11 +1,12 @@
 {
-  "_note": "v5 (fix gamma selection + steadier training): same model and prompts as v4. v4's validation chose gamma 0.045, which on test sent 53% of seen images to unseen pairs (seen top-1 50.8% -> 30.1%); a diagnostic test sweep put the best gamma near 0.02. Two causes in the validation split, fixed here: (1) validation ranked against 30 untrained pairs (20 pseudo-unseen + the 10 real unseen) but test has only 10, so the real unseen pairs are now hidden from the validation label space; (2) pseudo-unseen images were dominated by cassava_mosaic (544 of 1,340), now capped at 40 images per held-out pair. Also lr 1e-3 -> 2e-4: in v4 validation unseen accuracy peaked at epoch 1-3 and val HM jumped around between epochs, so a smaller step should give a smoother curve and a less noisy epoch choice.",
-  "_result": "Best so far. With gamma 0.0375 (from validation): harmonic mean 52.9% top-1 / 87.1% top-5 (v4: 43.6% / 84.7%); seen top-1 44.3% / top-5 80.8%, unseen top-1 65.7% / top-5 94.6%. The validation fixes worked as intended: the chosen gamma moved from 0.045 to 0.0375 and the seen/unseen balance is much closer (v4 was 30% / 79%), landing near the HM that v4's test diagnostic said was reachable (~53%). Still too high: 35% of seen-test images go to unseen pairs. Training is steadier: val HM rose to ~45% by epoch 5 and stayed within 44-46% (v4 swung 22-36%); selected epoch 18 of 40. Pseudo-unseen accuracy still drifts down with training (~45% peak -> 37% at epoch 40) but much less than v4 (39% -> 15%). Trade-off from the longer training: uncalibrated, seen top-1 is higher (57.6% vs v4 50.8%; disease correct 60%) but the model is more biased to seen pairs (uncalibrated HM 26.1% vs 34.9%; unseen-only diagnostic 73.8% vs 80.7%), and calibration recovers it. Per unseen pair: cucumber_downy_mildew 97%, sugarcane_rust 93%, corn_brown_spot 89%, grape_black_rot 83%, mango_anthracnose 82%, cherry_aphis_spp 67%, tomato_early_blight 64%, cucumber_powdery_mildew 60%, cotton_bacterial_blight 54%, pepper_bell_bacterial_spot 30% (lowest; was 73% in v4).",
-  "version": "v5",
+  "_note": "v4.2 (more robust gamma): same model, prompts and lr as v4.1 (HM 52.9%). v4.1's gamma (0.0375, from one validation split) still sent 35% of seen-test images to unseen pairs, so gamma is still over-estimated, and a single split of 20 pseudo-unseen pairs is a small, noisy sample. v4.2 repeats stage 1 on 3 validation splits (seeds 42, 43, 44; different pseudo-unseen pairs and val images each) and picks the (epoch, gamma) with the best validation HM averaged over the 3. max_epochs 40 -> 30: v4.1's val HM plateaued from epoch 5 and it chose epoch 18, so epochs 31-40 only cost time (3 splits triple stage 1).",
+  "_result": "No gain over v4.1: harmonic mean 51.8% top-1 / 87.1% top-5 (v4.1: 52.9% / 87.1%); seen top-1 41.2%, unseen top-1 69.7%; 38.6% of seen-test images still go to unseen pairs (v4.1 35.2%). The three splits disagree on gamma, which confirms one split is noisy: each split's own best was 0.0425, 0.0275 and 0.0375, and their mean val HM was 44.5%, 46.1% and 49.1%. But averaging landed on the same gamma as v4.1 (0.0375, at epoch 13), so the calibration overshoot is not split-to-split noise; it is systematic. Pseudo-unseen pairs (seen pairs held out) apparently need a larger gamma than the real unseen pairs, perhaps because the real unseen pairs' crops and diseases are better covered in training. Keep the 3-split selection (it no longer depends on one lucky split), but a different fix is needed for the overshoot. Uncalibrated: seen 55.5%, unseen 17.0%, HM 26.0% (v4.1 26.1%). Per unseen pair: corn_brown_spot 97%, cucumber_downy_mildew 94%, mango_anthracnose 93%, sugarcane_rust 84%, grape_black_rot 82%, tomato_early_blight 72%, cherry_aphis_spp 63%, cucumber_powdery_mildew 60%, cotton_bacterial_blight 50%, pepper_bell_bacterial_spot 42%.",
+  "version": "v4.2",
+  "title": "multi_split_val",
   "method": "clip_prompt_learning",
   "seed": 42,
   "data": {
-    "_note": "Unchanged from v4.",
+    "_note": "Unchanged from v4.1.",
     "eval_splits": [
       "test_seen",
       "test_unseen"
@@ -13,17 +14,17 @@
     "label_space": "all_pairs"
   },
   "model": {
-    "_note": "Unchanged from v4.",
+    "_note": "Unchanged from v4.1.",
     "library": "open_clip",
     "arch": "ViT-B-16-quickgelu",
     "pretrained": "openai"
   },
   "input": {
-    "_note": "Unchanged from v4.",
+    "_note": "Unchanged from v4.1.",
     "preprocess": "model_default"
   },
   "names": {
-    "_note": "Unchanged from v4.",
+    "_note": "Unchanged from v4.1.",
     "underscore_to_space": true,
     "crop_overrides": {
       "pepper_bell": "bell pepper",
@@ -77,14 +78,14 @@
     }
   },
   "prompts": {
-    "_note": "Unchanged from v4.",
+    "_note": "Unchanged from v4.1.",
     "descriptions_file": "knowledge/disease_descriptions_v1.json",
     "pair_template": "a photo of {crop} leaves with {disease}: {description}.",
     "crop_template": "a photo of {crop} leaves.",
     "disease_template": "a photo of leaves with {disease}: {description}."
   },
   "validation": {
-    "_note": "From train: 20 whole seen pairs (each with >= 8 images) held out as pseudo-unseen, chosen so their crop and disease still occur in training (like the real unseen pairs), plus 15% of the remaining images as val-seen. Picks the epoch and gamma (grid 0 to 0.1, step 0.0025, in cosine-similarity units). 'healthy' pairs are not held out: none of the real unseen pairs is healthy, and without this exclusion 6 of the 20 held-out pairs were healthy (corn_healthy alone has 223 images), which would tune gamma on the wrong kind of class. v5: real unseen pairs hidden during validation (exclude_real_unseen_from_label_space), and at most 40 images per pseudo-unseen pair.",
+    "_note": "From train: 20 whole seen pairs (each with >= 8 images) held out as pseudo-unseen, chosen so their crop and disease still occur in training (like the real unseen pairs), plus 15% of the remaining images as val-seen. Picks the epoch and gamma (grid 0 to 0.1, step 0.0025, in cosine-similarity units). 'healthy' pairs are not held out: none of the real unseen pairs is healthy, and without this exclusion 6 of the 20 held-out pairs were healthy (corn_healthy alone has 223 images), which would tune gamma on the wrong kind of class. v4.1: real unseen pairs hidden during validation (exclude_real_unseen_from_label_space), and at most 40 images per pseudo-unseen pair. v4.2: n_splits 3 (seeds seed, seed+1, seed+2); selection uses the mean validation HM over splits for each (epoch, gamma).",
     "exclude_holdout_diseases": [
       "healthy"
     ],
@@ -98,14 +99,14 @@
     ],
     "exclude_real_unseen_from_label_space": true,
     "max_images_per_holdout_pair": 40,
-    "n_splits": 1
+    "n_splits": 3
   },
   "training": {
-    "_note": "AdamW on the 230 vectors only; weight_decay 0 because decay would pull the vectors towards zero rather than towards their name initialisation. logit_scale 100 = CLIP's own temperature. Cosine LR over the run. final_fit 'all_train': after selection, refit on every training image (the held-out pairs are real seen classes in the test set) for the selected epoch count. v5: lr 1e-3 -> 2e-4 (v4 peaked by epoch 3 with noisy validation).",
+    "_note": "AdamW on the 230 vectors only; weight_decay 0 because decay would pull the vectors towards zero rather than towards their name initialisation. logit_scale 100 = CLIP's own temperature. Cosine LR over the run. final_fit 'all_train': after selection, refit on every training image (the held-out pairs are real seen classes in the test set) for the selected epoch count. v4.1: lr 1e-3 -> 2e-4 (v4 peaked by epoch 3 with noisy validation). v4.2: max_epochs 40 -> 30.",
     "lr": 0.0002,
     "weight_decay": 0.0,
     "batch_size": 256,
-    "max_epochs": 40,
+    "max_epochs": 30,
     "logit_scale": 100.0,
     "loss_weights": {
       "pair": 1.0,
@@ -115,19 +116,19 @@
     "final_fit": "all_train"
   },
   "evaluation": {
-    "_note": "Unchanged from v4.",
+    "_note": "Unchanged from v4.1.",
     "top_k": [
       1,
       5
     ]
   },
   "runtime": {
-    "_note": "Unchanged from v4.",
+    "_note": "Unchanged from v4.1.",
     "device": "cuda",
     "amp": true,
     "grad_checkpointing": true,
     "batch_size": 64,
     "num_workers": 4
   },
-  "output_dir": "runs/vlm/v5"
+  "output_dir": "runs/vlm/v4.2"
 }

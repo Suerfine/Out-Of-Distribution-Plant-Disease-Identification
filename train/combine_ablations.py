@@ -1,6 +1,6 @@
 """Build a config that combines every single-change ablation that improved on its base, judged on VALIDATION only.
 
-Usage:  python -m train.combine_ablations --base v9 --variants v10 v12 v13 v14 --ensemble v11 --out v15 [--ensemble-out v16]
+Usage:  python -m train.combine_ablations --base v5 --variants v5.1 v5.2 v5.3 v5.4 --ensemble v6 --out v5.5 [--ensemble-out v6.1]
 
 A variant counts as an improvement when its validation HM beats the base's by more than --margin (default 0.01, about
 run-to-run noise). Test numbers are never read. Each variant config differs from the base only in its own settings,
@@ -13,6 +13,7 @@ other member) is written as well. Exits with code 2 if nothing improved (no conf
 import argparse
 import copy
 import json
+import shutil
 import sys
 
 from dpd.data import PROJECT_ROOT
@@ -48,19 +49,31 @@ def val_hm(version):
     return val.get("val_hm_mean", val.get("val_hm"))
 
 
+def config_path(version):
+    """config/vlm/<version>_<title>_config.json (exactly one file per version)."""
+    found = list(CFG.glob(f"{version}_*config.json"))
+    if len(found) != 1:
+        sys.exit(f"expected one config for {version} in {CFG}, found {[p.name for p in found]}")
+    return found[0]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", required=True)
     ap.add_argument("--variants", nargs="+", required=True)
     ap.add_argument("--ensemble")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--title", default="combined", help="title of the --out config (file name and 'title' field)")
     ap.add_argument("--ensemble-out")
+    ap.add_argument("--ensemble-title", default="combined_ensemble")
     ap.add_argument("--margin", type=float, default=0.01)
+    ap.add_argument("--alias-if-identical", action="store_true",
+                    help="if only one variant qualified, copy its finished run folder instead of retraining the same model")
     ap.add_argument("--force-ensemble", action="store_true",
                     help="write the ensemble config on top of --out even if the ensemble variant did not clear the margin")
     args = ap.parse_args()
 
-    load = lambda v: json.loads((CFG / f"{v}_config.json").read_text(encoding="utf-8"))
+    load = lambda v: json.loads(config_path(v).read_text(encoding="utf-8"))
     base = load(args.base)
     base_hm = val_hm(args.base)
     fb = flat(base)
@@ -69,7 +82,7 @@ def main():
     for v in args.variants:
         hm = val_hm(v)
         cfg = load(v)
-        changed = {p: val for p, val in flat(cfg).items() if fb.get(p) != val and p not in (("version",), ("output_dir",))}
+        changed = {p: val for p, val in flat(cfg).items() if fb.get(p) != val and p not in (("version",), ("title",), ("output_dir",))}
         desc = ", ".join(f"{'.'.join(p)}={val}" for p, val in changed.items())
         if hm is None:
             lines.append(f"{v} EXCLUDED (run did not finish) [{desc}]")
@@ -98,18 +111,33 @@ def main():
               f"{args.out} not created.")
         sys.exit(2)
 
-    combined["version"], combined["output_dir"], combined["_result"] = args.out, f"runs/vlm/{args.out}", "Pending."
+    combined["version"], combined["title"], combined["output_dir"], combined["_result"] = args.out, args.title, f"runs/vlm/{args.out}", "Pending."
     combined["_note"] = (f"{args.out}: {args.base} + every single-change ablation that improved validation HM by more than "
                          f"{args.margin * 100:.0f} point (decided on validation only, by train/combine_ablations.py). "
                          f"Included: {', '.join(included)}. Decision log: " + " | ".join(lines)
                          + " Changes may not add up: compare this run's validation HM with the best single variant.")
-    (CFG / f"{args.out}_config.json").write_text(json.dumps(combined, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"\nwrote config/vlm/{args.out}_config.json with {', '.join(included)}")
+    if args.alias_if_identical and len(included) == 1:
+        # Only one variant qualified, so the combined config IS that variant's (apart from version, output_dir and
+        # notes). Copy its finished run instead of training an identical model again.
+        twin = included[0]
+        combined["_note"] += (f" Identical settings to {twin}, so {twin}'s finished run was copied here instead of retraining "
+                              f"(identical configs reproduce bit-for-bit in this project: v5.2's training matched v5's every epoch).")
+        dst = RUNS / args.out
+        shutil.copytree(RUNS / twin, dst)
+        (dst / "config.json").write_text(json.dumps(combined, indent=2, ensure_ascii=False), encoding="utf-8")
+        m = json.loads((dst / "metrics.json").read_text())
+        m["version"], m["copied_from"] = args.out, twin
+        (dst / "metrics.json").write_text(json.dumps(m, indent=2))
+        print(f"\n{args.out} has the same settings as {twin}: copied runs/vlm/{twin} to runs/vlm/{args.out} (no retraining)")
+    out_name = f"{args.out}_{args.title}_config.json"
+    (CFG / out_name).write_text(json.dumps(combined, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"\nwrote config/vlm/{out_name} with {', '.join(included)}")
 
     if args.ensemble_out and ens_hm is not None and (ens_improved or args.force_ensemble):
         ens = load(args.ensemble)
         ens["members"][0] = {"run": f"runs/vlm/{args.out}"}
-        ens["version"], ens["output_dir"], ens["_result"] = args.ensemble_out, f"runs/vlm/{args.ensemble_out}", "Pending."
+        ens["version"], ens["title"], ens["output_dir"], ens["_result"] = (args.ensemble_out, args.ensemble_title,
+                                                                           f"runs/vlm/{args.ensemble_out}", "Pending.")
         ens["_note"] = (f"{args.ensemble_out}: the {args.ensemble} ensemble recipe applied to {args.out} instead of {args.base}: "
                         f"{args.out} + {ens['members'][1]['run'].split('/')[-1]}, weight and gamma chosen on validation. "
                         + (f"Created because {args.ensemble} improved validation HM over {args.base} ({ens_hm:.2%} vs {base_hm:.2%})."
@@ -118,8 +146,9 @@ def main():
                            f"{(ens_hm - base_hm) * 100:+.1f} pts over {args.base}'s recorded {base_hm:.2%}, under the "
                            f"{args.margin * 100:.0f}-point margin, but against {args.base} retrained on the same split inside "
                            f"{args.ensemble} it improved clearly (see {args.ensemble}'s _result)."))
-        (CFG / f"{args.ensemble_out}_config.json").write_text(json.dumps(ens, indent=2, ensure_ascii=False), encoding="utf-8")
-        print(f"wrote config/vlm/{args.ensemble_out}_config.json (ensemble of {args.out})")
+        ens_name = f"{args.ensemble_out}_{args.ensemble_title}_config.json"
+        (CFG / ens_name).write_text(json.dumps(ens, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(f"wrote config/vlm/{ens_name} (ensemble of {args.out})")
 
 
 if __name__ == "__main__":
