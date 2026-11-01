@@ -38,7 +38,7 @@ pct = lambda label, **kw: st.column_config.ProgressColumn(label, format="percent
 gamma_of = lambda r: float(r["metrics"].get("gamma", 0.0))
 
 # runs/<family> folder -> label; anything else (runs/baseline) is a baseline.
-FAMILY_LABELS = {"vlm": "proposed (VLM)", "cnn": "proposed (CNN)"}
+FAMILY_LABELS = {"vlm": "proposed (VLM)", "cnn": "proposed (CNN)", "cropnorm": "proposed (crop norm)"}
 
 table = pd.DataFrame(
     [

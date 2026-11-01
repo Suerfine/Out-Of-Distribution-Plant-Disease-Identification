@@ -17,6 +17,7 @@ Stage 2: refit every network on all training images for the chosen epochs, then 
 
 import argparse
 import json
+import math
 import random
 import shutil
 import time
@@ -73,8 +74,9 @@ def predict(model, loader, device, amp) -> dict[str, np.ndarray]:
 def train_network(heads, train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=None):
     """Train one network; if eval_loader is given, return its log-probs after every epoch."""
     device, amp = cfg["runtime"]["device"], cfg["runtime"]["amp"]
-    mcfg, ocfg, lcfg = cfg["model"], cfg["optimizer"], cfg["loss"]
-    model = MultiHeadNet(mcfg["backbone"], mcfg["pretrained"], {h: HEAD_SIZES[h] for h in heads}, mcfg["head_dropout"])
+    mcfg, ocfg, lcfg, tcfg = cfg["model"], cfg["optimizer"], cfg["loss"], cfg["training"]
+    model = MultiHeadNet(mcfg["backbone"], mcfg["pretrained"], {h: HEAD_SIZES[h] for h in heads}, mcfg["head_dropout"],
+                         mcfg.get("drop_path_rate", 0.0))
     model = model.to(device)
     opt = torch.optim.AdamW(
         [
@@ -84,13 +86,32 @@ def train_network(heads, train_df, epochs, cfg, image_dir, tfs, eval_loader=None
         weight_decay=ocfg["weight_decay"],
     )
     loader = make_loader(train_df, image_dir, tfs[0], cfg, shuffle=True)
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs * len(loader))
+    # Optional training keys (absent in older configs, which keep the original per-step cosine to 0 over `epochs`):
+    # accumulation_steps (physical batch_size x steps = effective batch), gradient_clip (max grad norm),
+    # warmup_epochs (linear warmup), min_lr_ratio (cosine floor), lr_schedule_epochs (a fixed cosine horizon, so a
+    # refit for e epochs follows the same learning rates as the first e epochs of the validation run).
+    accum, clip = tcfg.get("accumulation_steps", 1), tcfg.get("gradient_clip")
+    steps = len(loader) // accum
+    if any(k in tcfg for k in ("warmup_epochs", "min_lr_ratio", "lr_schedule_epochs")):
+        warmup, floor = tcfg.get("warmup_epochs", 0) * steps, tcfg.get("min_lr_ratio", 0.0)
+        horizon = tcfg.get("lr_schedule_epochs", epochs) * steps
+
+        def lr_factor(s):
+            if s < warmup:
+                return (s + 1) / warmup
+            t = min(1.0, (s - warmup) / max(1, horizon - warmup))
+            return floor + (1 - floor) * 0.5 * (1 + math.cos(math.pi * t))
+
+        sched = torch.optim.lr_scheduler.LambdaLR(opt, lr_factor)
+    else:
+        sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs * steps)
     scaler = torch.amp.GradScaler(device, enabled=amp)
     per_epoch = []
     for epoch in range(1, epochs + 1):
         model.train()
+        opt.zero_grad(set_to_none=True)  # drops any partial accumulation left from the previous epoch
         t0, tot, correct, n = time.time(), 0.0, {h: 0 for h in heads}, 0
-        for x, y_crop, y_dis in loader:
+        for step, (x, y_crop, y_dis) in enumerate(loader):
             x = x.to(device, non_blocking=True)
             targets = {"crop": y_crop.to(device), "disease": y_dis.to(device)}
             with torch.autocast(device, enabled=amp):
@@ -99,11 +120,15 @@ def train_network(heads, train_df, epochs, cfg, image_dir, tfs, eval_loader=None
                     lcfg["weights"][h] * F.cross_entropy(logits[h].float(), targets[h], label_smoothing=lcfg["label_smoothing"])
                     for h in heads
                 )
-            opt.zero_grad(set_to_none=True)
-            scaler.scale(loss).backward()
-            scaler.step(opt)
-            scaler.update()
-            sched.step()
+            scaler.scale(loss / accum).backward()
+            if (step + 1) % accum == 0:
+                if clip:
+                    scaler.unscale_(opt)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+                scaler.step(opt)
+                scaler.update()
+                opt.zero_grad(set_to_none=True)
+                sched.step()
             tot += loss.item() * len(x)
             n += len(x)
             for h in heads:

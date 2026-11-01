@@ -25,6 +25,7 @@ KIND = {
     "clip_prompt_lora": "trained prompts + LoRA",
     "cnn_independent": "baseline: independent CNNs",
     "cnn_multitask": "baseline: multi-task CNN",
+    "cnn_crop_norm": "crop-normalised CNN",
     "ensemble": "ensemble",
 }
 

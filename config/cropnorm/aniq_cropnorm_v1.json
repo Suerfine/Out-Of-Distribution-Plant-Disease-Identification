@@ -1,0 +1,107 @@
+{
+  "_note": "aniq_cropnorm_v1: aniq_cropnorm_v0 + FiLM crop normalisation (the core idea): each crop c has a learned gain and shift, n_c = (z - shift_c) * exp(-log_gain_c), and diseases are classified in the normalised space against one base prototype per disease shared by all crops. At test the image is normalised under every candidate crop, so the disease score depends on the crop. Gains/shifts start at the identity, lambda_identity 0.01 keeps crops with little data (7 crops have one disease) near it.",
+  "_result": "Validation HM 53.16% (per split 49.4/56.2/53.9), +2.3 over v0: just passes the 2-point rule, but within run-to-run noise, and selected at epoch 7 (an early peak; epochs 18-20 average ~52.6%). Test does not confirm it: HM 54.2% (seen 53.0%, unseen 55.4%) vs v0 56.6% (51.7%, 62.4%); unseen disease accuracy fell 62.5% -> 55.6% while seen crop accuracy rose 76% -> 82%. Crop-conditioned normalisation gains on pseudo-unseen validation pairs (drawn from pairs with >= 8 images, i.e. common crops/diseases) but not on the real unseen pairs, several of which involve sparse crops/diseases (cherry/aphis_spp, cucumber).",
+  "version": "aniq_cropnorm_v1",
+  "method": "cnn_crop_norm",
+  "seed": 42,
+  "data": {
+    "_note": "Same splits and 333-pair protocol as the CLIP versions (generalised zero-shot).",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Same backbone and head dropout as aniq_baseline_independent_cnn; the crop network uses exactly these settings, the disease network adds the crop_norm head on the same ResNet-50.",
+    "backbone": "resnet50",
+    "pretrained": true,
+    "head_dropout": 0.3
+  },
+  "input": {
+    "_note": "Images are pre-resized once to shorter side 256 (runs/cache/resized_256) so training is not bottlenecked on decoding 3120 px JPEGs. Train: random resized crop 224. Test: resize 256, centre crop 224. ImageNet mean/std.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "Standard field-robustness augmentation: random resized crop (scale 0.25-1), horizontal and vertical flips (leaf orientation is arbitrary), brightness/contrast/saturation jitter 0.2. No hue jitter: colour is diagnostic (yellow halos, orange rust, purple tints), see the symptom research.",
+    "random_resized_crop_scale": [
+      0.25,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "Cross-entropy with label smoothing 0.1 (long-tailed, noisy labels: median 7 images per pair). For the multi-task model the two head losses are summed with equal weight.",
+    "label_smoothing": 0.1,
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    }
+  },
+  "optimizer": {
+    "_note": "AdamW; backbone 1e-4 (pretrained, small steps), heads 1e-3 (random init), weight decay 0.05. Cosine decay per step over the run.",
+    "lr_backbone": 0.0001,
+    "lr_head": 0.001,
+    "weight_decay": 0.05
+  },
+  "validation": {
+    "_note": "Same validation split procedure and settings as v4.2 (pseudo-unseen pairs held out, healthy excluded, 40 images per held-out pair, real unseen pairs hidden), so gamma is chosen the same way for baselines and the proposed model. gamma_grid is in log-probability units here (pair score = sum of two log-probs), so its range differs from the CLIP versions' cosine units: 0 to 10, step 0.1.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      10.0,
+      0.1
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "As the baseline: batch 32, AMP, max_epochs bounds stage 1, stage 2 refits on all train. The crop CNN's validation log-probs and final fit are cached in runs/cache/crop_net/ and shared by every crop_norm config.",
+    "batch_size": 32,
+    "max_epochs": 20,
+    "final_fit": "all_train"
+  },
+  "evaluation": {
+    "_note": "Pair score = log P(crop) + log P(disease). gamma (subtracted from seen pairs) from validation, in log-probability units.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "4 dataloader workers; images come from the resized cache.",
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 4
+  },
+  "crop_norm": {
+    "_note": "Crop-normalised disease prototypes (dpd/crop_norm.py). transform: none | film | centroid. embed_dim: width of z. init_scale / learn_scale: cosine-logit scale. lambda_reverse: weight of the reverse check 1 - cos(T_c(|n| p_d), z). lambda_consistency: weight of the cross-crop supervised contrastive loss (positives = same disease, different crop; consistency_pairs_per_batch such pairs per batch, temperature consistency_temperature). lambda_identity: L2 penalty keeping FiLM gains/shifts near the identity (film only). centroid_momentum: running-mean momentum (centroid only). shared_backbone: one network with crop head + normalised disease branch instead of a separate crop CNN.",
+    "transform": "film",
+    "embed_dim": 512,
+    "init_scale": 16.0,
+    "learn_scale": true,
+    "lambda_reverse": 0.0,
+    "lambda_consistency": 0.0,
+    "consistency_temperature": 0.1,
+    "consistency_pairs_per_batch": 8,
+    "lambda_identity": 0.01,
+    "centroid_momentum": 0.9,
+    "shared_backbone": false
+  },
+  "output_dir": "runs/cropnorm/aniq_cropnorm_v1"
+}

@@ -56,8 +56,9 @@ def member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs):
         tl.fit(model, lora, fit_df, sorted(set(fit_df["pair_id"])), epochs, mcfg, image_dir, tfs,
                log=lambda r: print(f"  {run_dir.name} epoch {r['epoch']}/{epochs} loss {r['loss']}", flush=True))
         tta = tuple(mcfg["evaluation"].get("tta", ["identity"]))
-        feats = tl.encode(model, tl.loader(val_df, image_dir, tfs[1], mcfg, shuffle=False), "cuda", mcfg["runtime"]["amp"], tta)
-        return tl.pair_scores(model, feats, mcfg["runtime"]["amp"])
+        # Same post-hoc knobs (LoRA scale, primitive fusion) the member's test scores were computed with.
+        return tl.score_all(model, tl.loader(val_df, image_dir, tfs[1], mcfg, shuffle=False), "cuda", mcfg["runtime"]["amp"],
+                            tta, tl.knobs_from_metrics(metrics))
     if method in ("cnn_independent", "cnn_multitask"):
         from dpd.cnn import NETWORKS, build_transforms
         from train import train_cnn as tc
