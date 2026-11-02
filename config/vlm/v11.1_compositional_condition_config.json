@@ -1,6 +1,6 @@
 {
   "_note": "v11.1: v11 with the generator conditioned on [pair, crop, disease] text embeddings (1536 dims) instead of the pair alone, so an unseen pair's condition reuses the crop and disease parts the generator saw with other partners. Single change from v11.",
-  "_result": "",
+  "_result": "Not kept by the rule (+1.5 over v11 < 2), and noisier across splits. Mean validation HM 50.75% (epoch 7, gamma 0.0375; per split 51.37 / 55.54 / 45.32) vs v11 49.25%. Test (reported, not used to decide): HM 59.7% (seen 55.7%, unseen 64.2%), unseen disease 64.4%, unseen-only diagnostic 75.0%.",
   "version": "v11.1",
   "title": "compositional_condition",
   "method": "clip_feature_gen",

@@ -197,6 +197,18 @@ class ClipLoraRunModel(ClipRunModel):
         return bank
 
 
+class FeatureGenLoraRunModel(ClipLoraRunModel):
+    """A feature-generation run (train/train_feature_gen.py) on a LoRA run's features: that run's adapted encoder
+    embeds the image (and the training bank, shared with it), this run's classifier weights score it."""
+
+    def __init__(self, run: dict, pairs):
+        src = PROJECT_ROOT / run["cfg"]["features"]["run"]
+        super().__init__({"dir": src, "cfg": json.loads((src / "config.json").read_text(encoding="utf-8")),
+                          "metrics": json.loads((src / "metrics.json").read_text(encoding="utf-8"))}, pairs)
+        self.pair_emb = np.load(run["dir"] / "pair_text_embeddings.npy")
+        self.gamma = float(run["metrics"].get("gamma", 0.0))
+
+
 class CnnRunModel:
     """A CNN run: score = log P(crop) + log P(disease) from the saved network(s), optionally weighted and logit-adjusted."""
 
@@ -384,6 +396,8 @@ def build_run_model(run: dict, pairs):
         from independent_cnn_baseline.inference import IndependentCnnRunModel
 
         return IndependentCnnRunModel(run, pairs)
+    if run["method"] == "clip_feature_gen" and run["cfg"].get("features", {}).get("source") == "lora_run":
+        return FeatureGenLoraRunModel(run, pairs)
     return model_class(run["method"])(run, pairs)
 
 

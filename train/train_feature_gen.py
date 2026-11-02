@@ -25,7 +25,7 @@ import torch.nn.functional as F
 
 from dpd.clip_utils import build_prompts, display_name, encode_images, encode_prompts, load_clip, load_descriptions
 from dpd.config import load_config, output_dir
-from dpd.data import pair_table, read_metadata
+from dpd.data import PROJECT_ROOT, pair_table, read_metadata
 from dpd.evaluate import evaluate, format_summary
 from dpd.feature_gen import fit_classifier, synthesise, train_gan
 from dpd.report import save_test_outputs
@@ -84,6 +84,49 @@ def fit_pipeline(x, y, trained_ids, target_ids, hidden, pair_emb, cond, cfg, epo
     return fit_classifier(torch.cat([x, xs]), torch.cat([y, ys]), allowed, pair_emb, cfg["classifier"], epochs, on_epoch)
 
 
+def lora_features(fcfg, df, pairs, fit_df=None, split_seed=None) -> dict[str, np.ndarray]:
+    """Image embeddings from a finished train_lora.py run's adapted encoder (features.source "lora_run").
+
+    fit_df None: the run's saved adapters (its final model, trained on all train) encode train and both test sets.
+    Otherwise a validation split: the LoRA run is retrained on `fit_df` (seed `split_seed`, its selected epoch count,
+    like train/ensemble.py) and encodes all training images, so the pseudo-unseen pairs stay unseen by the encoder.
+    Cached in runs/cache/lora_features/.
+    """
+    from dpd.clip_utils import CACHE_DIR, clip_transforms
+    from dpd.lora import set_lora_scale
+    from dpd.resize_cache import ensure_resized
+    from train import train_lora as tl
+
+    run_dir = PROJECT_ROOT / fcfg["run"]
+    mcfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
+    metrics = json.loads((run_dir / "metrics.json").read_text())
+    epochs = metrics["selected_epoch"]
+    cache = CACHE_DIR / "lora_features" / f"{run_dir.name}_{'final' if fit_df is None else f'seed{split_seed}_e{epochs}'}.npz"
+    if cache.exists():
+        return dict(np.load(cache))
+    subsets = {s: df[df["split"] == s] for s in (("train",) if fit_df is not None else ("train", "test_seen", "test_unseen"))}
+    image_dir = ensure_resized(pd.concat(subsets.values())["file"], mcfg["input"]["resize_cache"])
+    tfs = clip_transforms(mcfg["input"], mcfg["augmentation"])
+    device, amp = mcfg["runtime"]["device"], mcfg["runtime"]["amp"]
+    torch.cuda.empty_cache()  # release the previous split's GAN / classifier blocks before training the encoder
+    tl.seed_everything(mcfg["seed"] if fit_df is None else split_seed)
+    model, lora_params = tl.build(mcfg, pairs, device)  # adapters already attached
+    if fit_df is None:
+        model.clip.visual.load_state_dict(torch.load(run_dir / "lora_image_encoder.pt", map_location="cpu"), strict=False)
+    else:
+        print(f"retraining {run_dir.name} for {epochs} epochs on the validation split (seed {split_seed}) to get its features", flush=True)
+        tl.fit(model, lora_params, fit_df, sorted(set(fit_df["pair_id"])), epochs, mcfg, image_dir, tfs,
+               log=lambda r: print(f"  {run_dir.name} epoch {r['epoch']}/{epochs} loss {r['loss']}", flush=True))
+    set_lora_scale(model.clip.visual, metrics.get("lora_scale", 1.0))
+    tta = tuple(mcfg["evaluation"].get("tta", ["identity"]))
+    feats = {s: tl.encode(model, tl.loader(sub, image_dir, tfs[1], mcfg, shuffle=False), device, amp, tta)[0] for s, sub in subsets.items()}
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(cache, **feats)
+    del model
+    torch.cuda.empty_cache()
+    return feats
+
+
 @torch.no_grad()
 def pair_scores(clf, x) -> np.ndarray:
     return (clf(x) / CLIP_SCALE).float().cpu().numpy()
@@ -106,14 +149,24 @@ def main():
     df = read_metadata()
     pairs = pair_table(df)
     clip_model, preprocess, tokenizer = load_clip(cfg["model"], device)
-    feats = {s: encode_images(clip_model, preprocess, df.loc[df["split"] == s, "file"], cfg["model"], runtime, cache_name=s)
-             for s in ("train", "test_seen", "test_unseen")}
     pair_emb_np, cond_np = text_conditions(cfg, clip_model, tokenizer, pairs, device)
     pair_emb, cond = torch.as_tensor(pair_emb_np, device=device), torch.as_tensor(cond_np, device=device)
     print(f"condition: {cfg['condition']['parts']} -> {cond.shape[1]} dims", flush=True)
+    # features.source: "frozen" (the frozen CLIP's cached embeddings) or "lora_run" (a train_lora.py run's adapted
+    # encoder; validation splits retrain it so their features never saw the pseudo-unseen pairs).
+    fcfg = cfg.get("features", {"source": "frozen"})
+    if fcfg["source"] == "frozen":
+        feats = {s: encode_images(clip_model, preprocess, df.loc[df["split"] == s, "file"], cfg["model"], runtime, cache_name=s)
+                 for s in ("train", "test_seen", "test_unseen")}
+    elif fcfg["source"] == "lora_run":
+        del clip_model  # free the GPU for retraining the LoRA run
+        torch.cuda.empty_cache()
+        feats = lora_features(fcfg, df, pairs)
+    else:
+        raise ValueError(f"unknown features.source {fcfg['source']!r}")
     train = df[df["split"] == "train"].copy()
     train["row"] = np.arange(len(train))
-    x_train = torch.as_tensor(feats["train"], device=device)
+    x_final = torch.as_tensor(feats["train"], device=device)
 
     # ---- Stage 1: choose the classifier's epoch count and gamma on validation split(s) ----
     gammas = np.round(np.arange(*vcfg["gamma_grid"]), 6)
@@ -134,6 +187,7 @@ def main():
         trained_ids = sorted(set(fit_df["pair_id"]))
         val_pairs = pairs.assign(is_unseen=~pairs["pair_id"].isin(trained_ids))
         y_vs, y_vu = val_seen["pair_id"].to_numpy(), val_unseen["pair_id"].to_numpy()
+        x_train = x_final if fcfg["source"] == "frozen" else torch.as_tensor(lora_features(fcfg, df, pairs, fit_df, split_seed)["train"], device=device)
         x_vs, x_vu = x_train[val_seen["row"].to_numpy()], x_train[val_unseen["row"].to_numpy()]
 
         def validate(epoch, clf, k=k, val_pairs=val_pairs, y_vs=y_vs, y_vu=y_vu, x_vs=x_vs, x_vu=x_vu):
@@ -168,7 +222,7 @@ def main():
 
     # ---- Stage 2: refit on all train, generating the real unseen pairs ----
     seed_everything(cfg["seed"])
-    clf = fit_pipeline(x_train, torch.as_tensor(train["pair_id"].to_numpy(), device=device), sorted(set(train["pair_id"])),
+    clf = fit_pipeline(x_final, torch.as_tensor(train["pair_id"].to_numpy(), device=device), sorted(set(train["pair_id"])),
                        np.flatnonzero(real_unseen), np.zeros(len(pairs), bool), pair_emb, cond, cfg, best_epoch)
 
     # ---- Test (once) ----

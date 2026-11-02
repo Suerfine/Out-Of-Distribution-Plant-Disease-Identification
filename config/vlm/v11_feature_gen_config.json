@@ -1,6 +1,6 @@
 {
   "_note": "v11 (new branch): feature generation for unseen pairs, f-CLSWGAN (Xian et al., CVPR 2018) on frozen CLIP ViT-B/16 image embeddings. A conditional WGAN-GP learns text embedding -> image embedding on the seen pairs; it then synthesises image features for the unseen pairs from their text alone, and a cosine classifier over all 333 pairs is trained on real seen + synthetic unseen features. No unseen image is used. Compare with v4.2 (same frozen features, learned prompts: val HM 46.6%, test 51.8%); the classifier here is linear in the frozen embedding, so any gain comes from the generated unseen features. Run time: minutes (features are cached).",
-  "_result": "",
+  "_result": "Kept over v4.2 (same frozen features): mean validation HM 49.25% (epoch 17, gamma 0.03; per split 48.63 / 48.83 / 50.28) vs v4.2 46.57%, +2.7. Test (reported, not used to decide): HM 57.8% (seen 55.9%, unseen 59.8%) vs v4.2 51.8% (41.2 / 69.7): the gain is on seen pairs; unseen is lower than v4.2. Uncalibrated test HM 24.2%. Unseen-only diagnostic 71.3%.",
   "version": "v11",
   "title": "feature_gen",
   "method": "clip_feature_gen",

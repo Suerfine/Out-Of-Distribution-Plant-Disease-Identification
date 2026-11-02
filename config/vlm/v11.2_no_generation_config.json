@@ -1,6 +1,6 @@
 {
   "_note": "v11.2: ablation of v11 with synthesis.n_per_unseen 0: the same classifier trained on real seen features only, so the unseen pairs keep their text-initialised weights. The v11 - v11.2 gap is what the generated features add. Single change from v11.",
-  "_result": "",
+  "_result": "Ablation: generation matters. Mean validation HM 37.03% (epoch 3, gamma 0.0975; per split 40.49 / 33.30 / 37.31) vs v11 49.25%, -12.2. The chosen gamma is at the top of the grid (max 0.0975), so this may understate the no-generation classifier slightly. Test (reported, not used to decide): HM 41.9% (seen 48.2%, unseen 37.1%).",
   "version": "v11.2",
   "title": "no_generation",
   "method": "clip_feature_gen",
