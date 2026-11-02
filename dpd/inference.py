@@ -14,7 +14,7 @@ from dpd.data import PROJECT_ROOT, pair_table
 from dpd.evaluate import ranked_indices
 
 RUNS_DIR = PROJECT_ROOT / "runs"
-SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "cnn_independent", "cnn_multitask", "multi_task_cnn", "cnn_crop_norm", "ensemble")
+SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen", "cnn_independent", "cnn_multitask", "multi_task_cnn", "cnn_crop_norm", "ensemble")
 
 
 def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
@@ -366,7 +366,7 @@ class EnsembleRunModel:
 
 def model_class(method: str):
     """ClipRunModel or CnnRunModel; class attributes (logit_scale, score_help) are usable without loading weights."""
-    if method in ("clip_zeroshot", "clip_prompt_learning"):
+    if method in ("clip_zeroshot", "clip_prompt_learning", "clip_feature_gen"):
         return ClipRunModel
     if method == "clip_prompt_lora":
         return ClipLoraRunModel
