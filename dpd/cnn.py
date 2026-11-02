@@ -119,8 +119,18 @@ def build_transforms(input_cfg: dict, aug_cfg: dict):
     cj = aug_cfg["color_jitter"]
     if any(cj.values()):
         train.append(T.ColorJitter(**cj))
+    # Optional stronger augmentation (all off when the keys are absent, so existing configs are unchanged).
+    if aug_cfg.get("rotation_degrees"):
+        train.append(T.RandomRotation(aug_cfg["rotation_degrees"]))
+    if aug_cfg.get("random_grayscale_p"):
+        train.append(T.RandomGrayscale(aug_cfg["random_grayscale_p"]))
+    if aug_cfg.get("gaussian_blur_p"):
+        train.append(T.RandomApply([T.GaussianBlur(kernel_size=9, sigma=(0.1, 2.0))], p=aug_cfg["gaussian_blur_p"]))
+    post = []
+    if aug_cfg.get("random_erasing_p"):
+        post.append(T.RandomErasing(p=aug_cfg["random_erasing_p"], scale=(0.02, 0.2), value=0))
     test = [T.Resize(input_cfg["resize"], interpolation=interp, antialias=True), T.CenterCrop(size)]
-    return T.Compose(train + norm), T.Compose(test + norm)
+    return T.Compose(train + norm + post), T.Compose(test + norm)
 
 
 def log_priors(df) -> dict[str, np.ndarray]:
