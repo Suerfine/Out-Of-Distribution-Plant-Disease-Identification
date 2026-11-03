@@ -1,6 +1,6 @@
 """Disentangled multi-task CNN (Victor's proposed approach), evaluated with the same protocol as every other model.
 
-Usage:  python -m train.train_disentangle --config config/disentangle/victor_disentangle_v1.json
+Usage:  python -m train.train_disentangle --config config/disentangle/<name>.json
 
 method "cnn_disentangle": one backbone, a crop branch and a disease branch, spies behind a gradient reversal layer
 and an optional decorrelation penalty (dpd/disentangle.py). Loss per batch:
