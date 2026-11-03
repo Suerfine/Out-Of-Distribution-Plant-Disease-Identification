@@ -9,10 +9,12 @@ The spies always learn (their accuracy is logged as a leakage measure); adversar
 reversed gradient pushes the branches, so adversarial_weight 0 + decorrelation_weight 0 is the "branches only" control.
 
 Same two stages as train/train_cnn.py: pick (epoch, gamma) on 3 validation splits with pseudo-unseen pairs, then refit
-on all training images for that many epochs and evaluate once on test.
+on all training images for that many epochs and evaluate once on test. Also takes train_cnn.py's optional recipe keys
+(model.drop_path_rate; training.accumulation_steps, gradient_clip, warmup_epochs, min_lr_ratio, lr_schedule_epochs).
 """
 
 import argparse
+import math
 import shutil
 import time
 
@@ -37,7 +39,28 @@ NETWORK = "disentangle_net"
 
 def build_model(cfg, pretrained=None):
     m = cfg["model"]
-    return DisentangledNet(m["backbone"], m["pretrained"] if pretrained is None else pretrained, m["z_dim"], m["spy_hidden"], m["head_dropout"])
+    return DisentangledNet(m["backbone"], m["pretrained"] if pretrained is None else pretrained, m["z_dim"], m["spy_hidden"],
+                           m["head_dropout"], m.get("drop_path_rate", 0.0))
+
+
+def make_scheduler(opt, tcfg, epochs, steps):
+    """Per-optimiser-step learning-rate schedule, same keys and maths as train/train_cnn.py.
+
+    With any of warmup_epochs / min_lr_ratio / lr_schedule_epochs: linear warmup, then cosine down to min_lr_ratio over
+    lr_schedule_epochs (a fixed horizon, so the stage-2 refit follows the learning rates of the first epochs of stage 1).
+    Without them: plain cosine to 0 over this run's length (the older configs)."""
+    if not any(k in tcfg for k in ("warmup_epochs", "min_lr_ratio", "lr_schedule_epochs")):
+        return torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs * steps)
+    warmup, floor = tcfg.get("warmup_epochs", 0) * steps, tcfg.get("min_lr_ratio", 0.0)
+    horizon = tcfg.get("lr_schedule_epochs", epochs) * steps
+
+    def lr_factor(s):
+        if s < warmup:
+            return (s + 1) / warmup
+        t = min(1.0, (s - warmup) / max(1, horizon - warmup))
+        return floor + (1 - floor) * 0.5 * (1 + math.cos(math.pi * t))
+
+    return torch.optim.lr_scheduler.LambdaLR(opt, lr_factor)
 
 
 @torch.no_grad()
@@ -56,7 +79,7 @@ def predict(model, loader, device, amp) -> dict[str, np.ndarray]:
 def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=None):
     """Train one DisentangledNet; if eval_loader is given, return its head log-probs after every epoch."""
     device, amp = cfg["runtime"]["device"], cfg["runtime"]["amp"]
-    ocfg, lcfg, dcfg = cfg["optimizer"], cfg["loss"], cfg["disentangle"]
+    ocfg, lcfg, dcfg, tcfg = cfg["optimizer"], cfg["loss"], cfg["disentangle"], cfg["training"]
     model = build_model(cfg).to(device)
     opt = torch.optim.AdamW(
         [
@@ -66,19 +89,21 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
         weight_decay=ocfg["weight_decay"],
     )
     loader = make_loader(train_df, image_dir, tfs[0], cfg, shuffle=True)
-    total_steps = epochs * len(loader)
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=total_steps)
-    # The adversarial ramp counts in epochs out of max_epochs, so the stage-2 refit applies the same strength at a given
+    # accumulation_steps: physical batch_size x steps = effective batch; gradient_clip: max gradient norm (optional).
+    accum, clip = tcfg.get("accumulation_steps", 1), tcfg.get("gradient_clip")
+    sched = make_scheduler(opt, tcfg, epochs, len(loader) // accum)
+    # The adversarial ramp counts in batches out of max_epochs, so the stage-2 refit applies the same strength at a given
     # epoch as stage 1 did when that epoch was selected (a ramp over the refit's own length reached full strength early).
-    ramp_steps = cfg["training"]["max_epochs"] * len(loader)
+    ramp_steps = tcfg["max_epochs"] * len(loader)
     scaler = torch.amp.GradScaler(device, enabled=amp)
     ls, w = lcfg["label_smoothing"], lcfg["weights"]
     per_epoch, step = [], 0
     for epoch in range(1, epochs + 1):
         model.train()
+        opt.zero_grad(set_to_none=True)  # drops any partial accumulation left from the previous epoch
         t0, n = time.time(), 0
         sums = dict.fromkeys(["loss", "decor", "crop_acc", "disease_acc", "spy_crop_acc", "spy_disease_acc"], 0.0)
-        for x, y_crop, y_dis in loader:
+        for i, (x, y_crop, y_dis) in enumerate(loader):
             x, y_crop, y_dis = x.to(device, non_blocking=True), y_crop.to(device), y_dis.to(device)
             ramp = adversarial_ramp(step / ramp_steps) if dcfg["adversarial_ramp"] else 1.0
             with torch.autocast(device, enabled=amp):
@@ -92,11 +117,15 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
                     + F.cross_entropy(spies["spy_disease"].float(), y_dis)
                     + dcfg["decorrelation_weight"] * decor
                 )
-            opt.zero_grad(set_to_none=True)
-            scaler.scale(loss).backward()
-            scaler.step(opt)
-            scaler.update()
-            sched.step()
+            scaler.scale(loss / accum).backward()
+            if (i + 1) % accum == 0:
+                if clip:
+                    scaler.unscale_(opt)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+                scaler.step(opt)
+                scaler.update()
+                opt.zero_grad(set_to_none=True)
+                sched.step()
             step += 1
             b = len(x)
             n += b

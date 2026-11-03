@@ -64,9 +64,9 @@ class DisentangledNet(nn.Module):
     both behind the GRL. Only the training loop calls spies(); prediction uses the heads alone.
     """
 
-    def __init__(self, backbone: str, pretrained: bool, z_dim: int, spy_hidden: int, dropout: float):
+    def __init__(self, backbone: str, pretrained: bool, z_dim: int, spy_hidden: int, dropout: float, drop_path_rate: float = 0.0):
         super().__init__()
-        self.backbone, dim = build_backbone(backbone, pretrained)
+        self.backbone, dim = build_backbone(backbone, pretrained, drop_path_rate)
         self.crop_branch = _branch(dim, z_dim, dropout)
         self.disease_branch = _branch(dim, z_dim, dropout)
         self.crop_head = nn.Linear(z_dim, HEAD_SIZES["crop"])
