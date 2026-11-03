@@ -702,6 +702,13 @@ def main():
         val=best_val_summary,
         harmonic_mean_top1_gamma0=no_cal["harmonic_mean_top1"]
     )
+    no_cal.update(
+        version=cfg["version"],
+        selected_epoch=best_epoch,
+        best_epoch=best_epoch,
+        val=best_val_summary,
+        harmonic_mean_top1_gamma0=no_cal["harmonic_mean_top1"]
+    )
 
     print("\n================ Test Results (Uncalibrated, gamma=0) ================")
     print(format_summary(no_cal))
@@ -725,6 +732,13 @@ def main():
     print("=" * 65)
 
     save_test_outputs(out, result, scores, labels, files, pairs, gamma)
+    # Save both uncalibrated metrics (metrics.json) and gamma-tuned metrics (metrics_gamma.json)
+    (out / "metrics_gamma.json").write_text(json.dumps(result, indent=2))
+    (out / "metrics.json").write_text(json.dumps(no_cal, indent=2))
+    np.savez_compressed(
+        out / "head_scores.npz",
+        **{f"{s}_{h}_logp": test_logp[s][h] for s in test_logp for h in test_logp[s]}
+    )
     np.save(out / "val_hm_grid.npy", hm_grid)
     ckpt_mgr.cleanup()
     sync_run_to_drive(out, sync_target)

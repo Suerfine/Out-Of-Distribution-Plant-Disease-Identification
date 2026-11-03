@@ -1,0 +1,116 @@
+{
+  "_note": "Nat_multitask_resnetv2_50_v2 (multi-task CNN, trainer train/train_multi_task_cnn.py): BiT (Big Transfer) ResNetV2-50x1 pretrained on ImageNet-21k and fine-tuned on ImageNet-1k (resnetv2_50x1_bit.goog_in21k_ft_in1k via timm) with two linear heads (crop 55, disease 175). Optimized multi-task configuration: patience increased from 8 to 12 with max_epochs increased to 40 to allow full convergence on difficult disease classes; backbone frozen for epoch 1 (freeze_backbone_epochs: 1) for head warm-up; conservative learning rates (lr_backbone 2e-5, lr_head 2e-4, weight_decay 0.05, warmup_epochs 3, min_lr_ratio 0.01); symptom-preserving crop scale [0.5, 1.0]; head_dropout 0.2; label_smoothing 0.1; effective batch size 32 (16 x 2); grad_clip_norm 1.0.",
+  "_result": "Not run yet.",
+  "version": "Nat_multitask_resnetv2_50_v2",
+  "method": "multi_task_cnn",
+  "seed": 42,
+  "data": {
+    "_note": "Evaluation on test seen (2,000) and test unseen (1,448) across all 333 composition pairs.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "BiT ResNetV2-50x1 pretrained backbone with dual linear heads (crop 55, disease 175). Head dropout 0.2 for regularization against long-tail class overfitting.",
+    "backbone": "resnetv2_50x1_bit.goog_in21k_ft_in1k",
+    "pretrained": true,
+    "head_dropout": 0.2
+  },
+  "input": {
+    "_note": "256x256 standardized resized cache with 224x224 center crop for evaluation.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "Symptom-preserving crop scale [0.5, 1.0] avoids cropping out localized disease lesions, with horizontal/vertical flips and subtle color jitter.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "Joint cross-entropy with label smoothing 0.1 on both heads and equal weighting (1.0 / 1.0).",
+    "label_smoothing": 0.1,
+    "weighting": "fixed",
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    },
+    "init_log_var": 0.0
+  },
+  "optimizer": {
+    "_note": "AdamW with conservative learning rates (lr_backbone 2e-5, lr_head 2e-4, weight_decay 0.05) to prevent gradient thrashing between the two task objectives.",
+    "name": "adamw",
+    "lr_backbone": 2e-05,
+    "lr_head": 0.0002,
+    "weight_decay": 0.05,
+    "momentum": 0.9,
+    "nesterov": true
+  },
+  "scheduler": {
+    "_note": "Cosine annealing scheduler with 3 warmup epochs decaying to min_lr_ratio 0.01 over max_epochs.",
+    "name": "cosine",
+    "warmup_epochs": 3,
+    "min_lr_ratio": 0.01,
+    "step_size_epochs": 7,
+    "step_factor": 0.1
+  },
+  "validation": {
+    "_note": "Held-out pseudo-unseen validation (15% split, 20 holdout pairs, max 40 images/pair) sweeping gamma [0.0, 10.0] in 0.1 increments to choose optimal stopping epoch and calibration gamma.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      10.0,
+      0.1
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 1
+  },
+  "training": {
+    "_note": "Patience increased to 12 with max_epochs increased to 40 so the model has enough headroom to escape local plateaus and refine disease feature representations. Head warm-up via freeze_backbone_epochs: 1 protects pretrained BiT weights from initial gradient shocks. Effective batch size 32 (16 x 2). Gradient clipping at 1.0.",
+    "batch_size": 16,
+    "max_epochs": 40,
+    "final_fit": "all_train",
+    "freeze_backbone_epochs": 1,
+    "accum_steps": 2,
+    "grad_clip_norm": 1.0,
+    "early_stopping": {
+      "patience": 12,
+      "min_epochs": 5
+    },
+    "refit_schedule": "compress"
+  },
+  "evaluation": {
+    "_note": "Standard DPD benchmark metrics: Top-1, Top-5, per-class means, and Harmonic Mean (HM).",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "AMP mixed precision on CUDA with 4 workers. Periodic checkpoints every 5 epochs for resume support.",
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 4,
+    "checkpoint_every_n_epochs": 5,
+    "keep_checkpoints": false
+  },
+  "output_dir": "runs/multitask/Nat_multitask_resnetv2_50_v2"
+}
