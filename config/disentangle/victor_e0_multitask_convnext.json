@@ -91,10 +91,10 @@
     ]
   },
   "runtime": {
-    "_note": "4 dataloader workers; images come from the resized cache.",
+    "_note": "2 dataloader workers (4 ran out of RAM on the 16 GB laptop: train and validation loaders each keep their workers alive); images come from the resized cache.",
     "device": "cuda",
     "amp": true,
-    "num_workers": 4
+    "num_workers": 2
   },
   "output_dir": "runs/disentangle/victor_e0_multitask_convnext"
 }
