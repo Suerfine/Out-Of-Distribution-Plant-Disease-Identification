@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from dpd.data import pair_table
-from dpd.evaluate import evaluate
+from dpd.evaluate import ausuc, evaluate, seen_unseen_curve
 from dpd.inference import list_runs
 from dpd.ui import KIND, OUTCOMES, backbone, best_run_index, load_metadata, run_label, test_predictions
 
@@ -29,6 +29,17 @@ def top1_breakdown(run_dir: str, gamma: float) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+@st.cache_data(max_entries=64)
+def tradeoff(run_dir: str) -> tuple[pd.DataFrame, float]:
+    """The run's seen-unseen curve over every calibration gamma (thinned to at most 400 points for plotting) and
+    its AUSUC, both from the saved test scores.npz."""
+    z = np.load(Path(run_dir) / "scores.npz")
+    curve = seen_unseen_curve(z["test_seen_scores"], z["test_seen_labels"], z["test_unseen_scores"], z["test_unseen_labels"],
+                              pair_table(load_metadata()))
+    keep = np.unique(np.linspace(0, len(curve) - 1, 400).round().astype(int))
+    return curve.iloc[keep].reset_index(drop=True), ausuc(curve)
+
+
 runs = list_runs()
 if not runs:
     st.info("No finished runs in `runs/`. Train or evaluate a model first.", title="No model yet", icon=":material/model_training:")
@@ -38,7 +49,7 @@ pct = lambda label, **kw: st.column_config.ProgressColumn(label, format="percent
 gamma_of = lambda r: float(r["metrics"].get("gamma", 0.0))
 
 # runs/<family> folder -> label; anything else (runs/baseline) is a baseline.
-FAMILY_LABELS = {"vlm": "proposed (VLM)", "cnn": "proposed (CNN)"}
+FAMILY_LABELS = {"vlm": "proposed (VLM)", "cnn": "proposed (CNN)", "cropnorm": "proposed (crop norm)"}
 
 table = pd.DataFrame(
     [
@@ -50,6 +61,7 @@ table = pd.DataFrame(
             "seen_top1": r["metrics"]["test_seen"]["top1"],
             "unseen_top1": r["metrics"]["test_unseen"]["top1"],
             "hm_top1": r["metrics"]["harmonic_mean_top1"],
+            "ausuc": tradeoff(str(r["dir"]))[1],
             "seen_top5": r["metrics"]["test_seen"]["top5"],
             "unseen_top5": r["metrics"]["test_unseen"]["top5"],
             "hm_top5": r["metrics"]["harmonic_mean_top5"],
@@ -120,6 +132,42 @@ with c2, st.container(border=True):
     st.caption("Top-right is best. The harmonic mean rewards models that do well on both, not just one.")
 
 with st.container(border=True):
+    st.markdown("**Seen / unseen trade-off over every calibration γ (AUSUC)**")
+    by_hm = table.sort_values("hm_top1", ascending=False)
+    default = list(dict.fromkeys([*by_hm["model"].head(3), *by_hm.loc[by_hm["family"] == "baseline", "model"].head(1)]))
+    picked = st.multiselect("Models", by_hm["model"].tolist(), default=default, key="dash_ausuc_models")
+    if picked:
+        dirs = {r["version"]: str(r["dir"]) for r in runs}
+        auc = {m: tradeoff(dirs[m])[1] for m in picked}
+        name = lambda m: f"{m} (AUSUC {auc[m]:.3f})"
+        curves = pd.concat([tradeoff(dirs[m])[0].assign(model=name(m)) for m in picked])
+        chosen = table[table["model"].isin(picked)].assign(model=lambda d: d["model"].map(name))
+        color = alt.Color("model:N", title=None, sort=[name(m) for m in picked], legend=alt.Legend(orient="top", labelLimit=320))
+        axes = dict(
+            x=alt.X("seen:Q", title="Seen Top-1", axis=alt.Axis(format="%"), scale=alt.Scale(domain=[0, 1])),
+            y=alt.Y("unseen:Q", title="Unseen Top-1", axis=alt.Axis(format="%"), scale=alt.Scale(domain=[0, 1])),
+        )
+        lines = alt.Chart(curves).mark_line(interpolate="step-after").encode(
+            **axes, color=color, order="gamma:Q",
+            tooltip=["model", alt.Tooltip("gamma:Q", format=".4f", title="γ"),
+                     alt.Tooltip("seen:Q", format=".1%"), alt.Tooltip("unseen:Q", format=".1%")],
+        )
+        dots = alt.Chart(chosen.rename(columns={"seen_top1": "seen", "unseen_top1": "unseen"})).mark_point(
+            size=110, filled=True, stroke="white", strokeWidth=1).encode(
+            **axes, color=color,
+            tooltip=["model", alt.Tooltip("gamma:Q", format=".4f", title="validation γ"),
+                     alt.Tooltip("seen:Q", format=".1%"), alt.Tooltip("unseen:Q", format=".1%"),
+                     alt.Tooltip("hm_top1:Q", format=".1%", title="HM Top-1")],
+        )
+        st.altair_chart(alt.layer(lines, dots).properties(height=380),
+                        alt="Seen against unseen Top-1 for each selected model as calibration gamma varies")
+    st.caption("Each line sweeps the calibration γ from favouring seen pairs (right, unseen 0%) to favouring unseen "
+               "pairs (top, seen 0%); the dot is the model's reported operating point (γ chosen on validation), whose "
+               "harmonic mean is the headline number. **AUSUC** is the area under the line: 1 means perfect on both at "
+               "once, and it does not depend on the chosen γ. Unseen Top-1 is a 10-pair problem once an image is "
+               "assigned to the unseen side, while seen is 323 pairs, so the curves reach higher on the unseen axis.")
+
+with st.container(border=True):
     st.markdown("**How each model's test predictions go wrong**")
     split_pick = st.segmented_control(
         "Test split", ["Both", "Seen", "Unseen"], default="Both", required=True, key="dash_outcome_split"
@@ -163,6 +211,8 @@ with st.container(border=True):
             "seen_top1": pct("Seen Top-1"),
             "unseen_top1": pct("Unseen Top-1"),
             "hm_top1": pct("HM Top-1"),
+            "ausuc": st.column_config.NumberColumn("AUSUC", format="%.3f",
+                                                   help="Area under the seen-unseen Top-1 curve over every calibration γ; independent of the chosen γ"),
             "seen_top5": pct("Seen Top-5"),
             "unseen_top5": pct("Unseen Top-5"),
             "hm_top5": pct("HM Top-5"),

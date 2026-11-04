@@ -26,8 +26,17 @@ NETWORKS = {
 }
 
 
-def build_backbone(name: str, pretrained: bool):
-    """Feature extractor (classifier removed) and its output width."""
+def build_backbone(name: str, pretrained: bool, drop_path_rate: float = 0.0):
+    """Feature extractor (classifier removed) and its output width.
+
+    "timm:<model>" loads any timm model with its pooled features (e.g. "timm:convnext_base.fb_in22k_ft_in1k",
+    ImageNet-22k pretraining); drop_path_rate (stochastic depth) applies to timm models only.
+    """
+    if name.startswith("timm:"):
+        import timm
+
+        net = timm.create_model(name[len("timm:"):], pretrained=pretrained, num_classes=0, drop_path_rate=drop_path_rate)
+        return net, net.num_features
     if name in ("resnet18", "resnet34"):
         fn = getattr(torchvision.models, name)
         net = fn(weights="IMAGENET1K_V1" if pretrained else None)
@@ -69,9 +78,9 @@ def build_backbone(name: str, pretrained: bool):
 class MultiHeadNet(nn.Module):
     """Shared backbone, one linear head per target. One head = a single-task CNN; two heads = multi-task."""
 
-    def __init__(self, backbone: str, pretrained: bool, heads: dict[str, int], dropout: float):
+    def __init__(self, backbone: str, pretrained: bool, heads: dict[str, int], dropout: float, drop_path_rate: float = 0.0):
         super().__init__()
-        self.backbone, dim = build_backbone(backbone, pretrained)
+        self.backbone, dim = build_backbone(backbone, pretrained, drop_path_rate)
         self.heads = nn.ModuleDict({k: nn.Sequential(nn.Dropout(dropout), nn.Linear(dim, n)) for k, n in heads.items()})
 
     def forward(self, x):
@@ -100,7 +109,9 @@ class ImageLabels(Dataset):
 def build_transforms(input_cfg: dict, aug_cfg: dict):
     norm = [T.ToImage(), T.ToDtype(torch.float32, scale=True), T.Normalize(IMAGENET_MEAN, IMAGENET_STD)]
     size = input_cfg["crop_size"]
-    train = [T.RandomResizedCrop(size, scale=tuple(aug_cfg["random_resized_crop_scale"]), antialias=True)]
+    # Resampling for crops and resizes; bilinear is torchvision's default (ConvNeXt was pretrained with bicubic).
+    interp = T.InterpolationMode[input_cfg.get("interpolation", "bilinear").upper()]
+    train = [T.RandomResizedCrop(size, scale=tuple(aug_cfg["random_resized_crop_scale"]), interpolation=interp, antialias=True)]
     if aug_cfg["horizontal_flip_p"]:
         train.append(T.RandomHorizontalFlip(aug_cfg["horizontal_flip_p"]))
     if aug_cfg["vertical_flip_p"]:
@@ -108,8 +119,18 @@ def build_transforms(input_cfg: dict, aug_cfg: dict):
     cj = aug_cfg["color_jitter"]
     if any(cj.values()):
         train.append(T.ColorJitter(**cj))
-    test = [T.Resize(input_cfg["resize"], antialias=True), T.CenterCrop(size)]
-    return T.Compose(train + norm), T.Compose(test + norm)
+    # Optional stronger augmentation (all off when the keys are absent, so existing configs are unchanged).
+    if aug_cfg.get("rotation_degrees"):
+        train.append(T.RandomRotation(aug_cfg["rotation_degrees"]))
+    if aug_cfg.get("random_grayscale_p"):
+        train.append(T.RandomGrayscale(aug_cfg["random_grayscale_p"]))
+    if aug_cfg.get("gaussian_blur_p"):
+        train.append(T.RandomApply([T.GaussianBlur(kernel_size=9, sigma=(0.1, 2.0))], p=aug_cfg["gaussian_blur_p"]))
+    post = []
+    if aug_cfg.get("random_erasing_p"):
+        post.append(T.RandomErasing(p=aug_cfg["random_erasing_p"], scale=(0.02, 0.2), value=0))
+    test = [T.Resize(input_cfg["resize"], interpolation=interp, antialias=True), T.CenterCrop(size)]
+    return T.Compose(train + norm + post), T.Compose(test + norm)
 
 
 def log_priors(df) -> dict[str, np.ndarray]:

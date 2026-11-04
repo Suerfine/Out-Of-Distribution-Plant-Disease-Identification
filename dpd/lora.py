@@ -28,9 +28,10 @@ class LoRADelta(nn.Module):
         self.B = nn.Parameter(torch.zeros(out_features, rank))
         nn.init.kaiming_uniform_(self.A, a=math.sqrt(5))
         self.scale = alpha / rank
+        self.multiplier = 1.0  # set_lora_scale: 0 = frozen CLIP, 1 = the trained update
 
     def forward(self, W):
-        return W + (self.B @ self.A).to(W.dtype) * self.scale
+        return W + (self.B @ self.A).to(W.dtype) * (self.scale * self.multiplier)
 
 
 def apply_lora(visual, last_n_blocks: int, rank: int, alpha: float, targets: list[str]) -> list[nn.Parameter]:
@@ -48,6 +49,14 @@ def apply_lora(visual, last_n_blocks: int, rank: int, alpha: float, targets: lis
             parametrize.register_parametrization(module, name, delta)
             params += [delta.A, delta.B]
     return params
+
+
+def set_lora_scale(visual, s: float):
+    """Scale every LoRA update in `visual` by s (W + s * delta), e.g. to interpolate toward the frozen model.
+    Parametrizations recompute the weight on every forward, so this takes effect immediately."""
+    for m in visual.modules():
+        if isinstance(m, LoRADelta):
+            m.multiplier = float(s)
 
 
 def lora_state(visual) -> dict:

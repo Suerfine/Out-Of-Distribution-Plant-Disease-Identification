@@ -104,6 +104,34 @@ def hm_top1_over_gammas(scores_seen, labels_seen, scores_unseen, labels_unseen, 
     return np.where(a + b > 0, 2 * a * b / np.maximum(a + b, 1e-12), 0.0)
 
 
+def seen_unseen_curve(scores_seen, labels_seen, scores_unseen, labels_unseen, pairs: pd.DataFrame) -> pd.DataFrame:
+    """Seen and unseen Top-1 at every calibration gamma where a prediction changes (Chao et al., 2016).
+
+    An image switches from its best seen pair to its best unseen pair once gamma exceeds (best seen - best unseen),
+    so those per-image gaps are the only gammas where accuracy can change; one extra point on each side of them
+    gives the ends. Rows run from all-seen (unseen Top-1 0) to all-unseen (seen Top-1 0).
+    """
+    unseen_mask = pairs["is_unseen"].to_numpy()
+
+    def gaps(s):
+        return s[:, ~unseen_mask].max(axis=1) - s[:, unseen_mask].max(axis=1)
+
+    g = np.unique(np.concatenate([gaps(scores_seen), gaps(scores_unseen)]))
+    g = np.concatenate([[g[0] - 1.0], g, [g[-1] + 1.0]])
+    return pd.DataFrame({
+        "gamma": g,
+        "seen": top1_over_gammas(scores_seen, labels_seen, unseen_mask, g),
+        "unseen": top1_over_gammas(scores_unseen, labels_unseen, unseen_mask, g),
+    })
+
+
+def ausuc(curve: pd.DataFrame) -> float:
+    """Area under the seen-unseen curve (x seen Top-1, y unseen Top-1, trapezoid rule): 1 for a model that is perfect
+    on both at once. Independent of the chosen gamma, unlike the harmonic mean, which is one point on the curve."""
+    c = curve.sort_values(["seen", "unseen"])
+    return float(np.trapezoid(c["unseen"], c["seen"]))
+
+
 def seen_confusion_matrix(scores_seen: np.ndarray, labels_seen: np.ndarray, pairs: pd.DataFrame, gamma: float = 0.0) -> pd.DataFrame:
     """Counts with rows = true seen pair, columns = predicted pair (all 333), labelled by pair name."""
     pred = calibrate(scores_seen, pairs["is_unseen"].to_numpy(), gamma).argmax(axis=1)

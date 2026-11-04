@@ -1,6 +1,7 @@
 """Disentangled multi-task CNN (Victor's proposed approach), evaluated with the same protocol as every other model.
 
-Usage:  python -m train.train_disentangle --config config/disentangle/victor_disentangle_v1.json
+Usage:  python -m train.train_disentangle --config config/disentangle/<name>.json [--resume]
+(--resume: after a crash, skip the validation splits that finished; see main().)
 
 method "cnn_disentangle": one backbone, a crop branch and a disease branch, spies behind a gradient reversal layer
 and an optional decorrelation penalty (dpd/disentangle.py). Loss per batch:
@@ -9,10 +10,12 @@ The spies always learn (their accuracy is logged as a leakage measure); adversar
 reversed gradient pushes the branches, so adversarial_weight 0 + decorrelation_weight 0 is the "branches only" control.
 
 Same two stages as train/train_cnn.py: pick (epoch, gamma) on 3 validation splits with pseudo-unseen pairs, then refit
-on all training images for that many epochs and evaluate once on test.
+on all training images for that many epochs and evaluate once on test. Also takes train_cnn.py's optional recipe keys
+(model.drop_path_rate; training.accumulation_steps, gradient_clip, warmup_epochs, min_lr_ratio, lr_schedule_epochs).
 """
 
 import argparse
+import math
 import shutil
 import time
 
@@ -37,7 +40,28 @@ NETWORK = "disentangle_net"
 
 def build_model(cfg, pretrained=None):
     m = cfg["model"]
-    return DisentangledNet(m["backbone"], m["pretrained"] if pretrained is None else pretrained, m["z_dim"], m["spy_hidden"], m["head_dropout"])
+    return DisentangledNet(m["backbone"], m["pretrained"] if pretrained is None else pretrained, m["z_dim"], m["spy_hidden"],
+                           m["head_dropout"], m.get("drop_path_rate", 0.0))
+
+
+def make_scheduler(opt, tcfg, epochs, steps):
+    """Per-optimiser-step learning-rate schedule, same keys and maths as train/train_cnn.py.
+
+    With any of warmup_epochs / min_lr_ratio / lr_schedule_epochs: linear warmup, then cosine down to min_lr_ratio over
+    lr_schedule_epochs (a fixed horizon, so the stage-2 refit follows the learning rates of the first epochs of stage 1).
+    Without them: plain cosine to 0 over this run's length (the older configs)."""
+    if not any(k in tcfg for k in ("warmup_epochs", "min_lr_ratio", "lr_schedule_epochs")):
+        return torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs * steps)
+    warmup, floor = tcfg.get("warmup_epochs", 0) * steps, tcfg.get("min_lr_ratio", 0.0)
+    horizon = tcfg.get("lr_schedule_epochs", epochs) * steps
+
+    def lr_factor(s):
+        if s < warmup:
+            return (s + 1) / warmup
+        t = min(1.0, (s - warmup) / max(1, horizon - warmup))
+        return floor + (1 - floor) * 0.5 * (1 + math.cos(math.pi * t))
+
+    return torch.optim.lr_scheduler.LambdaLR(opt, lr_factor)
 
 
 @torch.no_grad()
@@ -56,7 +80,7 @@ def predict(model, loader, device, amp) -> dict[str, np.ndarray]:
 def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=None):
     """Train one DisentangledNet; if eval_loader is given, return its head log-probs after every epoch."""
     device, amp = cfg["runtime"]["device"], cfg["runtime"]["amp"]
-    ocfg, lcfg, dcfg = cfg["optimizer"], cfg["loss"], cfg["disentangle"]
+    ocfg, lcfg, dcfg, tcfg = cfg["optimizer"], cfg["loss"], cfg["disentangle"], cfg["training"]
     model = build_model(cfg).to(device)
     opt = torch.optim.AdamW(
         [
@@ -66,19 +90,21 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
         weight_decay=ocfg["weight_decay"],
     )
     loader = make_loader(train_df, image_dir, tfs[0], cfg, shuffle=True)
-    total_steps = epochs * len(loader)
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=total_steps)
-    # The adversarial ramp counts in epochs out of max_epochs, so the stage-2 refit applies the same strength at a given
+    # accumulation_steps: physical batch_size x steps = effective batch; gradient_clip: max gradient norm (optional).
+    accum, clip = tcfg.get("accumulation_steps", 1), tcfg.get("gradient_clip")
+    sched = make_scheduler(opt, tcfg, epochs, len(loader) // accum)
+    # The adversarial ramp counts in batches out of max_epochs, so the stage-2 refit applies the same strength at a given
     # epoch as stage 1 did when that epoch was selected (a ramp over the refit's own length reached full strength early).
-    ramp_steps = cfg["training"]["max_epochs"] * len(loader)
+    ramp_steps = tcfg["max_epochs"] * len(loader)
     scaler = torch.amp.GradScaler(device, enabled=amp)
     ls, w = lcfg["label_smoothing"], lcfg["weights"]
     per_epoch, step = [], 0
     for epoch in range(1, epochs + 1):
         model.train()
+        opt.zero_grad(set_to_none=True)  # drops any partial accumulation left from the previous epoch
         t0, n = time.time(), 0
         sums = dict.fromkeys(["loss", "decor", "crop_acc", "disease_acc", "spy_crop_acc", "spy_disease_acc"], 0.0)
-        for x, y_crop, y_dis in loader:
+        for i, (x, y_crop, y_dis) in enumerate(loader):
             x, y_crop, y_dis = x.to(device, non_blocking=True), y_crop.to(device), y_dis.to(device)
             ramp = adversarial_ramp(step / ramp_steps) if dcfg["adversarial_ramp"] else 1.0
             with torch.autocast(device, enabled=amp):
@@ -92,11 +118,15 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
                     + F.cross_entropy(spies["spy_disease"].float(), y_dis)
                     + dcfg["decorrelation_weight"] * decor
                 )
-            opt.zero_grad(set_to_none=True)
-            scaler.scale(loss).backward()
-            scaler.step(opt)
-            scaler.update()
-            sched.step()
+            scaler.scale(loss / accum).backward()
+            if (i + 1) % accum == 0:
+                if clip:
+                    scaler.unscale_(opt)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+                scaler.step(opt)
+                scaler.update()
+                opt.zero_grad(set_to_none=True)
+                sched.step()
             step += 1
             b = len(x)
             n += b
@@ -117,6 +147,8 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
+    parser.add_argument("--resume", action="store_true",
+                        help="reuse validation splits already finished by an earlier run of this config (val_hm_split<k>.npy)")
     args = parser.parse_args()
     cfg = load_config(args.config)
     assert cfg["method"] == METHOD, f"{args.config} is a '{cfg['method']}' config"
@@ -124,6 +156,11 @@ def main():
     if runtime["device"] == "cuda" and not torch.cuda.is_available():
         raise SystemExit("Config asks for cuda but torch.cuda.is_available() is False.")
     out = output_dir(cfg)
+    if args.resume and (out / "config.json").exists() and load_config(out / "config.json") != cfg:
+        raise SystemExit(f"--resume: {args.config} differs from the config of the earlier run in {out}")
+    if not args.resume:
+        for f in out.glob("val_hm_split*.npy"):
+            f.unlink()  # stale splits from an earlier run must not leak into this one
     shutil.copy(args.config, out / "config.json")
 
     df = read_metadata()
@@ -146,7 +183,17 @@ def main():
     hidden = pairs["is_unseen"].to_numpy() if vcfg["exclude_real_unseen_from_label_space"] else np.zeros(len(pairs), bool)
     n_splits = vcfg.get("n_splits", 1)
     hm_grid = np.zeros((n_splits, tcfg["max_epochs"], len(gammas)))
+    # Each finished split saves its grid, so a crash costs only the split in progress (--resume skips the saved ones).
+    # Every split reseeds with seed + k, so a resumed run trains the remaining splits exactly as an unbroken run would.
+    done = [k for k in range(n_splits) if (out / f"val_hm_split{k + 1}.npy").exists()]
+    if done:
+        history[:] = [r for r in pd.read_csv(out / "history.csv").to_dict("records")
+                      if r["stage"] in {f"split{k + 1}/{NETWORK}" for k in done}]
     for k in range(n_splits):
+        if k in done:
+            hm_grid[k] = np.load(out / f"val_hm_split{k + 1}.npy")
+            print(f"validation split {k + 1}/{n_splits}: loaded from the earlier run", flush=True)
+            continue
         split_seed = cfg["seed"] + k
         fit_df, val_seen, val_unseen, _ = make_validation_split(
             train, vcfg["n_holdout_pairs"], vcfg["min_holdout_images"], vcfg["val_fraction"], split_seed,
@@ -165,6 +212,7 @@ def main():
             hm_grid[k, e] = [evaluate(s[:n_vs], y_vs, s[n_vs:], y_vu, val_pairs, g, (1,))["harmonic_mean_top1"] for g in gammas]
             print(f"split {k + 1} epoch {e + 1}: val HM {hm_grid[k, e, 0]:.2%} at gamma 0, best {hm_grid[k, e].max():.2%} "
                   f"at gamma {gammas[hm_grid[k, e].argmax()]}", flush=True)
+        np.save(out / f"val_hm_split{k + 1}.npy", hm_grid[k])
     mean_grid = hm_grid.mean(axis=0)
     e, g = np.unravel_index(mean_grid.argmax(), mean_grid.shape)
     best_epoch, gamma = int(e) + 1, float(gammas[g])

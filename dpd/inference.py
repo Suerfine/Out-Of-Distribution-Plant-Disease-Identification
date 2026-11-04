@@ -14,7 +14,7 @@ from dpd.data import PROJECT_ROOT, pair_table
 from dpd.evaluate import ranked_indices
 
 RUNS_DIR = PROJECT_ROOT / "runs"
-SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "cnn_independent", "cnn_multitask", "multi_task_cnn", "ensemble")
+SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen", "cnn_independent", "cnn_multitask", "multi_task_cnn", "cnn_crop_norm", "ensemble")
 
 
 def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
@@ -122,7 +122,7 @@ class ClipLoraRunModel(ClipRunModel):
 
     def __init__(self, run: dict, pairs):
         from dpd.clip_utils import clip_transforms
-        from dpd.lora import load_lora
+        from dpd.lora import load_lora, set_lora_scale
 
         super().__init__(run, pairs)
         cfg = run["cfg"]
@@ -136,6 +136,13 @@ class ClipLoraRunModel(ClipRunModel):
         if self.patch:
             self.disease_emb = torch.as_tensor(np.load(run["dir"] / "disease_text_embeddings.npy"), device=device())
             self.pair_disease = pairs["disease_id"].to_numpy()
+        # Post-hoc knobs (v9+, evaluation.posthoc): LoRA scale and crop / disease fusion weights chosen on validation.
+        m = run["metrics"]
+        set_lora_scale(self.clip.visual, m.get("lora_scale", 1.0))
+        self.fusion = (m.get("fusion_crop_weight", 0.0), m.get("fusion_disease_weight", 0.0))
+        if any(self.fusion):
+            self.crop_text = np.load(run["dir"] / "crop_text_embeddings.npy") if self.fusion[0] else None
+            self.disease_text = np.load(run["dir"] / "disease_text_embeddings.npy") if self.fusion[1] else None
 
     @torch.no_grad()
     def _encode(self, x, with_patch=False):
@@ -161,7 +168,15 @@ class ClipLoraRunModel(ClipRunModel):
 
         emb, patch = self._encode(self.transform(standardise(src, self.run["cfg"]["input"]["resize_cache"])).unsqueeze(0), with_patch=True)
         lam = self.patch["lambda"] if self.patch else 0.0
-        return emb[0], combine((emb @ self.pair_emb.T), patch, getattr(self, "pair_disease", None), lam)[0]
+        scores = combine((emb @ self.pair_emb.T), patch, getattr(self, "pair_disease", None), lam)
+        if any(self.fusion):
+            from dpd.fusion import fuse
+
+            a, b = self.fusion
+            crop = emb @ self.crop_text.T if a else None
+            dis = emb @ self.disease_text.T if b else None
+            scores = fuse(scores, crop, dis, self.pairs["crop_id"].to_numpy(), self.pairs["disease_id"].to_numpy(), a, b)
+        return emb[0], scores[0]
 
     def train_bank(self, train) -> np.ndarray:
         """Adapted-encoder embeddings of every training image, computed once and saved in the run folder."""
@@ -182,6 +197,18 @@ class ClipLoraRunModel(ClipRunModel):
         return bank
 
 
+class FeatureGenLoraRunModel(ClipLoraRunModel):
+    """A feature-generation run (train/train_feature_gen.py) on a LoRA run's features: that run's adapted encoder
+    embeds the image (and the training bank, shared with it), this run's classifier weights score it."""
+
+    def __init__(self, run: dict, pairs):
+        src = PROJECT_ROOT / run["cfg"]["features"]["run"]
+        super().__init__({"dir": src, "cfg": json.loads((src / "config.json").read_text(encoding="utf-8")),
+                          "metrics": json.loads((src / "metrics.json").read_text(encoding="utf-8"))}, pairs)
+        self.pair_emb = np.load(run["dir"] / "pair_text_embeddings.npy")
+        self.gamma = float(run["metrics"].get("gamma", 0.0))
+
+
 class CnnRunModel:
     """A CNN run: score = log P(crop) + log P(disease) from the saved network(s), optionally weighted and logit-adjusted."""
 
@@ -189,7 +216,19 @@ class CnnRunModel:
     score_help = "log P(crop) + log P(disease) (weighted and logit-adjusted if the run chose so), after calibration"
 
     def __init__(self, run: dict, pairs):
-        from dpd.cnn import HEAD_SIZES, NETWORKS, MultiHeadNet, build_transforms
+        from dpd.cnn import HEAD_SIZES, NETWORKS, MultiHeadNet
+
+        self._load_scoring(run, pairs)
+        cfg = run["cfg"]
+        self.nets = {}
+        for name, heads in NETWORKS[cfg["method"]].items():
+            net = MultiHeadNet(cfg["model"]["backbone"], False, {h: HEAD_SIZES[h] for h in heads}, cfg["model"]["head_dropout"])
+            net.load_state_dict(torch.load(run["dir"] / f"{name}.pt", map_location="cpu"))
+            self.nets[name] = net.to(device()).eval()
+
+    def _load_scoring(self, run: dict, pairs):
+        """Gamma, crop weight, tau (and the training log prior it needs) from metrics.json, and the test transform."""
+        from dpd.cnn import build_transforms
 
         self.run, self.pairs = run, pairs
         self.gamma = float(run["metrics"].get("gamma", 0.0))
@@ -205,11 +244,6 @@ class CnnRunModel:
             self.log_prior = None
         cfg = run["cfg"]
         self.transform = build_transforms(cfg["input"], cfg["augmentation"])[1]
-        self.nets = {}
-        for name, heads in NETWORKS[cfg["method"]].items():
-            net = MultiHeadNet(cfg["model"]["backbone"], False, {h: HEAD_SIZES[h] for h in heads}, cfg["model"]["head_dropout"])
-            net.load_state_dict(torch.load(run["dir"] / f"{name}.pt", map_location="cpu"))
-            self.nets[name] = net.to(device()).eval()
 
     @torch.no_grad()
     def _forward(self, x):
@@ -254,6 +288,59 @@ class CnnRunModel:
         return bank
 
 
+class CropNormRunModel(CnnRunModel):
+    """A crop-normalisation run (train/train_crop_norm.py): log P(crop) + log P(disease | image normalised for that crop),
+    from the crop CNN (or the shared network's crop head) and the crop-normalised disease network."""
+
+    score_help = "log P(crop) + log P(disease | image normalised for that crop) (weighted if the run chose so), after calibration"
+
+    def __init__(self, run: dict, pairs):
+        from dpd.cnn import HEAD_SIZES, MultiHeadNet
+        from dpd.crop_norm import CropNormNet
+
+        self._load_scoring(run, pairs)
+        cfg = run["cfg"]
+        mcfg = cfg["model"]
+        self.disease_net = CropNormNet(mcfg["backbone"], False, cfg["crop_norm"], mcfg["head_dropout"])
+        self.disease_net.load_state_dict(torch.load(run["dir"] / "disease_net.pt", map_location="cpu"))
+        self.disease_net = self.disease_net.to(device()).eval()
+        self.crop_net = None
+        if not cfg["crop_norm"]["shared_backbone"]:
+            self.crop_net = MultiHeadNet(mcfg["backbone"], False, {"crop": HEAD_SIZES["crop"]}, mcfg["head_dropout"])
+            self.crop_net.load_state_dict(torch.load(run["dir"] / "crop_net.pt", map_location="cpu"))
+            self.crop_net = self.crop_net.to(device()).eval()
+
+    @torch.no_grad()
+    def _forward(self, x):
+        """Concatenated L2-normalised backbone features, and (crop log-probs, disease logits under every crop)."""
+        dn = self.disease_net
+        with torch.autocast(device(), enabled=device() == "cuda"):
+            f = dn.backbone(x)
+            z = dn.proj(f).float()
+            feats = [f.float()]
+            if self.crop_net is not None:
+                fc = self.crop_net.backbone(x)
+                feats.insert(0, fc.float())
+                crop_logits = self.crop_net.heads["crop"](fc)
+            else:
+                crop_logits = dn.crop_head(f)
+        with torch.autocast(device(), enabled=False):
+            dis_logits = dn.disease_logits(dn.normalise(z))
+        emb = torch.nn.functional.normalize(torch.cat([torch.nn.functional.normalize(v, dim=-1) for v in feats], dim=-1), dim=-1)
+        logp_crop = torch.log_softmax(crop_logits.float(), dim=-1)
+        return emb.cpu().numpy(), (logp_crop.cpu().numpy(), dis_logits.cpu().numpy())
+
+    def predict(self, src):
+        """(retrieval embedding, uncalibrated score per pair) for an image path or file-like object."""
+        from dpd.crop_norm import compose_pair_scores
+        from dpd.resize_cache import standardise
+
+        x = self.transform(standardise(src, self.run["cfg"]["input"]["resize_cache"])).unsqueeze(0).to(device())
+        emb, (logp_crop, dis_logits) = self._forward(x)
+        scores = compose_pair_scores(logp_crop, dis_logits, self.pairs, self.crop_weight, self.tau, self.log_prior)
+        return emb[0], scores[0]
+
+
 def member_run(path: str) -> dict:
     """A run dict (as list_runs builds) for an ensemble member given its folder relative to the project root."""
     d = PROJECT_ROOT / path
@@ -291,12 +378,14 @@ class EnsembleRunModel:
 
 def model_class(method: str):
     """ClipRunModel or CnnRunModel; class attributes (logit_scale, score_help) are usable without loading weights."""
-    if method in ("clip_zeroshot", "clip_prompt_learning"):
+    if method in ("clip_zeroshot", "clip_prompt_learning", "clip_feature_gen"):
         return ClipRunModel
     if method == "clip_prompt_lora":
         return ClipLoraRunModel
     if method in ("cnn_independent", "cnn_multitask", "multi_task_cnn"):
         return CnnRunModel
+    if method == "cnn_crop_norm":
+        return CropNormRunModel
     if method == "ensemble":
         return EnsembleRunModel
     raise ValueError(f"unsupported method {method!r}")
@@ -307,6 +396,8 @@ def build_run_model(run: dict, pairs):
         from independent_cnn_baseline.inference import IndependentCnnRunModel
 
         return IndependentCnnRunModel(run, pairs)
+    if run["method"] == "clip_feature_gen" and run["cfg"].get("features", {}).get("source") == "lora_run":
+        return FeatureGenLoraRunModel(run, pairs)
     return model_class(run["method"])(run, pairs)
 
 

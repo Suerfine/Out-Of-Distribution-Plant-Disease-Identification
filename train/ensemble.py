@@ -41,7 +41,7 @@ def compose_cnn_member(logp: dict, pairs, metrics: dict, fit_df) -> np.ndarray:
     return compose_pair_scores(logp["crop"], logp["disease"], pairs, w, tau, prior)
 
 
-def member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs):
+def member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs, same_split=False):
     """Retrain one member on the split's fit part for `epochs` and score the validation images (all 333 pairs),
     scored exactly the way the member's saved test scores were."""
     method = mcfg["method"]
@@ -56,20 +56,31 @@ def member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs):
         tl.fit(model, lora, fit_df, sorted(set(fit_df["pair_id"])), epochs, mcfg, image_dir, tfs,
                log=lambda r: print(f"  {run_dir.name} epoch {r['epoch']}/{epochs} loss {r['loss']}", flush=True))
         tta = tuple(mcfg["evaluation"].get("tta", ["identity"]))
-        feats = tl.encode(model, tl.loader(val_df, image_dir, tfs[1], mcfg, shuffle=False), "cuda", mcfg["runtime"]["amp"], tta)
-        return tl.pair_scores(model, feats, mcfg["runtime"]["amp"])
+        # Same post-hoc knobs (LoRA scale, primitive fusion) the member's test scores were computed with.
+        return tl.score_all(model, tl.loader(val_df, image_dir, tfs[1], mcfg, shuffle=False), "cuda", mcfg["runtime"]["amp"],
+                            tta, tl.knobs_from_metrics(metrics))
     if method in ("cnn_independent", "cnn_multitask"):
         from dpd.cnn import NETWORKS, build_transforms
         from train import train_cnn as tc
 
+        saved = run_dir / "val_logp_split1.npz"
+        if same_split and saved.exists() and mcfg["training"].get("lr_schedule_epochs"):
+            # Saved by train_cnn.py for its split 1 (same seed and split as here); with its fixed lr horizon, epoch e
+            # of that run is what retraining for e epochs would give, so no retraining is needed.
+            z = np.load(saved)
+            ep = metrics.get("selected_epochs", {})
+            logp = {"crop": z["crop"][ep.get("crop_net", epochs) - 1], "disease": z["disease"][ep.get("disease_net", epochs) - 1]}
+            print(f"  {run_dir.name}: validation log-probs from its saved split-1 predictions (no retraining)", flush=True)
+            return compose_cnn_member(logp, pairs, metrics, fit_df)
         image_dir = ensure_resized(pd.concat([fit_df, val_df])["file"], mcfg["input"]["resize_cache"])
         tfs = build_transforms(mcfg["input"], mcfg["augmentation"])
         val_loader = tc.make_loader(val_df, image_dir, tfs[1], mcfg, shuffle=False)
         logp = {}
         for name, heads in NETWORKS[method].items():
             tc.seed_everything(mcfg["seed"])
-            model, _ = tc.train_network(heads, fit_df, epochs, mcfg, image_dir, tfs,
-                                        log=lambda r, n=name: print(f"  {run_dir.name}/{n} epoch {r['epoch']}/{epochs} loss {r['loss']}", flush=True))
+            ep = metrics.get("selected_epochs", {}).get(name, epochs)  # per-network epochs (validation.separate_epochs)
+            model, _ = tc.train_network(heads, fit_df, ep, mcfg, image_dir, tfs,
+                                        log=lambda r, n=name, ep=ep: print(f"  {run_dir.name}/{n} epoch {r['epoch']}/{ep} loss {r['loss']}", flush=True))
             logp.update(tc.predict(model, val_loader, mcfg["runtime"]["device"], mcfg["runtime"]["amp"]))
             del model
             torch.cuda.empty_cache()
@@ -112,7 +123,9 @@ def main():
             val = np.load(cache)
         else:
             print(f"validation scores for {run_dir.name}: retraining {epochs} epochs on the validation split", flush=True)
-            val = member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs)
+            split_keys = ("n_holdout_pairs", "min_holdout_images", "val_fraction", "exclude_holdout_diseases", "max_images_per_holdout_pair")
+            same_split = mcfg["seed"] == cfg["seed"] and all(mcfg["validation"].get(k) == vcfg[k] for k in split_keys)
+            val = member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs, same_split)
             np.save(cache, val)
         test = np.load(run_dir / "scores.npz")
         members.append({"name": run_dir.name, "method": mcfg["method"], "val": to_logprob(val, mcfg["method"]),

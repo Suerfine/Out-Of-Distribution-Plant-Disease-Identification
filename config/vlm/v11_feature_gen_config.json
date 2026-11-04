@@ -1,0 +1,177 @@
+{
+  "_note": "v11 (new branch): feature generation for unseen pairs, f-CLSWGAN (Xian et al., CVPR 2018) on frozen CLIP ViT-B/16 image embeddings. A conditional WGAN-GP learns text embedding -> image embedding on the seen pairs; it then synthesises image features for the unseen pairs from their text alone, and a cosine classifier over all 333 pairs is trained on real seen + synthetic unseen features. No unseen image is used. Compare with v4.2 (same frozen features, learned prompts: val HM 46.6%, test 51.8%); the classifier here is linear in the frozen embedding, so any gain comes from the generated unseen features. Run time: minutes (features are cached).",
+  "_result": "Kept over v4.2 (same frozen features): mean validation HM 49.25% (epoch 17, gamma 0.03; per split 48.63 / 48.83 / 50.28) vs v4.2 46.57%, +2.7. Test (reported, not used to decide): HM 57.8% (seen 55.9%, unseen 59.8%) vs v4.2 51.8% (41.2 / 69.7): the gain is on seen pairs; unseen is lower than v4.2. Uncalibrated test HM 24.2%. Unseen-only diagnostic 71.3%.",
+  "version": "v11",
+  "title": "feature_gen",
+  "method": "clip_feature_gen",
+  "seed": 42,
+  "data": {
+    "_note": "Unchanged from v4.2.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Frozen OpenAI CLIP ViT-B/16 (QuickGELU), as v3/v4.2; image embeddings come from the runs/cache embedding cache.",
+    "library": "open_clip",
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai"
+  },
+  "names": {
+    "_note": "Unchanged from v4.2.",
+    "underscore_to_space": true,
+    "crop_overrides": {
+      "pepper_bell": "bell pepper",
+      "paddy": "rice",
+      "blackgram": "black gram"
+    },
+    "disease_overrides": {
+      "xamthomonas": "xanthomonas bacterial blight",
+      "verticulium_wilt": "verticillium wilt",
+      "crinckle": "crinkle",
+      "monillia_laxa": "monilinia brown rot",
+      "leafblast": "leaf blast",
+      "die_back": "dieback",
+      "gray_light": "gray blight",
+      "curl": "leaf curl",
+      "viral": "viral disease",
+      "miner": "leaf miner damage",
+      "slug": "slug feeding damage",
+      "caterpillar": "caterpillar feeding damage",
+      "insects_damages": "insect damage",
+      "nutrition_deficiency": "nutrient deficiency",
+      "scorch": "leaf scorch",
+      "pox_virus": "plum pox virus",
+      "pocket_disease": "plum pocket disease",
+      "cercospora": "cercospora leaf spot",
+      "tungro": "tungro virus",
+      "hispa": "rice hispa beetle damage",
+      "aphis_spp": "aphids",
+      "eriosoma_lanigerum": "woolly apple aphids",
+      "icerya_seychellarum": "fluted scale insects",
+      "parthenolecanium_corni": "lecanium scale insects",
+      "ceroplastes_rubens": "red wax scale insects",
+      "aulacaspis_tubercularis": "white mango scale insects",
+      "ischnaspis_longirostris": "black thread scale insects",
+      "procontarinia_matteiana": "mango leaf gall midge galls",
+      "procontarinia_rubus": "gall midge galls",
+      "erosomyia_sp": "gall midge damage",
+      "venturia_inaequalis": "apple scab",
+      "gnomonia_leptostyla": "walnut anthracnose",
+      "erwinia_amylovora": "erwinia fire blight",
+      "aculus_olearius": "olive bud mites",
+      "cisaberoptus_kenyae": "leaf coating mites",
+      "dialeuropora_decempuncta": "whiteflies",
+      "neomelicharia_sparsa": "planthoppers",
+      "valanga_nigricornis": "grasshopper feeding damage",
+      "mictis_longicornis": "leaf-footed bug damage",
+      "apoderus_javanicus": "leaf-rolling weevil damage",
+      "orthaga_euadrusalis": "leaf webber caterpillars",
+      "dappula_tertia": "bagworms",
+      "diabrotica_speciosa": "cucumber beetle feeding damage"
+    }
+  },
+  "prompts": {
+    "_note": "v3's knowledge-base templates for the pair text (the frozen text encoder's embedding of these is the generator condition and the classifier's initial weights). crop_templates / disease_templates are only used when condition.parts includes 'crop' / 'disease'.",
+    "descriptions_file": "knowledge/disease_descriptions_v1.json",
+    "templates": [
+      "a photo of {crop} leaves with {disease}: {description}.",
+      "a close-up photo of a {crop} leaf showing {disease}: {description}.",
+      "a {crop} plant affected by {disease}: {description}.",
+      "{disease} on a {crop} leaf: {description}.",
+      "a field photo of {crop} leaves with {disease}: {description}."
+    ],
+    "healthy_templates": [
+      "a photo of healthy {crop} leaves: {description}.",
+      "a close-up photo of a healthy {crop} leaf: {description}.",
+      "a healthy {crop} plant: {description}.",
+      "a healthy green {crop} leaf: {description}.",
+      "a field photo of healthy {crop} leaves: {description}."
+    ],
+    "crop_templates": [
+      "a photo of {crop} leaves.",
+      "a close-up photo of a {crop} leaf.",
+      "a {crop} plant."
+    ],
+    "disease_templates": [
+      "a photo of leaves with {disease}: {description}.",
+      "a close-up photo of a leaf showing {disease}: {description}.",
+      "{disease} on a leaf: {description}."
+    ]
+  },
+  "condition": {
+    "_note": "Generator condition per pair: concatenation of these text embeddings ('pair', 'crop', 'disease'). v11: the pair prompt only (the classic setup).",
+    "parts": [
+      "pair"
+    ]
+  },
+  "aux_classifier": {
+    "_note": "Cosine classifier on the real features of the trained pairs; frozen, it gives the GAN's classification loss (keeps generated features recognisable).",
+    "logit_scale": 50.0,
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "batch_size": 128,
+    "epochs": 20
+  },
+  "gan": {
+    "_note": "f-CLSWGAN defaults (one 4096-unit hidden layer each, LeakyReLU 0.2, Adam 1e-4 / beta1 0.5, 5 critic steps per generator step, GP 10, cls weight 0.01). Output L2-normalised like the real CLIP embeddings.",
+    "noise_dim": 512,
+    "hidden": 4096,
+    "normalize_output": true,
+    "lr": 0.0001,
+    "betas": [
+      0.5,
+      0.999
+    ],
+    "batch_size": 64,
+    "n_critic": 5,
+    "lambda_gp": 10.0,
+    "cls_weight": 0.01,
+    "epochs": 30
+  },
+  "synthesis": {
+    "_note": "Synthetic features per untrained target pair (300 as in f-CLSWGAN). seen_min_per_pair > 0 would also top up rare seen pairs to that many features.",
+    "n_per_unseen": 300,
+    "seen_min_per_pair": 0
+  },
+  "classifier": {
+    "_note": "Final cosine classifier over all pairs, initialised from the pair text embeddings; epoch chosen on validation. Saved scores are logits / 100 (CLIP's cosine scale).",
+    "logit_scale": 50.0,
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "batch_size": 128,
+    "max_epochs": 25
+  },
+  "validation": {
+    "_note": "Same three splits as v5.8/v10.3 (seeds 42-44; 20 pseudo-unseen pairs each). In validation the GAN is trained on the fit images only and generates the 20 pseudo-unseen pairs; the 10 real unseen pairs are hidden (not generated, not scored). gamma_grid includes negative values because, unlike the prompt models, a classifier trained on many synthetic unseen features can over-predict unseen pairs.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      -0.1,
+      0.1,
+      0.0025
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "evaluation": {
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "batch_size": 64,
+    "num_workers": 4
+  },
+  "output_dir": "runs/vlm/v11"
+}

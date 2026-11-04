@@ -1,6 +1,6 @@
 {
   "_note": "v7 (branch: lesion-level disease features): v5.5 (best single model on validation, 56.89%) with ONE change: patch-level disease scoring (dpd/patch_disease.py). Each disease's text embedding is also matched against the 196 projected patch tokens, and the mean of its top-8 patch similarities is its patch score; pair score = cosine(CLS, pair text) + 1.0 * patch score of the pair's disease, and the disease loss uses the patch scores. Motivation: the test diagnostic showed 70-75% of seen disease errors have the crop right (e.g. septoria / bacterial spot / late blight -> early blight); lesions are small, so the CLS embedding barely moves. top_k and lambda are a single untuned choice. Keep only if validation HM beats v5.5's 56.89% by more than 2 points.",
-  "_result": "Pending.",
+  "_result": "Not kept. Validation HM 58.39% (epoch 6, gamma 0.0925) vs v5.5's 56.89%: +1.5 points, inside the ~3-point noise and below the 2-point margin. Test (for the record only, not used to decide): seen top-1 49.6% (v5.5 52.2%), unseen 83.4% (v5.5 84.3%), HM 62.2% (v5.5 64.5%); seen disease top-1 54.3% (v5.5 56.2%). Same selected epoch as v5.5 (6); on validation both val-seen (64.9% vs 62.3%) and pseudo-unseen (53.1% vs 52.4%) rose slightly, but the gain did not carry to test. Patch-level disease scoring with top-8 / lambda 1.0 does not clearly help.",
   "version": "v7",
   "title": "patch_disease",
   "method": "clip_prompt_lora",
