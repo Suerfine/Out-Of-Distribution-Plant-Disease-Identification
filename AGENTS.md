@@ -36,6 +36,7 @@ Training scripts live in `train/` and are run as modules from the project root s
 - `config/multitask/<name>.json`: multi-task CNN experiments (`nat_multitask_v1`, ...). Outputs go to `runs/multitask/<name>/`. Supports `--set` CLI overrides, backbone selection, custom scheduler/loss weighting, and checkpointing.
 - Outputs go to `runs/<family>/<name>/` (`output_dir` must match the family folder), with a copy of the config. `runs/` is gitignored; `runs/cache/` holds shared embeddings and resized images.
 - Choose epochs, thresholds and gamma on a validation split carved from train (`dpd/splits.py`), never on the test sets.
+- **Recording results (`docs/all_results.csv`)**: After experiments have run, agents MUST update `docs/all_results.csv` with the experiment results. Agents must NOT modify, add, delete, or rename columns in `docs/all_results.csv`—only fill in the existing columns (`datetime`, `type`, `experiment_name`, `harmonic_mean_top1`, `harmonic_mean_top5`, `seen_top_1`, `seen_top1_class_mean`, `seen_top5`, `seen_top5_class_mean`, `seen_crop_top1`, `seen_disease_top1`, `unseen_top_1`, `unseen_top1_class_mean`, `unseen_top5`, `unseen_top5_class_mean`, `unseen_crop_top1`, `unseen_disease_top1`, `config`, `notes`). Include both uncalibrated ($\gamma = 0$) and calibrated ($\gamma > 0$) evaluations where applicable, clearly highlighting in the `notes` column that gamma was applied (e.g. `Calibrated (gamma=X applied)` vs `Uncalibrated (gamma=0.0)`).
 
 ## Code layout
 
@@ -94,7 +95,7 @@ Local layout (gitignored, downloaded separately, never commit it): `DPD_Small/DP
 - Harmonic mean of seen and unseen accuracy: `H = 2·seen·unseen / (seen + unseen)`.
 - Confusion matrix for the **seen** test set.
 
-Keep evaluation code shared across all models (`dpd/evaluate.py`, `dpd/report.py`) so results are directly comparable.
+Keep evaluation code shared across all models (`dpd/evaluate.py`, `dpd/report.py`) so results are directly comparable. After runs finish, always log results into `docs/all_results.csv` without modifying the existing columns.
 
 ## Deliverables beyond code
 
