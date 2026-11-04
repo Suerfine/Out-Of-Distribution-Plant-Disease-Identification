@@ -1,6 +1,6 @@
 {
   "_note": "victor_e1_branches (E1, control for disentanglement): E0 with one change, the shared ConvNeXt-Base features pass through a crop branch and a disease branch (Linear 1024 -> 256, BatchNorm, ReLU) before the heads. The two spies train and their accuracy is logged (how much crop information z_dis holds, and disease information z_crop), but adversarial_weight 0 means they do not change the branches. E1 vs E0 measures the branch layers alone; E2-E5 vs E1 measure the disentangling losses alone.",
-  "_result": "",
+  "_result": "Run 2 (seed 42, 3 splits, 4 Nov; run 1 crashed in split 3 with a CUDA error, likely an OMEN power-mode switch mid-run): test HM Top-1 65.3 / Top-5 91.9; seen 53.5, unseen 83.8 (calibrated, gamma 6.8 from validation); raw seen 68.4, raw unseen 6.6; 29.6% of seen images sent to unseen pairs. Epoch 5, validation HM 58.0 (per split 55.6 / 59.4 / 59.0); the validation curve peaks at epoch 5 and then wobbles between 53 and 57. Unseen-only top-1 89.2. Versus E0 (victor_e0_multitask_convnext, HM 62.9, validation 58.9): +2.4 on test but level on validation, so the branches alone change nothing beyond noise; they trade seen accuracy for unseen. Leakage at the refit's epoch 5 (train accuracy): the crop spy reads the crop from the disease features 95.5%, the disease spy reads the disease from the crop features 69.0%, so the disease features carry nearly all the crop information. That is what E2-E5 try to remove.",
   "version": "victor_e1_branches",
   "method": "cnn_disentangle",
   "seed": 42,

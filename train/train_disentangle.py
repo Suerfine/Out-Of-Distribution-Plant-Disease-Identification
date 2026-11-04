@@ -1,6 +1,7 @@
 """Disentangled multi-task CNN (Victor's proposed approach), evaluated with the same protocol as every other model.
 
-Usage:  python -m train.train_disentangle --config config/disentangle/<name>.json
+Usage:  python -m train.train_disentangle --config config/disentangle/<name>.json [--resume]
+(--resume: after a crash, skip the validation splits that finished; see main().)
 
 method "cnn_disentangle": one backbone, a crop branch and a disease branch, spies behind a gradient reversal layer
 and an optional decorrelation penalty (dpd/disentangle.py). Loss per batch:
@@ -146,6 +147,8 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
+    parser.add_argument("--resume", action="store_true",
+                        help="reuse validation splits already finished by an earlier run of this config (val_hm_split<k>.npy)")
     args = parser.parse_args()
     cfg = load_config(args.config)
     assert cfg["method"] == METHOD, f"{args.config} is a '{cfg['method']}' config"
@@ -153,6 +156,11 @@ def main():
     if runtime["device"] == "cuda" and not torch.cuda.is_available():
         raise SystemExit("Config asks for cuda but torch.cuda.is_available() is False.")
     out = output_dir(cfg)
+    if args.resume and (out / "config.json").exists() and load_config(out / "config.json") != cfg:
+        raise SystemExit(f"--resume: {args.config} differs from the config of the earlier run in {out}")
+    if not args.resume:
+        for f in out.glob("val_hm_split*.npy"):
+            f.unlink()  # stale splits from an earlier run must not leak into this one
     shutil.copy(args.config, out / "config.json")
 
     df = read_metadata()
@@ -175,7 +183,17 @@ def main():
     hidden = pairs["is_unseen"].to_numpy() if vcfg["exclude_real_unseen_from_label_space"] else np.zeros(len(pairs), bool)
     n_splits = vcfg.get("n_splits", 1)
     hm_grid = np.zeros((n_splits, tcfg["max_epochs"], len(gammas)))
+    # Each finished split saves its grid, so a crash costs only the split in progress (--resume skips the saved ones).
+    # Every split reseeds with seed + k, so a resumed run trains the remaining splits exactly as an unbroken run would.
+    done = [k for k in range(n_splits) if (out / f"val_hm_split{k + 1}.npy").exists()]
+    if done:
+        history[:] = [r for r in pd.read_csv(out / "history.csv").to_dict("records")
+                      if r["stage"] in {f"split{k + 1}/{NETWORK}" for k in done}]
     for k in range(n_splits):
+        if k in done:
+            hm_grid[k] = np.load(out / f"val_hm_split{k + 1}.npy")
+            print(f"validation split {k + 1}/{n_splits}: loaded from the earlier run", flush=True)
+            continue
         split_seed = cfg["seed"] + k
         fit_df, val_seen, val_unseen, _ = make_validation_split(
             train, vcfg["n_holdout_pairs"], vcfg["min_holdout_images"], vcfg["val_fraction"], split_seed,
@@ -194,6 +212,7 @@ def main():
             hm_grid[k, e] = [evaluate(s[:n_vs], y_vs, s[n_vs:], y_vu, val_pairs, g, (1,))["harmonic_mean_top1"] for g in gammas]
             print(f"split {k + 1} epoch {e + 1}: val HM {hm_grid[k, e, 0]:.2%} at gamma 0, best {hm_grid[k, e].max():.2%} "
                   f"at gamma {gammas[hm_grid[k, e].argmax()]}", flush=True)
+        np.save(out / f"val_hm_split{k + 1}.npy", hm_grid[k])
     mean_grid = hm_grid.mean(axis=0)
     e, g = np.unravel_index(mean_grid.argmax(), mean_grid.shape)
     best_epoch, gamma = int(e) + 1, float(gammas[g])

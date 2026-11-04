@@ -1,6 +1,6 @@
 {
   "_note": "victor_e0_multitask_convnext (E0, parent of the disentanglement runs): aniq_baseline_independent_convnext_base with one change, method cnn_multitask (one shared ConvNeXt-Base backbone, crop and disease heads trained jointly) instead of two separate networks. Everything else is Hein's recipe R0, the team's shared recipe. Disentanglement changes a shared backbone, so its fair parent shares one too; run on Victor's RTX 4050 so E1-E5 compare on the same GPU.",
-  "_result": "",
+  "_result": "Run 1 (seed 42, 3 splits, 4 Nov): test HM Top-1 62.9 / Top-5 92.9; seen 58.0, unseen 68.7 (calibrated, gamma 6.7 from validation); raw seen 73.3, raw unseen 4.6; 28.4% of seen images sent to unseen pairs. Epoch 19, validation HM 58.9 (per split 57.4 / 55.9 / 64.3). Unseen-only top-1 86.1. 8.5 points below the independent ConvNeXt-Base (HM 71.4, seen 67.0, unseen 76.5), so on this recipe sharing one backbone hurts both seen and unseen; also below SupCon + CE (66.0). This is the parent for E1-E5.",
   "version": "victor_e0_multitask_convnext",
   "method": "cnn_multitask",
   "seed": 42,
