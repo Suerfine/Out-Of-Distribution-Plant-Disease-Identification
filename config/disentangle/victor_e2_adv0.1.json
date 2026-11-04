@@ -1,6 +1,6 @@
 {
   "_note": "victor_e2_adv0.1 (E2): E1 (victor_e1_branches) with one change, adversarial_weight 0.1: the spies now push back through the gradient reversal layer, so each branch is trained to hide the other target (crop from z_dis, disease from z_crop). Strength ramps from 0 to 0.1 over max_epochs (adversarial_ramp). Question: does a gentle push lower the leakage E1 measured (crop spy 95.5% on z_dis) and raise HM over E1?",
-  "_result": "",
+  "_result": "Seed 42, 3 splits, 4 Nov, 80 min: test HM Top-1 62.9 / Top-5 91.3; seen 52.2, unseen 79.3 (calibrated, gamma 6.3 from validation); raw seen 65.5, raw unseen 6.5; 30.2% of seen images sent to unseen pairs. Epoch 4, validation HM 56.3 (per split 54.1 / 55.9 / 59.0). Unseen-only top-1 88.9. Versus E1 (victor_e1_branches, HM 65.3, validation 58.0): -2.4 on test and -1.7 on validation, so the gentle push does not help. Leakage falls: at the refit's epoch 4 (train accuracy) the crop spy reads the crop from the disease features 84.8% (E1 at epoch 4: 93.5%) and the disease spy reads the disease from the crop features 32.1% (E1: 60.7%). By epoch 20 of each split, at full strength, the crop spy is down to about 53%, but validation HM there is 50-52 (E1: 54-57). So less leakage comes with lower HM. The ramp means the chosen epoch 4 only ran at strength 0.076.",
   "version": "victor_e2_adv0.1",
   "method": "cnn_disentangle",
   "seed": 42,
