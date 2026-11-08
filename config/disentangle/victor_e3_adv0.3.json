@@ -1,6 +1,6 @@
 {
   "_note": "victor_e3_adv0.3 (E3): E1 (victor_e1_branches) with one change, adversarial_weight 0.3: the spies now push back through the gradient reversal layer, so each branch is trained to hide the other target (crop from z_dis, disease from z_crop). Strength ramps from 0 to 0.3 over max_epochs (adversarial_ramp). Question: does the middle of the trade-off curve lower the leakage E1 measured (crop spy 95.5% on z_dis) and raise HM over E1?",
-  "_result": "",
+  "_result": "Seed 42, 3 splits, 8 Nov, 82 min: test HM Top-1 53.7 / Top-5 89.5; seen 54.5, unseen 52.8 (calibrated, gamma 5.8 from validation); raw seen 67.8, raw unseen 7.8; 26.3% of seen images sent to unseen pairs. Epoch 6, validation HM 57.6 (per split 52.2 / 61.6 / 59.1). Unseen-only top-1 72.1 (E1: 89.2). Versus E1 (victor_e1_branches, HM 65.3, validation 58.0): -11.6 on test but only -0.4 on validation, so validation did not see the damage. The loss is on the 10 real unseen pairs: unseen disease top-1 53.4 (E2: 79.3), unseen crop 74.9 (E2: 88.9). Leakage falls further: at the refit's epoch 4 (train accuracy) the crop spy reads the crop from the disease features 56.5% (E2: 84.8%, E1: 93.5%) and the disease spy reads the disease from the crop features 27.4% (E2: 32.1%, E1: 60.7%); at the chosen epoch 6, 52.1% / 28.5% at strength 0.27. By epoch 20 the crop spy is at 34-39%, and validation HM there is 45-52. Stronger push: less leakage, much worse on the real unseen pairs.",
   "version": "victor_e3_adv0.3",
   "method": "cnn_disentangle",
   "seed": 42,
