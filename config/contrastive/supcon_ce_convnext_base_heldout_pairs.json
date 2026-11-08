@@ -1,0 +1,110 @@
+{
+  "_note": "Run 4: Run 2 (supcon_ce_convnext_base_matched_schedule) with one change, a calibrated pair-level loss with held-out pairs added to the training loss. Each training step a random 10% of the training pairs play the unseen pairs: their images skip the factor cross-entropy, and a cross-entropy over the training pairs' scores (log P(crop) + log P(disease), seen pairs shifted down by gamma0 = 6.75, the gamma validation chose for Run 2) asks that the true pair wins. Motivation, from the deep analysis of Run 2 and the negative Run 3: the seen-versus-unseen decision is the largest loss (11.5 harmonic-mean points, AUROC 0.906) and a better rule on the same scores did not help, so the change has to be in training. Only training pairs are used, so no test or real-unseen information enters (the real unseen pairs are not candidates). Stage 1 is re-run in full because the training loss changed; epoch and gamma are chosen on the 3 validation splits as before. Everything else is as Run 2 (final fit matched to the validation schedule).",
+  "_result": "Run 4. Test HM Top-1 70.94 / Top-5 92.97; seen 63.05 (Top-5 87.60), unseen 81.08 (Top-5 99.03) calibrated; raw seen 72.80, raw unseen 12.09; 21.2% of seen images sent to unseen pairs (Run 2: 29.2%). Epoch 17, gamma 7.25, validation HM 61.27 (per split 60.32 / 58.69 / 64.80; Run 2: 59.15, 53.56 / 59.44 / 64.46). Versus Run 2 (HM 67.28 / 93.29): +3.7 Top-1, level on Top-5; seen +6.3, unseen -1.5. Seen-versus-unseen separation improved (AUROC 0.906 to 0.919; HM ceiling 78.8 to 80.2; loss to the decision 11.5 to 9.3). Just above the roughly 3 points of run-to-run noise, supported by validation (+2.1) but a single seed; and the stopping epoch also changed (17 against 6), so the gain is not purely the loss term. Close to the independent ConvNeXt-Base baseline (HM 71.44 / 93.26; seen 67.0, unseen 76.5).",
+  "version": "supcon_ce_convnext_base_heldout_pairs",
+  "method": "cnn_supcon",
+  "seed": 42,
+  "data": {
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "ConvNeXt-Base from timm, ImageNet-22k pretraining then 1k fine-tuning; drop_path_rate is stochastic depth. ce_dropout matches the baseline's head dropout.",
+    "backbone": "timm:convnext_base.fb_in22k_ft_in1k",
+    "pretrained": true,
+    "proj_dim": 128,
+    "proj_hidden": null,
+    "ce_dropout": 0.2,
+    "drop_path_rate": 0.1
+  },
+  "input": {
+    "_note": "Bicubic resizing, as ConvNeXt was pretrained.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224,
+    "interpolation": "bicubic"
+  },
+  "augmentation": {
+    "_note": "Same as the independent ConvNeXt-Base baseline.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "CHANGED: pair_loss adds weight * CE over the training pairs' calibrated scores; holdout_frac of the pairs are pretend-unseen each step (their images skip the factor CE if mask_ce_on_holdout); gamma0 shifts the other pairs' scores.",
+    "temperature": 0.1,
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    },
+    "ce_weight": 1.0,
+    "label_smoothing": 0.1,
+    "pair_loss": {
+      "weight": 1.0,
+      "gamma0": 6.75,
+      "holdout_frac": 0.1,
+      "mask_ce_on_holdout": true
+    }
+  },
+  "scoring": {
+    "_note": "CHANGED: mode heads, the cross-entropy heads' log-probabilities. temperature is only used for the prototypes saved alongside.",
+    "mode": "heads",
+    "temperature": 0.1
+  },
+  "optimizer": {
+    "_note": "As the independent ConvNeXt-Base baseline (lr_head also covers the projection and cross-entropy heads).",
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05
+  },
+  "validation": {
+    "_note": "Same as supcon_resnet50.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      40.0,
+      0.25
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "final_schedule match_validation as in Run 2. No saved validation grid is reused: stage 1 runs in full because the training loss changed.",
+    "batch_size": 64,
+    "max_epochs": 20,
+    "final_fit": "all_train",
+    "final_schedule": "match_validation"
+  },
+  "evaluation": {
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2,
+    "grad_checkpointing": true,
+    "_note": "grad_checkpointing: recompute backbone activations in the backward pass; identical gradients, less GPU memory, somewhat slower. Needed because ConvNeXt-Base with 128 views per step did not fit in 16 GB."
+  },
+  "output_dir": "runs/contrastive/supcon_ce_convnext_base_heldout_pairs"
+}

@@ -1,0 +1,110 @@
+{
+  "_note": "Run 3: Run 2's final model (supcon_ce_convnext_base_matched_schedule) with one change, the seen-versus-unseen decision. Run 2 subtracts one global gamma from every seen pair's score. Here a logistic regression, fitted on validation scores from the training set only, predicts whether an image belongs to an unseen pair from facts about its scores (best seen and best unseen pair score, their gap, the margin of the best over the second best in each group, entropy and top probability of the crop and disease heads, difference of the group log-sum-exps; never the image source), and the image then gets the best pair of the predicted group. The threshold is chosen for the validation harmonic mean. Gamma is a special case (using only the gap), so it is compared by leave-one-split-out on the validation splits before the test is touched. Motivation, from the deep analysis of Run 2: the seen-versus-unseen decision loses 11.5 points of harmonic mean (AUROC 0.906), 29.2% of seen images go to unseen pairs, and unfamiliar sources (PWV2, FP, CPDD) are pushed there most. No training of the final model: it is the source run's saved model, so the comparison with Run 2 is not affected by training noise.",
+  "_result": "Run 3. Test HM Top-1 67.39 / Top-5 90.55; seen 57.05 (Top-5 86.65), unseen 82.32 (Top-5 94.82); 30.4% of seen images sent to unseen pairs. Same final model as Run 2 (HM 67.3 / 93.3, seen 56.75, unseen 82.6), only the decision rule differs. The decision is applied as a per-image gamma (the seen scores are shifted so the decided group wins), so Top-5 is ranked over all 333 pairs like the gamma runs. No real gain in Top-1: +0.1 on test and +0.3 on leave-one-split-out validation (mean held-out HM: gamma 58.59, learned 58.93; per split 52.67/58.31/64.79 against 53.75/58.01/65.03). Top-5 is lower than Run 2 (-2.7), mainly on unseen images, because the rule only fixes the winner and gives no guarantee about ranks 2 to 5. Reading: the seen-versus-unseen limit is in the scores themselves, not in how they are thresholded, so the next change has to be in training. Note: an earlier version of this run that ranked the decided group first reported Top-1 67.6 and an artefactual Top-5; borderline images flipped when the scores were handled in float64. Re-training the validation splits gave gamma 7.0 and validation HM 58.59 against Run 1's saved grid (gamma 6.75, 59.15), a sign of run-to-run variation.",
+  "version": "supcon_ce_convnext_base_learned_decision",
+  "method": "cnn_supcon",
+  "seed": 42,
+  "data": {
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "ConvNeXt-Base from timm, ImageNet-22k pretraining then 1k fine-tuning; drop_path_rate is stochastic depth. ce_dropout matches the baseline's head dropout.",
+    "backbone": "timm:convnext_base.fb_in22k_ft_in1k",
+    "pretrained": true,
+    "proj_dim": 128,
+    "proj_hidden": null,
+    "ce_dropout": 0.2,
+    "drop_path_rate": 0.1
+  },
+  "input": {
+    "_note": "Bicubic resizing, as ConvNeXt was pretrained.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224,
+    "interpolation": "bicubic"
+  },
+  "augmentation": {
+    "_note": "Same as the independent ConvNeXt-Base baseline.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "CHANGED: total = SupCon(crop) + SupCon(disease) + ce_weight * (CE(crop) + CE(disease)). Label smoothing as in the baselines.",
+    "temperature": 0.1,
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    },
+    "ce_weight": 1.0,
+    "label_smoothing": 0.1
+  },
+  "scoring": {
+    "_note": "CHANGED: mode heads, the cross-entropy heads' log-probabilities. temperature is only used for the prototypes saved alongside.",
+    "mode": "heads",
+    "temperature": 0.1
+  },
+  "optimizer": {
+    "_note": "As the independent ConvNeXt-Base baseline (lr_head also covers the projection and cross-entropy heads).",
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05
+  },
+  "validation": {
+    "_note": "Same as supcon_resnet50.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      40.0,
+      0.25
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "CHANGED: final_schedule match_validation (final fit uses the max_epochs-long cosine schedule and stops at the selected epoch). reuse_validation_grid: Run 1's validation grid, valid because stage 1 is unchanged.",
+    "batch_size": 64,
+    "max_epochs": 20,
+    "final_fit": "all_train",
+    "final_schedule": "match_validation",
+    "reuse_validation_grid": "runs/contrastive/supcon_ce_convnext_base/val_hm_grid.npy"
+  },
+  "evaluation": {
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2,
+    "grad_checkpointing": true,
+    "_note": "grad_checkpointing: recompute backbone activations in the backward pass; identical gradients, less GPU memory, somewhat slower. Needed because ConvNeXt-Base with 128 views per step did not fit in 16 GB."
+  },
+  "output_dir": "runs/contrastive/supcon_ce_convnext_base_learned_decision",
+  "decision": {
+    "_note": "source_run: the run whose final model and selected epoch are reused; validation splits are re-trained to that epoch on the 20-epoch schedule to collect scores.",
+    "type": "learned",
+    "source_run": "runs/contrastive/supcon_ce_convnext_base_matched_schedule"
+  }
+}

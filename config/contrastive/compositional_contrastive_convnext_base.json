@@ -1,0 +1,103 @@
+{
+  "_note": "Compositional contrastive model (internal comparison against the SupCon-off control, Run 4's CE + held-out pairs model, 70.7 / 70.9). Same ConvNeXt-Base backbone, input, augmentation, two-view batches, optimiser settings, validation protocol and final-fit schedule. Changed: the classifier heads, SupCon and the pair-level cross-entropy are replaced by one image-to-pair contrastive (InfoNCE-style) loss. The image embedding is matched to the embedding of every (crop, disease) pair, p(c,d) = normalise(e_c + e_d + MLP([e_c; e_d])), so the pair score models crop and disease together instead of log P(crop) + log P(disease) as independent; unseen pairs use the same composer. Held-out pairs as in Run 4: each step a random 10% of the training pairs are pretend-unseen and all other pairs' scores are shifted down by gamma0 = 6.75 before the cross-entropy over the training pairs (label smoothing 0.1). Rationale from the error analysis: the independence assumption causes lookalike and partial-match errors, SupCon's disease space stayed tied to the crop (9% disease retrieval on unseen images), and a pair-level target removes the dependence on batch composition.",
+  "_result": "Internal comparison (not for the report). Test HM Top-1 65.33 / Top-5 88.33; seen 57.00, unseen 76.52 (calibrated); 27.2% of seen images sent to unseen pairs. Epoch 5, gamma 7.25, validation HM 57.16 (per split 57.24 / 55.43 / 58.81). Versus the SupCon-off control (CE + held-out pairs, 70.71 / 93.16, validation 61.73) it is 5.4 points lower on test and 4.6 lower on validation, with lower seen-only accuracy (69.2 against 73.2) and much lower unseen-only accuracy (80.2 against 89.1). Validation peaked at epoch 4 to 5 and then fell (split 1: 54.5 at epoch 4, 49.6 at epoch 20), i.e. the model overfits the seen pairs quickly. One untuned configuration. Reading: a joint pair embedding built by a small composer does not beat independent heads on this data.",
+  "version": "compositional_contrastive_convnext_base",
+  "method": "cnn_compositional",
+  "seed": 42,
+  "data": {
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "ConvNeXt-Base backbone as in the baseline; emb_dim is the shared embedding size, hidden the composer MLP width; init_scale is the starting temperature scale (1/0.07).",
+    "backbone": "timm:convnext_base.fb_in22k_ft_in1k",
+    "pretrained": true,
+    "emb_dim": 256,
+    "hidden": 512,
+    "head_dropout": 0.2,
+    "drop_path_rate": 0.1,
+    "init_scale": 14.3
+  },
+  "input": {
+    "_note": "Bicubic resizing, as ConvNeXt was pretrained.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224,
+    "interpolation": "bicubic"
+  },
+  "augmentation": {
+    "_note": "Same as the independent ConvNeXt-Base baseline.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "pair_loss: cross-entropy over the training pairs' scores with holdout_frac of them pretend-unseen and the rest shifted by gamma0.",
+    "pair_loss": {
+      "gamma0": 6.75,
+      "holdout_frac": 0.1,
+      "label_smoothing": 0.1
+    }
+  },
+  "scoring": {
+    "_note": "CHANGED: mode heads, the cross-entropy heads' log-probabilities. temperature is only used for the prototypes saved alongside.",
+    "mode": "heads",
+    "temperature": 0.1
+  },
+  "optimizer": {
+    "_note": "As the independent ConvNeXt-Base baseline (lr_head also covers the projection and cross-entropy heads).",
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05
+  },
+  "validation": {
+    "_note": "Same as supcon_resnet50.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      40.0,
+      0.25
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "final_schedule match_validation as in Run 2. No saved validation grid is reused: stage 1 runs in full because the training loss changed.",
+    "batch_size": 64,
+    "max_epochs": 20,
+    "final_fit": "all_train",
+    "final_schedule": "match_validation"
+  },
+  "evaluation": {
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2,
+    "grad_checkpointing": true,
+    "_note": "grad_checkpointing: recompute backbone activations in the backward pass; identical gradients, less GPU memory, somewhat slower. Needed because ConvNeXt-Base with 128 views per step did not fit in 16 GB."
+  },
+  "output_dir": "runs/contrastive/compositional_contrastive_convnext_base"
+}

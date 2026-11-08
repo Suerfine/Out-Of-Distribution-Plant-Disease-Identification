@@ -55,8 +55,11 @@ def make_two_view_loader(df, image_dir, transform, cfg):
     )
 
 
-def train_network(train_df, epochs, cfg, image_dir, tfs, on_epoch=None, log=None):
-    """Train with SupCon; `on_epoch(model)` runs after every epoch and its results are returned as a list."""
+def train_network(train_df, epochs, cfg, image_dir, tfs, on_epoch=None, log=None, schedule_epochs=None):
+    """Train with SupCon; `on_epoch(model)` runs after every epoch and its results are returned as a list.
+
+    The cosine learning-rate schedule spans `schedule_epochs` (default: `epochs`). A final fit that stops at a chosen
+    epoch passes the validation run's full length, so it stops where the validated snapshot stood on the schedule."""
     device, amp = cfg["runtime"]["device"], cfg["runtime"]["amp"]
     mcfg, ocfg, lcfg = cfg["model"], cfg["optimizer"], cfg["loss"]
     model = ContrastiveNet(mcfg["backbone"], mcfg["pretrained"], mcfg["proj_dim"], mcfg.get("proj_hidden"),
@@ -72,9 +75,19 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, on_epoch=None, log=None
         weight_decay=ocfg["weight_decay"],
     )
     loader = make_two_view_loader(train_df, image_dir, tfs[0], cfg)
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs * len(loader))
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=(schedule_epochs or epochs) * len(loader))
     scaler = torch.amp.GradScaler(device, enabled=amp)
     per_epoch = []
+    pl = lcfg.get("pair_loss")  # opt-in: calibrated pair-level loss with pretend-unseen (held-out) pairs
+    if pl:
+        pairs_all = pair_table(read_metadata())
+        pair_of = -torch.ones(HEAD_SIZES["crop"], HEAD_SIZES["disease"], dtype=torch.long)
+        pair_of[torch.as_tensor(pairs_all["crop_id"].to_numpy()), torch.as_tensor(pairs_all["disease_id"].to_numpy())] =             torch.as_tensor(pairs_all["pair_id"].to_numpy())
+        pair_of = pair_of.to(device)
+        pair_crop = torch.as_tensor(pairs_all["crop_id"].to_numpy()).to(device)
+        pair_dis = torch.as_tensor(pairs_all["disease_id"].to_numpy()).to(device)
+        cand = torch.zeros(len(pairs_all), dtype=torch.bool, device=device)
+        cand[torch.as_tensor(train_df["pair_id"].unique()).to(device)] = True
     for epoch in range(1, epochs + 1):
         model.train()
         t0, tot, parts, n = time.time(), 0.0, {h: 0.0 for h in HEADS}, 0
@@ -86,7 +99,22 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, on_epoch=None, log=None
                 logits = model.classify(f) if model.cls is not None else None
             losses = {h: supcon_loss(z[h], labels[h], lcfg["temperature"]) for h in HEADS}
             loss = sum(lcfg["weights"][h] * losses[h] for h in HEADS)
-            if logits is not None:  # cross-entropy on both views, as in the baselines
+            if logits is not None and pl:
+                # Each step a random share of the training pairs plays the unseen pairs: their images skip the factor
+                # cross-entropy, and the pair-level cross-entropy over the training pairs shifts every other pair's
+                # score down by gamma0, as calibration does at test time.
+                y_pair = pair_of[labels["crop"], labels["disease"]]
+                hold = (torch.rand(len(cand), device=device) < pl["holdout_frac"]) & cand
+                keep = (~hold[y_pair]).float() if pl.get("mask_ce_on_holdout", True) else torch.ones_like(y_pair, dtype=torch.float)
+                loss = loss + lcfg["ce_weight"] * sum(
+                    (F.cross_entropy(logits[h].float(), labels[h], label_smoothing=lcfg["label_smoothing"], reduction="none") * keep).sum()
+                    / keep.sum().clamp_min(1.0) for h in HEADS
+                )
+                lp = {h: F.log_softmax(logits[h].float(), dim=-1) for h in HEADS}
+                zpair = lp["crop"][:, pair_crop] + lp["disease"][:, pair_dis] - pl["gamma0"] * (cand & ~hold).float()
+                zpair = zpair.masked_fill(~cand, -1e9)
+                loss = loss + pl["weight"] * F.cross_entropy(zpair, y_pair)
+            elif logits is not None:  # cross-entropy on both views, as in the baselines
                 loss = loss + lcfg["ce_weight"] * sum(
                     F.cross_entropy(logits[h].float(), labels[h], label_smoothing=lcfg["label_smoothing"]) for h in HEADS
                 )
@@ -169,7 +197,7 @@ def main():
     hidden = pairs["is_unseen"].to_numpy() if vcfg["exclude_real_unseen_from_label_space"] else np.zeros(len(pairs), bool)
     n_splits = vcfg.get("n_splits", 1)
     hm_grid = np.zeros((n_splits, tcfg["max_epochs"], len(gammas)))
-    for k in range(n_splits):
+    for k in range(0 if (not args.pilot and tcfg.get("reuse_validation_grid")) else n_splits):
         split_seed = cfg["seed"] + k
         fit_df, val_seen, val_unseen, holdout = make_validation_split(
             train, vcfg["n_holdout_pairs"], vcfg["min_holdout_images"], vcfg["val_fraction"], split_seed,
@@ -193,8 +221,17 @@ def main():
             hm_grid[k, e] = [evaluate(s[:n_vs], y_vs, s[n_vs:], y_vu, val_pairs, g, (1,))["harmonic_mean_top1"] for g in gammas]
             print(f"split {k + 1} epoch {e + 1}: val HM {hm_grid[k, e, 0]:.2%} at gamma 0, best {hm_grid[k, e].max():.2%} "
                   f"at gamma {gammas[hm_grid[k, e].argmax()]}", flush=True)
+    reuse = None if args.pilot else tcfg.get("reuse_validation_grid")
+    if reuse:  # stage 1 unchanged from an earlier run: reuse its saved validation grid instead of retraining
+        hm_grid = np.load(reuse)
+        assert hm_grid.shape == (n_splits, tcfg["max_epochs"], len(gammas)), f"{reuse} does not match this config's validation setup"
+        print(f"stage 1 skipped: validation grid loaded from {reuse}", flush=True)
     mean_grid = hm_grid.mean(axis=0)
-    e, g = np.unravel_index(mean_grid.argmax(), mean_grid.shape)
+    if tcfg.get("force_epoch") and not args.pilot:  # ablation: stop at a given epoch; gamma is the validation-best one for it
+        e = int(tcfg["force_epoch"]) - 1
+        g = int(mean_grid[e].argmax())
+    else:
+        e, g = np.unravel_index(mean_grid.argmax(), mean_grid.shape)
     best_epoch, gamma = int(e) + 1, float(gammas[g])
     best = {"epoch": best_epoch, "gamma": gamma, "val_hm_mean": round(float(mean_grid[e, g]), 4),
             "val_hm_per_split": [round(float(x), 4) for x in hm_grid[:, e, g]], "val_hm_g0_mean": round(float(mean_grid[e, 0]), 4)}
@@ -202,7 +239,8 @@ def main():
 
     # ---- Stage 2: refit on all training images, evaluate once on test ----
     seed_everything(cfg["seed"])
-    model, _ = train_network(train, best_epoch, cfg, image_dir, tfs, log=logger("final"))
+    sched_len = tcfg["max_epochs"] if tcfg.get("final_schedule") == "match_validation" else None
+    model, _ = train_network(train, best_epoch, cfg, image_dir, tfs, log=logger("final"), schedule_epochs=sched_len)
     torch.save(model.state_dict(), out / "supcon_net.pt")
     emb_train = embed(model, eval_loader(train), device, amp)
     protos = {}

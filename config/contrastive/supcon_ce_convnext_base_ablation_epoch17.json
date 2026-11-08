@@ -1,0 +1,106 @@
+{
+  "_note": "Ablation for Run 4: Run 2 (supcon_ce_convnext_base_matched_schedule, no pair-level loss) with the final fit stopped at epoch 17, the epoch validation chose for Run 4, instead of epoch 6. Run 4 changed two things at once, the held-out pairs loss and the stopping epoch (17 against 6), so this run keeps the loss off and moves only the epoch, to show how much of Run 4's gain the longer training explains. Same 20-epoch schedule, and gamma is the validation-best gamma at epoch 17 from the saved validation grid of Run 1 and Run 2 (stage 1 is identical, so the grid is reused); nothing is chosen on the test set. Compare with Run 4 (same epoch, loss on) and Run 2 (same loss setting, epoch 6).",
+  "_result": "Ablation of Run 4. Test HM Top-1 68.07 / Top-5 93.60; seen 60.45, unseen 77.90 (calibrated); raw seen 73.9, raw unseen 5.8; 25.9% of seen images sent to unseen pairs. Epoch 17 (forced), gamma 6.50 from the saved validation grid. Same stopping epoch as Run 4, loss off. Versus Run 2 (epoch 6): +0.8 Top-1, so the longer training explains about 0.8 of Run 4's 3.7-point gain. Versus Run 4 (epoch 17, loss on): Run 4 is +2.9 Top-1 (70.94), seen +2.6, unseen +3.2, fewer seen images lost to unseen pairs (21.2% against 25.9%), higher unseen-only accuracy (89.2 against 86.6), higher AUROC for seen-versus-unseen (0.919 against 0.897), and raw unseen 12.1 against 5.8. Held-out validation agrees: at epoch 17 the mean validation HM is 61.27 with the loss and 57.61 without (+3.7). Reading: most of the gain comes from the held-out pairs loss, a smaller part from longer training; the loss effect is about 3 points on test (single seed, near the noise level) and 3.7 on validation.",
+  "version": "supcon_ce_convnext_base_ablation_epoch17",
+  "method": "cnn_supcon",
+  "seed": 42,
+  "data": {
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "ConvNeXt-Base from timm, ImageNet-22k pretraining then 1k fine-tuning; drop_path_rate is stochastic depth. ce_dropout matches the baseline's head dropout.",
+    "backbone": "timm:convnext_base.fb_in22k_ft_in1k",
+    "pretrained": true,
+    "proj_dim": 128,
+    "proj_hidden": null,
+    "ce_dropout": 0.2,
+    "drop_path_rate": 0.1
+  },
+  "input": {
+    "_note": "Bicubic resizing, as ConvNeXt was pretrained.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224,
+    "interpolation": "bicubic"
+  },
+  "augmentation": {
+    "_note": "Same as the independent ConvNeXt-Base baseline.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "CHANGED: total = SupCon(crop) + SupCon(disease) + ce_weight * (CE(crop) + CE(disease)). Label smoothing as in the baselines.",
+    "temperature": 0.1,
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    },
+    "ce_weight": 1.0,
+    "label_smoothing": 0.1
+  },
+  "scoring": {
+    "_note": "CHANGED: mode heads, the cross-entropy heads' log-probabilities. temperature is only used for the prototypes saved alongside.",
+    "mode": "heads",
+    "temperature": 0.1
+  },
+  "optimizer": {
+    "_note": "As the independent ConvNeXt-Base baseline (lr_head also covers the projection and cross-entropy heads).",
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05
+  },
+  "validation": {
+    "_note": "Same as supcon_resnet50.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      40.0,
+      0.25
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "force_epoch: stop the final fit at this epoch (gamma from the saved validation grid for that epoch). Everything else as Run 2.",
+    "batch_size": 64,
+    "max_epochs": 20,
+    "final_fit": "all_train",
+    "final_schedule": "match_validation",
+    "reuse_validation_grid": "runs/contrastive/supcon_ce_convnext_base/val_hm_grid.npy",
+    "force_epoch": 17
+  },
+  "evaluation": {
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2,
+    "grad_checkpointing": true,
+    "_note": "grad_checkpointing: recompute backbone activations in the backward pass; identical gradients, less GPU memory, somewhat slower. Needed because ConvNeXt-Base with 128 views per step did not fit in 16 GB."
+  },
+  "output_dir": "runs/contrastive/supcon_ce_convnext_base_ablation_epoch17"
+}
