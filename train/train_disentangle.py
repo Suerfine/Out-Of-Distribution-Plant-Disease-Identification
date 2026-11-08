@@ -8,6 +8,8 @@ and an optional decorrelation penalty (dpd/disentangle.py). Loss per batch:
     CE(crop) + CE(disease) + CE(spy_crop) + CE(spy_disease) + decorrelation_weight * decorrelation(z_crop, z_dis)
 The spies always learn (their accuracy is logged as a leakage measure); adversarial_weight only sets how strongly the
 reversed gradient pushes the branches, so adversarial_weight 0 + decorrelation_weight 0 is the "branches only" control.
+Optional disentangle.protect_backbone (default false): the reversed gradient stops at the branches and never reaches
+the shared backbone.
 
 Same two stages as train/train_cnn.py: pick (epoch, gamma) on 3 validation splits with pseudo-unseen pairs, then refit
 on all training images for that many epochs and evaluate once on test. Also takes train_cnn.py's optional recipe keys
@@ -109,7 +111,13 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
             ramp = adversarial_ramp(step / ramp_steps) if dcfg["adversarial_ramp"] else 1.0
             with torch.autocast(device, enabled=amp):
                 o = model(x)
-                spies = model.spies(o["z_crop"], o["z_dis"], dcfg["adversarial_weight"] * ramp)
+                # protect_backbone: a second branch pass on detached backbone features, so the reversed gradient
+                # updates the branches only (the branch BatchNorm running stats see the batch twice).
+                if dcfg.get("protect_backbone", False):
+                    z_crop_s, z_dis_s = model.branches(o["features"].detach())
+                else:
+                    z_crop_s, z_dis_s = o["z_crop"], o["z_dis"]
+                spies = model.spies(z_crop_s, z_dis_s, dcfg["adversarial_weight"] * ramp)
                 decor = decorrelation_loss(o["z_crop"].float(), o["z_dis"].float())
                 loss = (
                     w["crop"] * F.cross_entropy(o["crop"].float(), y_crop, label_smoothing=ls)

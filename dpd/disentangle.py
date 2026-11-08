@@ -58,10 +58,12 @@ def _spy(dim_in, hidden, n_out):
 
 
 class DisentangledNet(nn.Module):
-    """forward(x) -> {"crop", "disease"} logits plus the branch features {"z_crop", "z_dis"}.
+    """forward(x) -> {"crop", "disease"} logits plus the branch features {"z_crop", "z_dis"} and the backbone
+    features "features".
 
     spies(z_crop, z_dis, lam) -> {"spy_crop" (crop guessed from z_dis), "spy_disease" (disease guessed from z_crop)},
-    both behind the GRL. Only the training loop calls spies(); prediction uses the heads alone.
+    both behind the GRL. Only the training loop calls spies(); prediction uses the heads alone. To keep the reversed
+    gradient out of the backbone, the trainer feeds spies() with branches(features.detach()) instead of forward's z.
     """
 
     def __init__(self, backbone: str, pretrained: bool, z_dim: int, spy_hidden: int, dropout: float, drop_path_rate: float = 0.0):
@@ -74,10 +76,15 @@ class DisentangledNet(nn.Module):
         self.spy_crop = _spy(z_dim, spy_hidden, HEAD_SIZES["crop"])
         self.spy_disease = _spy(z_dim, spy_hidden, HEAD_SIZES["disease"])
 
+    def branches(self, f):
+        """Backbone features -> (z_crop, z_dis)."""
+        return self.crop_branch(f), self.disease_branch(f)
+
     def forward(self, x):
         f = self.backbone(x)
-        z_crop, z_dis = self.crop_branch(f), self.disease_branch(f)
-        return {"crop": self.crop_head(z_crop), "disease": self.disease_head(z_dis), "z_crop": z_crop, "z_dis": z_dis}
+        z_crop, z_dis = self.branches(f)
+        return {"crop": self.crop_head(z_crop), "disease": self.disease_head(z_dis), "z_crop": z_crop, "z_dis": z_dis,
+                "features": f}
 
     def spies(self, z_crop, z_dis, lam: float):
         return {"spy_crop": self.spy_crop(grad_reverse(z_dis, lam)), "spy_disease": self.spy_disease(grad_reverse(z_crop, lam))}
