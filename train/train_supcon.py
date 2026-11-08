@@ -31,8 +31,8 @@ from dpd.evaluate import evaluate, format_summary
 from dpd.report import save_test_outputs
 from dpd.resize_cache import ensure_resized
 from dpd.splits import make_validation_split
-from dpd.supcon import (HEADS, ContrastiveNet, TwoViewImageLabels, class_prototypes, embed, fit_linear_heads,
-                        linear_log_probs, log_probs, supcon_loss)
+from dpd.supcon import (HEADS, CnCBatchSampler, ContrastiveNet, TwoViewImageLabels, class_prototypes, cnc_loss, embed,
+                        fit_linear_heads, linear_log_probs, log_probs, supcon_loss)
 from train.train_cnn import make_loader, seed_everything
 
 PILOT_IMAGES_PER_PAIR, PILOT_TEST_IMAGES = 6, 400
@@ -49,6 +49,12 @@ def apply_pilot(cfg: dict) -> dict:
 
 def make_two_view_loader(df, image_dir, transform, cfg):
     rt = cfg["runtime"]
+    cnc = cfg["loss"].get("cnc")  # opt-in: cross-crop positives and same-crop hard negatives for the disease head
+    if cnc:
+        sampler = CnCBatchSampler(df["crop_id"].to_numpy(), df["disease_id"].to_numpy(), cfg["training"]["batch_size"],
+                                  cnc["groups"], cnc["per_crop"], cnc["hard_neg"], cfg["seed"])
+        return DataLoader(TwoViewImageLabels(df, image_dir, transform), batch_sampler=sampler, num_workers=rt["num_workers"],
+                          pin_memory=True, persistent_workers=rt["num_workers"] > 0)
     return DataLoader(
         TwoViewImageLabels(df, image_dir, transform), batch_size=cfg["training"]["batch_size"], shuffle=True,
         num_workers=rt["num_workers"], pin_memory=True, persistent_workers=rt["num_workers"] > 0, drop_last=True,
@@ -97,7 +103,10 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, on_epoch=None, log=None
             with torch.autocast(device, enabled=amp):
                 f, z = model.encode(x)
                 logits = model.classify(f) if model.cls is not None else None
-            losses = {h: supcon_loss(z[h], labels[h], lcfg["temperature"]) for h in HEADS}
+            cnc = lcfg.get("cnc")
+            losses = {h: supcon_loss(z[h], labels[h], lcfg["temperature"]) for h in HEADS if not (cnc and h == "disease")}
+            if cnc:  # Correct-n-Contrast-style disease term instead of the SupCon disease term
+                losses["disease"] = cnc_loss(z["disease"], labels["disease"], labels["crop"], lcfg["temperature"])
             loss = sum(lcfg["weights"][h] * losses[h] for h in HEADS)
             if logits is not None and pl:
                 # Each step a random share of the training pairs plays the unseen pairs: their images skip the factor

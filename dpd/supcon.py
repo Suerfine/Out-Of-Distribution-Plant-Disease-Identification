@@ -151,3 +151,68 @@ def log_probs(emb: np.ndarray, protos: np.ndarray, valid: np.ndarray, temperatur
     logits[:, ~valid] = -1e4
     logits = logits - logits.max(axis=1, keepdims=True)
     return logits - np.log(np.exp(logits).sum(axis=1, keepdims=True))
+
+
+def cnc_loss(z: torch.Tensor, disease: torch.Tensor, crop: torch.Tensor, temperature: float) -> torch.Tensor:
+    """Correct-n-Contrast-style loss for the disease head. `z` is (2N, d) with the two views of image i at rows i and
+    i + N; `disease` and `crop` are (2N,).
+    Positives of an anchor: its other view, and every image with the SAME disease on a DIFFERENT crop (so the crop cannot
+    help to match them). Negatives: every image with a different disease (the batch sampler adds other diseases on the
+    same crop, so the crop cannot help to separate them either). Images with the same disease on the same crop are
+    left out of both the positives and the denominator: matching them is exactly the crop shortcut."""
+    n2 = z.shape[0]
+    n = n2 // 2
+    idx = torch.arange(n2, device=z.device)
+    self_mask = idx[:, None] == idx[None, :]
+    own = (idx[:, None] - idx[None, :]).abs() == n
+    same_d = disease[:, None] == disease[None, :]
+    same_c = crop[:, None] == crop[None, :]
+    pos = (same_d & ~same_c) | own
+    neutral = same_d & same_c & ~own & ~self_mask
+    logits = (z @ z.T / temperature).masked_fill(self_mask | neutral, float("-inf"))
+    log_prob = logits - torch.logsumexp(logits, dim=1, keepdim=True)
+    mean_log_prob_pos = log_prob.masked_fill(~pos, 0.0).sum(1) / pos.sum(1)  # every anchor has its own other view
+    return -mean_log_prob_pos.mean()
+
+
+class CnCBatchSampler:
+    """Batches for cnc_loss. Each batch = `groups` groups plus random images. A group: one disease that occurs on at least
+    two crops in the fit set, `per_crop` images of it on each of two crops (cross-crop positives), and `hard_neg` images
+    of other diseases on the first of those crops (same-crop hard negatives). The rest of the batch is uniform random,
+    so the class mix stays close to the natural one. Built from the fit images only."""
+
+    def __init__(self, crop, disease, batch_size: int, groups: int, per_crop: int, hard_neg: int, seed: int):
+        self.crop, self.disease = np.asarray(crop), np.asarray(disease)
+        self.batch_size, self.groups, self.per_crop, self.hard_neg = batch_size, groups, per_crop, hard_neg
+        self.by_pair, self.by_crop, crops_of = {}, {}, {}
+        for i, (c, d) in enumerate(zip(self.crop, self.disease)):
+            self.by_pair.setdefault((c, d), []).append(i)
+            self.by_crop.setdefault(c, []).append(i)
+            crops_of.setdefault(d, set()).add(c)
+        self.by_pair = {k: np.array(v) for k, v in self.by_pair.items()}
+        self.by_crop = {k: np.array(v) for k, v in self.by_crop.items()}
+        self.multi = {d: sorted(cs) for d, cs in crops_of.items() if len(cs) >= 2}
+        self.multi_ids = np.array(sorted(self.multi))
+        self.n_batches = len(self.crop) // batch_size
+        self.rng = np.random.default_rng(seed)
+        assert groups * (2 * per_crop + hard_neg) <= batch_size, "groups do not fit in the batch"
+
+    def __len__(self):
+        return self.n_batches
+
+    def __iter__(self):
+        r = self.rng
+        for _ in range(self.n_batches):
+            batch = []
+            if len(self.multi_ids):
+                for d in r.choice(self.multi_ids, self.groups, replace=len(self.multi_ids) < self.groups):
+                    c1, c2 = r.choice(self.multi[d], 2, replace=False)
+                    for c in (c1, c2):
+                        pool = self.by_pair[(c, d)]
+                        batch += r.choice(pool, self.per_crop, replace=len(pool) < self.per_crop).tolist()
+                    pool = self.by_crop[c1]
+                    pool = pool[self.disease[pool] != d]
+                    if len(pool):
+                        batch += r.choice(pool, self.hard_neg, replace=len(pool) < self.hard_neg).tolist()
+            batch += r.integers(0, len(self.crop), self.batch_size - len(batch)).tolist()
+            yield batch
