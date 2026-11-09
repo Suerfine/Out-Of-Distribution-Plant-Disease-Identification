@@ -29,6 +29,18 @@ Options (all in the config, each off by default so older configs behave exactly 
   training.weight_average     {"type": "ema", "decay": d}: exponential moving average of the prompt vectors and LoRA
                               weights, updated every step (decay warmed up as min(d, (1+t)/(10+t))); validation and the
                               final model use the averaged weights
+  training.loss_weights.ssl   weight of a local-to-global self-supervised loss (no labels): each training image also
+                              gets a small "local" crop (augmentation.ssl_local: scale, optional color_jitter / flips,
+                              batch_fraction = share of the batch that gets a local view), and 1 - cos(local CLS,
+                              stop-grad global CLS) is minimised, so the encoder must recognise the image from a small
+                              region (lesion-level detail). Training only; validation, test and inference are unchanged
+  training.alternating_primitives   {"period_epochs": p, "first": "disease" | "crop"}: DRPT-style schedule (Lu et
+                              al. 2023). Only one of the disease / crop vector sets is updated at a time, swapping every
+                              p epochs (LoRA always trains), so the two sets do not drag each other into one entangled
+                              optimum. Training only
+  model.primitive_branches    {"lr": lr}: Troika-style crop and disease visual branches (dpd/primitive_branches.py): the
+                              crop / disease losses use their own residual linear map of the CLS embedding, and primitive
+                              fusion (evaluation.posthoc crop / disease weights) scores with those branch features
 
 Stage 1: train on train minus the validation split(s); after every epoch score the validation images and sweep
 gamma; pick the (epoch, gamma) with the best mean validation HM. Stage 2: refit a fresh model on all training
@@ -47,13 +59,14 @@ import torch.nn.functional as F
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 
-from dpd.clip_utils import TTA_VIEWS, clip_transforms, load_clip
+from dpd.clip_utils import TTA_VIEWS, TwoViews, clip_transforms, load_clip, ssl_local_transform
 from dpd.config import load_config, output_dir
 from dpd.data import pair_table, read_metadata
 from dpd.evaluate import calibrate, evaluate, format_summary, hm_top1_over_gammas
 from dpd.fusion import bootstrap_hm_diff, fuse
 from dpd.lora import apply_lora, lora_state, set_lora_scale
 from dpd.patch_disease import combine, image_features
+from dpd.primitive_branches import branch_features, build_branches
 from dpd.prompt_learner import build_model
 from dpd.report import save_test_outputs
 from dpd.resize_cache import cached_name, ensure_resized
@@ -99,6 +112,8 @@ def build(cfg, pairs, device):
     model.patch = cfg["model"].get("patch_disease")
     model.pair_disease = torch.as_tensor(pairs["disease_id"].to_numpy(), device=device)
     model.pair_crop = torch.as_tensor(pairs["crop_id"].to_numpy(), device=device)
+    pb = cfg["model"].get("primitive_branches")
+    model.branches = build_branches(clip_model.visual.output_dim).to(device) if pb else None
     return model, lora_params
 
 
@@ -142,8 +157,9 @@ def primitive_scores(model, img_feats, amp):
     """Cosines of the image embeddings with the crop and with the disease prompts (for primitive fusion)."""
     model.eval()
     cls = img_feats[0]
-    return (cls @ text_embeddings(model, "crops", amp).float().cpu().numpy().T,
-            cls @ text_embeddings(model, "diseases", amp).float().cpu().numpy().T)
+    br = model.branches
+    return (branch_features(br, "crop", cls) @ text_embeddings(model, "crops", amp).float().cpu().numpy().T,
+            branch_features(br, "disease", cls) @ text_embeddings(model, "diseases", amp).float().cpu().numpy().T)
 
 
 def posthoc_grids(ev):
@@ -227,12 +243,24 @@ def fit(model, lora_params, train_df, trained_pairs, epochs, cfg, image_dir, tfs
     device, amp = rt["device"], rt["amp"]
     wa = tcfg.get("weight_average")
     assert wa is None or wa["type"] == "ema", f"unknown weight_average {wa}"
-    ema = WeightEMA([model.crop_vecs, model.disease_vecs, *lora_params], wa["decay"]) if wa else None
-    opt = torch.optim.AdamW([
+    branch_params = list(model.branches.parameters()) if model.branches is not None else []
+    ema = WeightEMA([model.crop_vecs, model.disease_vecs, *lora_params, *branch_params], wa["decay"]) if wa else None
+    groups_opt = [
         {"params": [model.crop_vecs, model.disease_vecs], "lr": tcfg["lr"]},
         {"params": lora_params, "lr": cfg["image_encoder"]["lora"]["lr"]},
-    ], weight_decay=tcfg["weight_decay"])
-    dl = loader(train_df, image_dir, tfs[0], cfg, shuffle=True)
+    ]
+    if branch_params:
+        groups_opt.append({"params": branch_params, "lr": cfg["model"]["primitive_branches"]["lr"]})
+    opt = torch.optim.AdamW(groups_opt, weight_decay=tcfg["weight_decay"])
+    alt = tcfg.get("alternating_primitives")
+    if alt:
+        assert alt["first"] in ("disease", "crop"), alt
+        vec_sets = {"crop": model.crop_vecs, "disease": model.disease_vecs}
+    ssl_w = tcfg["loss_weights"].get("ssl", 0)
+    local_tf = ssl_local_transform(cfg["input"], cfg["augmentation"]) if ssl_w > 0 else None
+    assert ssl_w == 0 or local_tf is not None, "loss_weights.ssl > 0 needs augmentation.ssl_local"
+    ssl_frac = cfg["augmentation"].get("ssl_local", {}).get("batch_fraction", 1.0)
+    dl = loader(train_df, image_dir, TwoViews(tfs[0], local_tf) if local_tf else tfs[0], cfg, shuffle=True)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs * len(dl))
     scale, lw = tcfg["logit_scale"], tcfg["loss_weights"]
     trained = torch.as_tensor(trained_pairs, device=device)
@@ -249,8 +277,17 @@ def fit(model, lora_params, train_df, trained_pairs, epochs, cfg, image_dir, tfs
     for epoch in range(1, epochs + 1):
         model.train()
         t0, totals, n_batches = time.time(), {"loss": 0.0, "pair": 0.0, "crop": 0.0, "disease": 0.0}, 0
+        frozen_vecs = None
+        if alt:  # DRPT: train one primitive's vectors per phase; the other set gets no update (grad None -> AdamW skips it)
+            first, second = alt["first"], "crop" if alt["first"] == "disease" else "disease"
+            training_set = first if ((epoch - 1) // alt["period_epochs"]) % 2 == 0 else second
+            frozen_vecs = vec_sets[second if training_set == first else first]
         for x, idx in dl:
             idx = idx.to(device)
+            x_local = None
+            if local_tf:
+                x, x_local = x
+                x_local = x_local[: max(1, round(ssl_frac * len(x_local)))].to(device, non_blocking=True)
             x = x.to(device, non_blocking=True)
             dt = disease_text(model, amp)
             with torch.autocast(device, enabled=amp):
@@ -268,17 +305,24 @@ def fit(model, lora_params, train_df, trained_pairs, epochs, cfg, image_dir, tfs
             if lw.get("within_crop", 0) > 0:
                 losses["within_crop"] = within_crop_loss(scale * pair_logits, col[y_pair[idx]], col_crop, y_crop[idx])
             if lw["crop"] > 0:
-                losses["crop"] = F.cross_entropy(scale * v @ t("crops").T, y_crop[idx])
+                losses["crop"] = F.cross_entropy(scale * branch_features(model.branches, "crop", v) @ t("crops").T, y_crop[idx])
             if lw["disease"] > 0:
-                dis_logits = patch if patch is not None else v @ t("diseases").T
+                dis_logits = patch if patch is not None else branch_features(model.branches, "disease", v) @ t("diseases").T
                 losses["disease"] = F.cross_entropy(scale * dis_logits, y_dis[idx])
             if lw.get("image_consistency", 0) > 0:
                 losses["image_consistency"] = F.l1_loss(v, frozen_features(model, x, amp))
+            if x_local is not None:
+                # Local-to-global self-distillation: the small crop's CLS must match the (stop-grad) global view's.
+                with torch.autocast(device, enabled=amp):
+                    v_local, _ = image_features(model.clip, x_local, None, None)
+                losses["ssl"] = (1 - F.cosine_similarity(v_local.float(), v[: len(x_local)].detach().float(), dim=-1)).mean()
             if lw.get("text_anchor", 0) > 0:
                 losses["text_anchor"] = sum(F.l1_loss(t(g).float(), text_init[g]) for g in groups) / len(groups)
             loss = sum(lw[k] * l for k, l in losses.items())
             opt.zero_grad(set_to_none=True)
             loss.backward()
+            if frozen_vecs is not None:
+                frozen_vecs.grad = None
             opt.step()
             sched.step()
             if ema:
@@ -288,6 +332,8 @@ def fit(model, lora_params, train_df, trained_pairs, epochs, cfg, image_dir, tfs
             for k, l in losses.items():
                 totals[k] = totals.get(k, 0.0) + l.item()
         rec = {"epoch": epoch, **{k: round(v / n_batches, 4) for k, v in totals.items()}, "sec": round(time.time() - t0)}
+        if alt:
+            rec["vectors_trained"] = training_set
         if on_epoch_end:
             if ema:
                 ema.swap()  # validate with the averaged weights
@@ -452,6 +498,8 @@ def main():
     torch.save({"crop_vecs": model.crop_vecs.detach().cpu(), "disease_vecs": model.disease_vecs.detach().cpu(), "gamma": gamma},
                out / "prompt_vectors.pt")
     torch.save(lora_state(model.clip.visual), out / "lora_image_encoder.pt")
+    if model.branches is not None:
+        torch.save(model.branches.state_dict(), out / "primitive_branches.pt")
     print(f"Saved to {out}")
 
 

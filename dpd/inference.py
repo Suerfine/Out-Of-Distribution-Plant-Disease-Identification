@@ -140,6 +140,14 @@ class ClipLoraRunModel(ClipRunModel):
         m = run["metrics"]
         set_lora_scale(self.clip.visual, m.get("lora_scale", 1.0))
         self.fusion = (m.get("fusion_crop_weight", 0.0), m.get("fusion_disease_weight", 0.0))
+        # Troika-style primitive branches (model.primitive_branches): fusion scores use the branch features.
+        self.branches = None
+        if cfg["model"].get("primitive_branches"):
+            from dpd.primitive_branches import build_branches
+
+            self.branches = build_branches(self.clip.visual.output_dim)
+            self.branches.load_state_dict(torch.load(run["dir"] / "primitive_branches.pt", map_location="cpu"))
+            self.branches.to(device()).eval()
         if any(self.fusion):
             self.crop_text = np.load(run["dir"] / "crop_text_embeddings.npy") if self.fusion[0] else None
             self.disease_text = np.load(run["dir"] / "disease_text_embeddings.npy") if self.fusion[1] else None
@@ -173,8 +181,10 @@ class ClipLoraRunModel(ClipRunModel):
             from dpd.fusion import fuse
 
             a, b = self.fusion
-            crop = emb @ self.crop_text.T if a else None
-            dis = emb @ self.disease_text.T if b else None
+            from dpd.primitive_branches import branch_features
+
+            crop = branch_features(self.branches, "crop", emb) @ self.crop_text.T if a else None
+            dis = branch_features(self.branches, "disease", emb) @ self.disease_text.T if b else None
             scores = fuse(scores, crop, dis, self.pairs["crop_id"].to_numpy(), self.pairs["disease_id"].to_numpy(), a, b)
         return emb[0], scores[0]
 

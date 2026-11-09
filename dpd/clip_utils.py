@@ -145,6 +145,38 @@ def clip_transforms(input_cfg: dict, aug_cfg: dict):
     return T.Compose(train + norm), T.Compose(test + norm)
 
 
+def ssl_local_transform(input_cfg: dict, aug_cfg: dict):
+    """Small-crop "local" view for the local-to-global self-supervised loss (augmentation.ssl_local), or None.
+
+    The crop covers a small part of the image (scale e.g. 0.1-0.35) and is resized to the normal crop size, so the ViT
+    needs no position-embedding interpolation. Flips default to the global view's; colour jitter is set separately
+    (usually stronger, so lighting and camera cues are treated as noise)."""
+    loc = aug_cfg.get("ssl_local")
+    if not loc:
+        return None
+    size = input_cfg["crop_size"]
+    tf = [T.RandomResizedCrop(size, scale=tuple(loc["scale"]), interpolation=T.InterpolationMode.BICUBIC, antialias=True)]
+    hp, vp = loc.get("horizontal_flip_p", aug_cfg["horizontal_flip_p"]), loc.get("vertical_flip_p", aug_cfg["vertical_flip_p"])
+    if hp:
+        tf.append(T.RandomHorizontalFlip(hp))
+    if vp:
+        tf.append(T.RandomVerticalFlip(vp))
+    jitter = loc.get("color_jitter", aug_cfg["color_jitter"])
+    if any(jitter.values()):
+        tf.append(T.ColorJitter(**jitter))
+    return T.Compose(tf + [T.ToImage(), T.ToDtype(torch.float32, scale=True), T.Normalize(CLIP_MEAN, CLIP_STD)])
+
+
+class TwoViews:
+    """Applies a global and a local transform to the same image; returns (global view, local view)."""
+
+    def __init__(self, global_tf, local_tf):
+        self.global_tf, self.local_tf = global_tf, local_tf
+
+    def __call__(self, img):
+        return self.global_tf(img), self.local_tf(img)
+
+
 # Test-time augmentation views (on a batch of image tensors); embeddings of the views are averaged.
 TTA_VIEWS = {
     "identity": lambda x: x,
