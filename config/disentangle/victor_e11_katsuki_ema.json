@@ -1,0 +1,112 @@
+{
+  "_note": "victor_e11_katsuki_ema (E11): E9 (victor_e9_katsuki_recipe) with one change, a running average of the weights (training.ema_decay), as E10 added to E7. Question: E9 lifted seen and E10 lifted unseen, so do the two gains combine?",
+  "_result": "Seed 42, 3 splits, 10 Nov, 93 min: test HM Top-1 70.5 / Top-5 92.7; seen 61.4, unseen 82.9 (calibrated, gamma 7.3 from validation); raw seen 70.4, raw unseen 11.3; 21.9% of seen images sent to unseen pairs. Epoch 7, validation HM 63.0 (per split 60.6 / 64.4 / 64.1). Unseen-only top-1 89.6. Versus E9 (victor_e9_katsuki_recipe, HM 68.2, validation 62.0), which differs only by the averaging: +2.3 on test, +1.0 on validation; seen -3.6, unseen +11.1; the selected epoch moved from 12 to 7. Versus E10 (victor_e10_ema, HM 70.8, validation 61.8): -0.3 on test, +1.2 on validation, a tie. Leakage at the refit's epoch 4 (live network, not the average): crop spy 63.2%, disease spy 29.9%. The E9 and E10 gains did not combine: E11 has E10's balance of seen and unseen. One seed.",
+  "version": "victor_e11_katsuki_ema",
+  "method": "cnn_disentangle",
+  "seed": 42,
+  "data": {
+    "_note": "Same splits and 333-pair protocol as the CLIP versions (generalised zero-shot).",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "timm ConvNeXt-Base pretrained on ImageNet-22k and fine-tuned on ImageNet-1k (weights downloaded by timm from Hugging Face on first use). LayerNorm rather than BatchNorm, so small physical batches with gradient accumulation are equivalent to batch 32. Stochastic depth 0.1, head dropout 0.2 (Hein's recipe). z_dim: width of each branch output (z_crop, z_dis). spy_hidden: hidden width of each spy (a 2-layer MLP, so it can detect non-linear leakage, as in DANN). head_dropout applies before each branch.",
+    "backbone": "timm:convnext_base.fb_in22k_ft_in1k",
+    "pretrained": true,
+    "head_dropout": 0.2,
+    "drop_path_rate": 0.1,
+    "z_dim": 256,
+    "spy_hidden": 256
+  },
+  "disentangle": {
+    "_note": "adversarial_weight: GRL strength (how hard the branches are pushed to fool the spies); 0 = spies only observe. adversarial_ramp: DANN schedule that raises the strength from 0 to adversarial_weight over max_epochs. decorrelation_weight: weight of the cross-correlation penalty between z_crop and z_dis; 0 = off. protect_backbone: if true, the reversed gradient stops at the branches (the backbone gets no adversarial gradient).",
+    "adversarial_weight": 0.3,
+    "adversarial_ramp": true,
+    "decorrelation_weight": 0.0,
+    "protect_backbone": true
+  },
+  "input": {
+    "_note": "As the ResNet-50 baseline (256 px resize cache, train random resized crop 224, test resize 256 + centre crop 224, ImageNet mean/std) but bicubic resampling, which ConvNeXt was pretrained with.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224,
+    "interpolation": "bicubic"
+  },
+  "augmentation": {
+    "_note": "Hein's recipe: random resized crop scale 0.5-1 (milder than the ResNet baseline's 0.25-1), flips, brightness/contrast/saturation jitter 0.2, no hue jitter (colour is diagnostic).",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "Cross-entropy with label smoothing 0.1 (long-tailed, noisy labels: median 7 images per pair). For the multi-task model the two head losses are summed with equal weight. The spy losses are plain cross-entropy with weight 1. gamma0 6.75 is Katsuki's value (E7 used 5.8).",
+    "label_smoothing": 0.1,
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    },
+    "pair_loss": {
+      "weight": 1.0,
+      "gamma0": 6.75,
+      "holdout_frac": 0.1
+    }
+  },
+  "optimizer": {
+    "_note": "AdamW; backbone 5e-5 (half the ResNet baseline: a larger pretrained model), heads 5e-4, weight decay 0.05. lr_head applies to the branches, heads and spies.",
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05
+  },
+  "validation": {
+    "_note": "Same validation procedure, splits and gamma grid (log-probability units) as aniq_baseline_independent_cnn; 3 splits (Hein's study used one), so epoch and gamma are chosen the same way as for every other baseline.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      10.0,
+      0.1
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "Katsuki's recipe: effective batch 64 (physical 16 x 4 accumulation, equivalent because ConvNeXt uses LayerNorm; 64 does not fit on the 6 GB GPU), no warmup, no gradient clipping, cosine to 0 over 20 epochs. lr_schedule_epochs 20 is the fixed horizon, so the stage-2 refit follows the validation schedule and stops at the selected epoch, as Katsuki's final_schedule match_validation does. ema_decay 0.996 averages over about 250 optimiser steps, about 2.5 epochs at this recipe's 100 steps per epoch, the same span in epochs as E10's 0.998 at 200 steps per epoch; one value, not tuned.",
+    "batch_size": 16,
+    "accumulation_steps": 4,
+    "max_epochs": 20,
+    "lr_schedule_epochs": 20,
+    "final_fit": "all_train",
+    "ema_decay": 0.996
+  },
+  "evaluation": {
+    "_note": "Pair score = log P(crop) + log P(disease). gamma (subtracted from seen pairs) from validation, in log-probability units.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "2 dataloader workers (4 ran out of RAM on the 16 GB laptop: train and validation loaders each keep their workers alive); images come from the resized cache.",
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2
+  },
+  "output_dir": "runs/disentangle/victor_e11_katsuki_ema"
+}
