@@ -17,6 +17,7 @@ a cross-entropy over the pair scores, with every other pair shifted down by gamm
 Same two stages as train/train_cnn.py: pick (epoch, gamma) on 3 validation splits with pseudo-unseen pairs, then refit
 on all training images for that many epochs and evaluate once on test. Also takes train_cnn.py's optional recipe keys
 (model.drop_path_rate; training.accumulation_steps, gradient_clip, warmup_epochs, min_lr_ratio, lr_schedule_epochs).
+Optional training.ema_decay (default off): both stages then validate, save and test a running average of the weights.
 """
 
 import argparse
@@ -28,6 +29,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
+from torch.optim.swa_utils import AveragedModel
 
 from dpd.cnn import HEAD_SIZES, build_transforms, compose_pair_scores
 from dpd.config import load_config, output_dir
@@ -102,8 +104,20 @@ def predict(model, loader, device, amp) -> dict[str, np.ndarray]:
     return {k: torch.cat(v).numpy() for k, v in out.items()}
 
 
+def make_ema(model, decay):
+    """Running average of model's weights and buffers; call update_parameters after each optimiser step, predict with it.
+
+    The early decay (1 + n) / (10 + n) stops the average from staying close to the untrained starting weights."""
+    def average(avg, new, n):
+        d = min(decay, (1 + n.item()) / (10 + n.item()))
+        return d * avg + (1 - d) * new
+
+    return AveragedModel(model, avg_fn=average, use_buffers=True)
+
+
 def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=None):
-    """Train one DisentangledNet; if eval_loader is given, return its head log-probs after every epoch."""
+    """Train one DisentangledNet and return it (its weight average if training.ema_decay is set); if eval_loader is
+    given, also return the head log-probs of that same network after every epoch."""
     device, amp = cfg["runtime"]["device"], cfg["runtime"]["amp"]
     ocfg, lcfg, dcfg, tcfg = cfg["optimizer"], cfg["loss"], cfg["disentangle"], cfg["training"]
     model = build_model(cfg).to(device)
@@ -126,6 +140,7 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
     pl = lcfg.get("pair_loss")
     if pl:
         pair_of, pair_crop, pair_dis, candidates = pair_lookup(train_df, device)
+    ema = make_ema(model, tcfg["ema_decay"]) if tcfg.get("ema_decay") else None
     per_epoch, step = [], 0
     for epoch in range(1, epochs + 1):
         model.train()
@@ -171,6 +186,8 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
                 scaler.update()
                 opt.zero_grad(set_to_none=True)
                 sched.step()
+                if ema:
+                    ema.update_parameters(model)
             step += 1
             b = len(x)
             n += b
@@ -184,10 +201,10 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
         rec = {"epoch": epoch, **{(k if k in ("loss", "decor", "pair") else f"train_{k}"): round(v / n, 4) for k, v in sums.items()},
                "adv_lambda": round(dcfg["adversarial_weight"] * ramp, 4), "sec": round(time.time() - t0)}
         if eval_loader is not None:
-            per_epoch.append(predict(model, eval_loader, device, amp))
+            per_epoch.append(predict(ema or model, eval_loader, device, amp))
         if log:
             log(rec)
-    return model, per_epoch
+    return (ema.module if ema else model), per_epoch
 
 
 def main():
