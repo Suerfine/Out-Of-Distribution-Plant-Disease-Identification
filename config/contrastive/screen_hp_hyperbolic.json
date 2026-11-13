@@ -1,0 +1,118 @@
+{
+  "_note": "Screen: Held-out pairs loss plus the hyperbolic hierarchy heads. Screening run, same protocol as the first five (validation only, training data only): ConvNeXt-Base, two-view batches of 64, cross-entropy heads (dropout 0.2, label smoothing 0.1), AdamW 5e-5 / 5e-4, cosine over 8 epochs, 3 validation splits (seeds 42-44), gamma grid 0-40, scoring by the cross-entropy heads, no final fit and no test evaluation. Only the item named below differs from the cross-entropy-only screening run (screen_ce_only) or, for hp_* arms, from that run plus the held-out pairs loss.",
+  "_result": "Not run yet.",
+  "version": "screen_hp_hyperbolic",
+  "method": "cnn_supcon",
+  "seed": 42,
+  "data": {
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "ConvNeXt-Base from timm, ImageNet-22k pretraining then 1k fine-tuning; drop_path_rate is stochastic depth. ce_dropout matches the baseline's head dropout.",
+    "backbone": "timm:convnext_base.fb_in22k_ft_in1k",
+    "pretrained": true,
+    "proj_dim": 128,
+    "proj_hidden": null,
+    "ce_dropout": 0.2,
+    "drop_path_rate": 0.1
+  },
+  "input": {
+    "_note": "Bicubic resizing, as ConvNeXt was pretrained.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224,
+    "interpolation": "bicubic"
+  },
+  "augmentation": {
+    "_note": "Same as the independent ConvNeXt-Base baseline.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "temperature": 0.1,
+    "weights": {
+      "crop": 0.0,
+      "disease": 0.0
+    },
+    "ce_weight": 1.0,
+    "label_smoothing": 0.1,
+    "pair_loss": {
+      "weight": 1.0,
+      "gamma0": 6.75,
+      "holdout_frac": 0.1,
+      "mask_ce_on_holdout": true
+    },
+    "taxonomy": {
+      "mode": "hyperbolic",
+      "clip_r": 2.0,
+      "scale": 5.0,
+      "w_group": 1.0,
+      "w_pull": 0.1,
+      "proto_lr_mult": 10.0
+    },
+    "_note": "Term under test: hp_hyperbolic."
+  },
+  "scoring": {
+    "_note": "CHANGED: mode heads, the cross-entropy heads' log-probabilities. temperature is only used for the prototypes saved alongside.",
+    "mode": "heads",
+    "temperature": 0.1
+  },
+  "optimizer": {
+    "_note": "As the independent ConvNeXt-Base baseline (lr_head also covers the projection and cross-entropy heads).",
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05
+  },
+  "validation": {
+    "_note": "Same as supcon_resnet50.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      40.0,
+      0.25
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "Short screening schedule, same for every approach: 8 epochs, validation stage only.",
+    "batch_size": 64,
+    "max_epochs": 8,
+    "final_fit": "all_train",
+    "stage1_only": true
+  },
+  "evaluation": {
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2,
+    "grad_checkpointing": true,
+    "_note": "grad_checkpointing: recompute backbone activations in the backward pass; identical gradients, less GPU memory, somewhat slower. Needed because ConvNeXt-Base with 128 views per step did not fit in 16 GB."
+  },
+  "output_dir": "runs/contrastive/screen_hp_hyperbolic"
+}
