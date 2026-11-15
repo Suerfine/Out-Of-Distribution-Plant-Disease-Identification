@@ -23,6 +23,8 @@ NETWORKS = {
     "cnn_independent": {"crop_net": ["crop"], "disease_net": ["disease"]},
     "cnn_multitask": {"multitask_net": ["crop", "disease"]},
     "multi_task_cnn": {"multitask_net": ["crop", "disease"]},
+    "pretext_multitask_cnn": {"multitask_net": ["crop", "disease"]},
+    "ssl_multitask_cnn": {"multitask_net": ["crop", "disease"]},
 }
 
 

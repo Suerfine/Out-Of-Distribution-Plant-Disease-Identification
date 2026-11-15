@@ -49,14 +49,22 @@ pct = lambda label, **kw: st.column_config.ProgressColumn(label, format="percent
 gamma_of = lambda r: float(r["metrics"].get("gamma", 0.0))
 
 # runs/<family> folder -> label; anything else (runs/baseline) is a baseline.
-FAMILY_LABELS = {"vlm": "proposed (VLM)", "cnn": "proposed (CNN)", "cropnorm": "proposed (crop norm)"}
+FAMILY_LABELS = {
+    "vlm": "proposed (VLM)",
+    "cnn": "proposed (CNN)",
+    "cropnorm": "proposed (crop norm)",
+    "multitask": "proposed (multi-task)",
+    "disentangle": "proposed (disentangled)",
+    "contrastive": "proposed (contrastive)",
+    "ssl": "proposed (SSL)",
+}
 
 table = pd.DataFrame(
     [
         {
             "model": r["version"],
             "family": FAMILY_LABELS.get(r["family"], "baseline"),
-            "method": KIND[r["method"]],
+            "method": KIND.get(r["method"], r["method"].replace("_", " ")),
             "backbone": backbone(r),
             "seen_top1": r["metrics"]["test_seen"]["top1"],
             "unseen_top1": r["metrics"]["test_unseen"]["top1"],

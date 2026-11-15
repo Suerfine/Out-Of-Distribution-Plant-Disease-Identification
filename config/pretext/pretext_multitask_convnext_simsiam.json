@@ -1,0 +1,107 @@
+{
+  "_note": "Multi-task CNN with auxiliary SimSiam pretext task on ConvNeXt-Base. The auxiliary pretext head learns invariant lesion visual features across two augmented views without disease labels, preventing representation collapse and reducing seen-composition shortcuts.",
+  "_result": "Pending experiment run.",
+  "version": "pretext_multitask_convnext_simsiam",
+  "method": "pretext_multitask_cnn",
+  "seed": 42,
+  "data": {
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "backbone": "convnext_base.fb_in22k_ft_in1k",
+    "pretrained": true,
+    "head_dropout": 0.3
+  },
+  "input": {
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "random_resized_crop_scale": [
+      0.25,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "label_smoothing": 0.1,
+    "weighting": "fixed",
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    },
+    "pretext": {
+      "type": "simsiam",
+      "lambda_pretext": 0.5,
+      "proj_dim": 512,
+      "hidden_dim": 2048,
+      "pred_hidden": 512
+    }
+  },
+  "optimizer": {
+    "name": "adamw",
+    "lr_backbone": 0.0001,
+    "lr_head": 0.001,
+    "weight_decay": 0.05,
+    "momentum": 0.9,
+    "nesterov": true
+  },
+  "scheduler": {
+    "name": "cosine",
+    "warmup_epochs": 0,
+    "min_lr_ratio": 0.0,
+    "step_size_epochs": 7,
+    "step_factor": 0.1
+  },
+  "validation": {
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": 0,
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "batch_size": 32,
+    "max_epochs": 20,
+    "final_fit": "all_train",
+    "freeze_backbone_epochs": 0,
+    "accum_steps": 1,
+    "grad_clip_norm": 0.0,
+    "early_stopping": {
+      "patience": 8,
+      "min_epochs": 5
+    },
+    "refit_schedule": "compress"
+  },
+  "evaluation": {
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2,
+    "checkpoint_every_n_epochs": 5,
+    "keep_checkpoints": false
+  },
+  "output_dir": "runs/pretext/pretext_multitask_convnext_simsiam"
+}
