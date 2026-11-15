@@ -10,10 +10,14 @@ The spies always learn (their accuracy is logged as a leakage measure); adversar
 reversed gradient pushes the branches, so adversarial_weight 0 + decorrelation_weight 0 is the "branches only" control.
 Optional disentangle.protect_backbone (default false): the reversed gradient stops at the branches and never reaches
 the shared backbone.
+Optional loss.pair_loss {weight, gamma0, holdout_frac} (default off; Katsuki's held-out-pairs loss from train/train_supcon.py):
+each step a random share of the training pairs plays the unseen pairs. Their images skip CE(crop) and CE(disease), and
+a cross-entropy over the pair scores, with every other pair shifted down by gamma0, asks that the true pair wins.
 
 Same two stages as train/train_cnn.py: pick (epoch, gamma) on 3 validation splits with pseudo-unseen pairs, then refit
 on all training images for that many epochs and evaluate once on test. Also takes train_cnn.py's optional recipe keys
 (model.drop_path_rate; training.accumulation_steps, gradient_clip, warmup_epochs, min_lr_ratio, lr_schedule_epochs).
+Optional training.ema_decay (default off): both stages then validate, save and test a running average of the weights.
 """
 
 import argparse
@@ -25,8 +29,9 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
+from torch.optim.swa_utils import AveragedModel
 
-from dpd.cnn import build_transforms, compose_pair_scores
+from dpd.cnn import HEAD_SIZES, build_transforms, compose_pair_scores
 from dpd.config import load_config, output_dir
 from dpd.data import pair_table, read_metadata
 from dpd.disentangle import DisentangledNet, adversarial_ramp, decorrelation_loss
@@ -66,6 +71,26 @@ def make_scheduler(opt, tcfg, epochs, steps):
     return torch.optim.lr_scheduler.LambdaLR(opt, lr_factor)
 
 
+def pair_lookup(train_df, device):
+    """Tensors for the held-out-pairs loss: (crop, disease) -> pair id, each pair's crop and disease id, and a mask of
+    the pairs in this fit. Only pairs present in train_df are candidates, so real unseen pairs never enter the loss."""
+    pairs = pair_table(read_metadata())
+    crop, disease, pair = (torch.tensor(pairs[c].to_numpy(), device=device) for c in ("crop_id", "disease_id", "pair_id"))
+    pair_of = -torch.ones(HEAD_SIZES["crop"], HEAD_SIZES["disease"], dtype=torch.long, device=device)
+    pair_of[crop, disease] = pair
+    candidates = torch.zeros(len(pairs), dtype=torch.bool, device=device)
+    candidates[torch.as_tensor(train_df["pair_id"].unique(), device=device)] = True
+    return pair_of, crop, disease, candidates
+
+
+def head_ce(logits, y, label_smoothing, keep=None):
+    """Cross-entropy of one head, averaged over the images where keep is 1 (every image when keep is None)."""
+    if keep is None:
+        return F.cross_entropy(logits.float(), y, label_smoothing=label_smoothing)
+    per_image = F.cross_entropy(logits.float(), y, label_smoothing=label_smoothing, reduction="none")
+    return (per_image * keep).sum() / keep.sum().clamp_min(1.0)
+
+
 @torch.no_grad()
 def predict(model, loader, device, amp) -> dict[str, np.ndarray]:
     """Log-probabilities of the crop and disease heads for every image in the loader."""
@@ -79,8 +104,20 @@ def predict(model, loader, device, amp) -> dict[str, np.ndarray]:
     return {k: torch.cat(v).numpy() for k, v in out.items()}
 
 
+def make_ema(model, decay):
+    """Running average of model's weights and buffers; call update_parameters after each optimiser step, predict with it.
+
+    The early decay (1 + n) / (10 + n) stops the average from staying close to the untrained starting weights."""
+    def average(avg, new, n):
+        d = min(decay, (1 + n.item()) / (10 + n.item()))
+        return d * avg + (1 - d) * new
+
+    return AveragedModel(model, avg_fn=average, use_buffers=True)
+
+
 def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=None):
-    """Train one DisentangledNet; if eval_loader is given, return its head log-probs after every epoch."""
+    """Train one DisentangledNet and return it (its weight average if training.ema_decay is set); if eval_loader is
+    given, also return the head log-probs of that same network after every epoch."""
     device, amp = cfg["runtime"]["device"], cfg["runtime"]["amp"]
     ocfg, lcfg, dcfg, tcfg = cfg["optimizer"], cfg["loss"], cfg["disentangle"], cfg["training"]
     model = build_model(cfg).to(device)
@@ -100,12 +137,16 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
     ramp_steps = tcfg["max_epochs"] * len(loader)
     scaler = torch.amp.GradScaler(device, enabled=amp)
     ls, w = lcfg["label_smoothing"], lcfg["weights"]
+    pl = lcfg.get("pair_loss")
+    if pl:
+        pair_of, pair_crop, pair_dis, candidates = pair_lookup(train_df, device)
+    ema = make_ema(model, tcfg["ema_decay"]) if tcfg.get("ema_decay") else None
     per_epoch, step = [], 0
     for epoch in range(1, epochs + 1):
         model.train()
         opt.zero_grad(set_to_none=True)  # drops any partial accumulation left from the previous epoch
         t0, n = time.time(), 0
-        sums = dict.fromkeys(["loss", "decor", "crop_acc", "disease_acc", "spy_crop_acc", "spy_disease_acc"], 0.0)
+        sums = dict.fromkeys(["loss", "decor", "crop_acc", "disease_acc", "spy_crop_acc", "spy_disease_acc"] + (["pair"] if pl else []), 0.0)
         for i, (x, y_crop, y_dis) in enumerate(loader):
             x, y_crop, y_dis = x.to(device, non_blocking=True), y_crop.to(device), y_dis.to(device)
             ramp = adversarial_ramp(step / ramp_steps) if dcfg["adversarial_ramp"] else 1.0
@@ -119,13 +160,23 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
                     z_crop_s, z_dis_s = o["z_crop"], o["z_dis"]
                 spies = model.spies(z_crop_s, z_dis_s, dcfg["adversarial_weight"] * ramp)
                 decor = decorrelation_loss(o["z_crop"].float(), o["z_dis"].float())
+                keep, pair_term = None, 0.0
+                if pl:  # the spies still see held-out images, so their accuracy stays a leakage measure over all images
+                    y_pair = pair_of[y_crop, y_dis]
+                    hold = (torch.rand(len(candidates), device=device) < pl["holdout_frac"]) & candidates
+                    keep = (~hold[y_pair]).float()
+                    z_pair = (F.log_softmax(o["crop"].float(), dim=-1)[:, pair_crop] + F.log_softmax(o["disease"].float(), dim=-1)[:, pair_dis]
+                              - pl["gamma0"] * (candidates & ~hold).float())
+                    pair_term = F.cross_entropy(z_pair.masked_fill(~candidates, -1e9), y_pair)
                 loss = (
-                    w["crop"] * F.cross_entropy(o["crop"].float(), y_crop, label_smoothing=ls)
-                    + w["disease"] * F.cross_entropy(o["disease"].float(), y_dis, label_smoothing=ls)
+                    w["crop"] * head_ce(o["crop"], y_crop, ls, keep)
+                    + w["disease"] * head_ce(o["disease"], y_dis, ls, keep)
                     + F.cross_entropy(spies["spy_crop"].float(), y_crop)
                     + F.cross_entropy(spies["spy_disease"].float(), y_dis)
                     + dcfg["decorrelation_weight"] * decor
                 )
+                if pl:
+                    loss = loss + pl["weight"] * pair_term
             scaler.scale(loss / accum).backward()
             if (i + 1) % accum == 0:
                 if clip:
@@ -135,21 +186,25 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, eval_loader=None, log=N
                 scaler.update()
                 opt.zero_grad(set_to_none=True)
                 sched.step()
+                if ema:
+                    ema.update_parameters(model)
             step += 1
             b = len(x)
             n += b
             sums["loss"] += loss.item() * b
             sums["decor"] += decor.item() * b
+            if pl:
+                sums["pair"] += pair_term.item() * b
             for key, logits, y in (("crop_acc", o["crop"], y_crop), ("disease_acc", o["disease"], y_dis),
                                    ("spy_crop_acc", spies["spy_crop"], y_crop), ("spy_disease_acc", spies["spy_disease"], y_dis)):
                 sums[key] += (logits.argmax(1) == y).sum().item()
-        rec = {"epoch": epoch, **{(k if k in ("loss", "decor") else f"train_{k}"): round(v / n, 4) for k, v in sums.items()},
+        rec = {"epoch": epoch, **{(k if k in ("loss", "decor", "pair") else f"train_{k}"): round(v / n, 4) for k, v in sums.items()},
                "adv_lambda": round(dcfg["adversarial_weight"] * ramp, 4), "sec": round(time.time() - t0)}
         if eval_loader is not None:
-            per_epoch.append(predict(model, eval_loader, device, amp))
+            per_epoch.append(predict(ema or model, eval_loader, device, amp))
         if log:
             log(rec)
-    return model, per_epoch
+    return (ema.module if ema else model), per_epoch
 
 
 def main():

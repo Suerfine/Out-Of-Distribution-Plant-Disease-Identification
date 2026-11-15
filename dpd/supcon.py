@@ -23,13 +23,27 @@ from dpd.resize_cache import cached_name
 HEADS = tuple(HEAD_SIZES)  # ("crop", "disease")
 
 
+class CosineLinear(nn.Module):
+    """Cosine classifier: scale * cos(feature, class weight). Opt-in replacement for the linear head."""
+
+    def __init__(self, dim, n_out, scale):
+        super().__init__()
+        self.weight = nn.Parameter(torch.randn(n_out, dim) * 0.02)
+        self.scale = scale
+
+    def forward(self, x):
+        return self.scale * F.linear(F.normalize(x.float(), dim=-1), F.normalize(self.weight.float(), dim=-1))
+
+
 class ContrastiveNet(nn.Module):
     """Backbone + one projection MLP per head; the output embeddings are L2-normalised."""
 
     def __init__(self, backbone: str, pretrained: bool, proj_dim: int, proj_hidden: int | None = None,
-                 ce_dropout: float | None = None, drop_path_rate: float = 0.0):
+                 ce_dropout: float | None = None, drop_path_rate: float = 0.0, cosine_scale: float | None = None,
+                 head_hidden: int | None = None):
         super().__init__()
         self.backbone, dim = build_backbone(backbone, pretrained, drop_path_rate)
+        self.feat_dim = dim
         hidden = proj_hidden or dim
         self.proj = nn.ModuleDict(
             {h: nn.Sequential(nn.Linear(dim, hidden), nn.ReLU(inplace=True), nn.Linear(hidden, proj_dim)) for h in HEADS}
@@ -37,13 +51,24 @@ class ContrastiveNet(nn.Module):
         # Optional linear classifier heads on the backbone features (as in the CNN baselines), trained with
         # cross-entropy next to the SupCon loss. None = pure SupCon.
         self.cls = None
+        self.logit_tau = None  # LogitNorm: when set, classify() returns logits / (tau * ||logits||)
         if ce_dropout is not None:
-            self.cls = nn.ModuleDict(
-                {h: nn.Sequential(nn.Dropout(ce_dropout), nn.Linear(dim, HEAD_SIZES[h])) for h in HEADS}
-            )
+            def make_head(h):  # linear (default), cosine (opt-in) or two-layer MLP (opt-in)
+                if cosine_scale:
+                    return nn.Sequential(nn.Dropout(ce_dropout), CosineLinear(dim, HEAD_SIZES[h], cosine_scale))
+                if head_hidden:
+                    return nn.Sequential(nn.Dropout(ce_dropout), nn.Linear(dim, head_hidden), nn.GELU(), nn.Dropout(ce_dropout),
+                                         nn.Linear(head_hidden, HEAD_SIZES[h]))
+                return nn.Sequential(nn.Dropout(ce_dropout), nn.Linear(dim, HEAD_SIZES[h]))
+
+            self.cls = nn.ModuleDict({h: make_head(h) for h in HEADS})
+        self.tta = False  # opt-in: average the head outputs over the image and its flips when embedding
 
     def classify(self, f) -> dict[str, torch.Tensor]:
-        return {h: c(f) for h, c in self.cls.items()}
+        out = {h: c(f) for h, c in self.cls.items()}
+        if self.logit_tau:
+            out = {h: l.float() / (l.float().norm(dim=-1, keepdim=True) * self.logit_tau + 1e-7) for h, l in out.items()}
+        return out
 
     def encode(self, x) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
         """Backbone features and the normalised embedding of each head."""
@@ -92,17 +117,30 @@ def embed(model: ContrastiveNet, loader, device: str, amp: bool) -> dict[str, np
     (an ImageLabels loader, test transform)."""
     model.eval()
     logp_keys = [f"logp_{h}" for h in HEADS] if model.cls is not None else []  # the CE heads' log-probabilities
-    out = {k: [] for k in (*HEADS, "feat", *logp_keys)}
+    aux = getattr(model, "aux", None)  # opt-in terms (dpd/new_terms.py)
+    has_comp = aux is not None and hasattr(aux, "comp")
+    out = {k: [] for k in (*HEADS, "feat", *logp_keys, *(["logp_comp"] if has_comp else []))}
     for x, _, _ in loader:
         with torch.autocast(device, enabled=amp):
             f, z = model.encode(x.to(device, non_blocking=True))
             logits = model.classify(f) if model.cls is not None else {}
+            if model.tta and logits:  # flip test-time augmentation (horizontal and vertical, as in training)
+                xs = x.to(device, non_blocking=True)
+                for flip in ((-1,), (-2,)):
+                    lf = model.classify(model.backbone(xs.flip(flip)))
+                    logits = {h: logits[h].float() + lf[h].float() for h in HEADS}
+                logits = {h: l / 3 for h, l in logits.items()}
         out["feat"].append(f.float().cpu())
+        if has_comp:
+            out["logp_comp"].append(aux.comp_logp(f.float()).cpu())
         for h in HEADS:
             out[h].append(z[h].cpu())
             if logits:
                 out[f"logp_{h}"].append(F.log_softmax(logits[h].float(), dim=-1).cpu())
-    return {k: torch.cat(v).numpy() for k, v in out.items()}
+    res = {k: torch.cat(v).numpy() for k, v in out.items()}
+    if has_comp:
+        res["fuse_w"] = np.array([float(aux.fusion_weight())])
+    return res
 
 
 def class_prototypes(emb: np.ndarray, labels: np.ndarray, n_classes: int) -> tuple[np.ndarray, np.ndarray]:

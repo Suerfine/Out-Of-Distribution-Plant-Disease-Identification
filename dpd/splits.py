@@ -11,7 +11,11 @@ import pandas as pd
 
 
 def make_validation_split(train: pd.DataFrame, n_holdout_pairs: int, min_holdout_images: int, val_fraction: float, seed: int,
-                          exclude_diseases: tuple[str, ...] = (), max_images_per_holdout_pair: int | None = None):
+                          exclude_diseases: tuple[str, ...] = (), max_images_per_holdout_pair: int | None = None,
+                          min_other_crops: int = 1):
+    """`min_other_crops` (default 1 = the original rule): a held-out pair's disease must stay in training on at least this
+    many other crops. All 10 real unseen pairs have their disease on 2 or more training crops, so 2 makes the
+    pseudo-unseen pairs match them (with 1, 15-35% of held-out pairs had the disease on a single crop)."""
     rng = np.random.default_rng(seed)
     counts = train.loc[~train["disease"].isin(exclude_diseases), "pair_id"].value_counts()
     candidates = rng.permutation(counts[counts >= min_holdout_images].index.to_numpy())
@@ -24,6 +28,11 @@ def make_validation_split(train: pd.DataFrame, n_holdout_pairs: int, min_holdout
         row = train[train["pair_id"] == p].iloc[0]
         # The crop and the disease must both survive in training, otherwise the pair is not compositional.
         if row["crop_id"] in set(keep["crop_id"]) and row["disease_id"] in set(keep["disease_id"]):
+            if min_other_crops > 1:  # the new pair and every pair already held out must keep enough crops per disease
+                crops_per_disease = keep.groupby("disease_id")["crop_id"].nunique()
+                held = train.loc[train["pair_id"].isin(holdout + [p]), "disease_id"].unique()
+                if any(crops_per_disease.get(d, 0) < min_other_crops for d in held):
+                    continue
             holdout.append(int(p))
     if len(holdout) < n_holdout_pairs:
         raise ValueError(f"Only found {len(holdout)} eligible pseudo-unseen pairs")
