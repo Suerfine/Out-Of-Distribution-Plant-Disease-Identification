@@ -1,0 +1,190 @@
+{
+  "_note": "v5.14: combination of the two v5.x ablations that beat v5.8 by > 2 points on 3-split validation: v5.13 (CoOp learned context + CSP, 62.59%) and v5.11 (Troika-style primitive branches + validation-chosen fusion, 62.23%). = v5.13 + v5.11's model.primitive_branches and evaluation.posthoc sections, copied unchanged; everything else as v5.13 (the two changes touch different settings: v5.13 the text side, v5.11 the image side and scoring). v5.9 (DRPT, +0.82), v5.12 (CoOp only, -0.62) are not included; v5.10 (multi-description) was not yet run and can be added as a v5.15 if it wins. Decision rule: keep v5.14 over v5.13 only if its mean validation HM is > 2 points above v5.13's, i.e. > 64.59% (ideally higher on every split: 59.35 / 64.91 / 63.50); between 62.6% and 64.6% keep the simpler v5.13. The gains may overlap, since both partly help disease recognition. Also compare the logged plain-scoring HM (no fusion) with v5.13 to see how much the branches add without fusion.",
+  "_result": "Pending.",
+  "version": "v5.14",
+  "title": "coop_csp_primitive_branches",
+  "method": "clip_prompt_lora",
+  "seed": 42,
+  "data": {
+    "_note": "Unchanged from v4.2.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Same OpenAI CLIP ViT-B/16 (QuickGELU) as v4.1/v4.2; the text encoder stays frozen. v5.14: + primitive_branches from v5.11.",
+    "library": "open_clip",
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai",
+    "primitive_branches": {
+      "_note": "From v5.11 (unchanged): crop and disease visual branches, residual linear maps on the CLS embedding initialised to zero (dpd/primitive_branches.py). lr as the LoRA adapters.",
+      "lr": 0.0001
+    }
+  },
+  "image_encoder": {
+    "_note": "From v5.3: v5 + more LoRA capacity: last 8 blocks instead of 4, rank 16 instead of 8. alpha 16 -> 32 keeps the LoRA scale (alpha/rank) at 2, so only capacity changes, not the effective step size. About 4x more adapter parameters (1.57M vs 393k). Same lr.",
+    "lora": {
+      "last_n_blocks": 8,
+      "rank": 16,
+      "alpha": 32,
+      "targets": [
+        "attn_qkv",
+        "attn_out",
+        "mlp_in",
+        "mlp_out"
+      ],
+      "lr": 0.0001
+    }
+  },
+  "input": {
+    "_note": "Images come from the 256 px resize cache (runs/cache/resized_256, shared with the CNN baselines). Test: CLIP's resize 224 + centre crop + CLIP mean/std. The app must standardise uploads the same way (dpd/resize_cache.standardise).",
+    "resize_cache": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "Same as the CNN baselines except a milder crop scale (0.5-1 instead of 0.25-1), because CLIP's pretrained features expect whole-object views. No hue jitter: colour is diagnostic.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "names": {
+    "_note": "Unchanged from v4.2.",
+    "underscore_to_space": true,
+    "crop_overrides": {
+      "pepper_bell": "bell pepper",
+      "paddy": "rice",
+      "blackgram": "black gram"
+    },
+    "disease_overrides": {
+      "xamthomonas": "xanthomonas bacterial blight",
+      "verticulium_wilt": "verticillium wilt",
+      "crinckle": "crinkle",
+      "monillia_laxa": "monilinia brown rot",
+      "leafblast": "leaf blast",
+      "die_back": "dieback",
+      "gray_light": "gray blight",
+      "curl": "leaf curl",
+      "viral": "viral disease",
+      "miner": "leaf miner damage",
+      "slug": "slug feeding damage",
+      "caterpillar": "caterpillar feeding damage",
+      "insects_damages": "insect damage",
+      "nutrition_deficiency": "nutrient deficiency",
+      "scorch": "leaf scorch",
+      "pox_virus": "plum pox virus",
+      "pocket_disease": "plum pocket disease",
+      "cercospora": "cercospora leaf spot",
+      "tungro": "tungro virus",
+      "hispa": "rice hispa beetle damage",
+      "aphis_spp": "aphids",
+      "eriosoma_lanigerum": "woolly apple aphids",
+      "icerya_seychellarum": "fluted scale insects",
+      "parthenolecanium_corni": "lecanium scale insects",
+      "ceroplastes_rubens": "red wax scale insects",
+      "aulacaspis_tubercularis": "white mango scale insects",
+      "ischnaspis_longirostris": "black thread scale insects",
+      "procontarinia_matteiana": "mango leaf gall midge galls",
+      "procontarinia_rubus": "gall midge galls",
+      "erosomyia_sp": "gall midge damage",
+      "venturia_inaequalis": "apple scab",
+      "gnomonia_leptostyla": "walnut anthracnose",
+      "erwinia_amylovora": "erwinia fire blight",
+      "aculus_olearius": "olive bud mites",
+      "cisaberoptus_kenyae": "leaf coating mites",
+      "dialeuropora_decempuncta": "whiteflies",
+      "neomelicharia_sparsa": "planthoppers",
+      "valanga_nigricornis": "grasshopper feeding damage",
+      "mictis_longicornis": "leaf-footed bug damage",
+      "apoderus_javanicus": "leaf-rolling weevil damage",
+      "orthaga_euadrusalis": "leaf webber caterpillars",
+      "dappula_tertia": "bagworms",
+      "diabrotica_speciosa": "cucumber beetle feeding damage"
+    }
+  },
+  "prompts": {
+    "_note": "CHANGED (v5.13): learned_context replaces 'a photo of' in all three templates; crop / disease vectors learned as in v5.8 (learn_primitives true). Names, descriptions and the rest of the templates as v5.8.",
+    "descriptions_file": "knowledge/disease_descriptions_v1.json",
+    "pair_template": "{crop} leaves with {disease}: {description}.",
+    "crop_template": "{crop} leaves.",
+    "disease_template": "leaves with {disease}: {description}.",
+    "learned_context": {
+      "_note": "NEW: learned context (dpd/prompt_learner.py). 3 vectors per prompt group (pairs, crops, diseases), shared by every class in the group and placed at the start of each sentence, initialised from the embeddings of 'a photo of' (so the words 'a photo of' are removed from the templates below and training starts from v5.8's sentence). CoOp's own default is 4 vectors from 'a photo of a'; 3 keeps the sentence identical at initialisation. Trained with the prompt vectors' optimiser group (lr 2e-4).",
+      "init": "a photo of"
+    },
+    "learn_primitives": true
+  },
+  "validation": {
+    "_note": "Same procedure as v4.2 but 1 split instead of 3: each split is now a full training run with the image encoder in the loop (images instead of cached embeddings). Note v4.2 showed one split can mis-set gamma, so treat v5's gamma with that caveat. v5.8: n_splits 1 -> 3 (seeds seed, seed+1, seed+2); selection uses the mean validation HM over splits, as in v4.2.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      0.1,
+      0.0025
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "Prompt vectors as v4.2 (AdamW lr 2e-4, weight decay 0, logit scale 100, loss weights pair 1 / crop 0.5 / disease 0.5). max_epochs 30 -> 15 (v4.1/v4.2 selected epochs 13-18 with cached features; each epoch now re-encodes every image). Batch 256 -> 64 for GPU memory with gradients through 4 image-encoder blocks.",
+    "lr": 0.0002,
+    "weight_decay": 0.0,
+    "batch_size": 64,
+    "max_epochs": 15,
+    "logit_scale": 100.0,
+    "loss_weights": {
+      "pair": 1.0,
+      "crop": 0.5,
+      "disease": 0.5
+    },
+    "final_fit": "all_train"
+  },
+  "evaluation": {
+    "_note": "As v5.13, plus posthoc fusion from v5.11.",
+    "top_k": [
+      1,
+      5
+    ],
+    "posthoc": {
+      "_note": "From v5.11 (unchanged): primitive fusion, so the branch features are used at prediction time: pair score + a * crop-branch score + b * disease-branch score (dpd/fusion.py), a and b chosen on validation with the epoch and gamma. Grids as v9 (which reached the 4.0 edge only in a smoke test). LoRA scale fixed at 1 (not part of this method). The run also logs plain scoring and a paired bootstrap of fused vs plain on validation.",
+      "crop_weight_grid": [
+        0.0,
+        0.5,
+        1.0,
+        2.0,
+        4.0
+      ],
+      "disease_weight_grid": [
+        0.0,
+        0.5,
+        1.0,
+        2.0,
+        4.0
+      ]
+    }
+  },
+  "runtime": {
+    "_note": "Gradient checkpointing on the text encoder as before. 4 dataloader workers read the resize cache.",
+    "device": "cuda",
+    "amp": true,
+    "grad_checkpointing": true,
+    "num_workers": 4
+  },
+  "output_dir": "runs/vlm/v5.14"
+}

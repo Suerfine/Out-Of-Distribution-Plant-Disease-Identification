@@ -39,7 +39,7 @@ from torch.utils.data import DataLoader
 from dpd.cnn import HEAD_SIZES, ImageLabels, MultiHeadNet, build_transforms, compose_pair_scores
 from dpd.config import load_config, output_dir
 from dpd.data import pair_table, read_metadata
-from dpd.evaluate import evaluate, format_summary
+from dpd.evaluate import evaluate, format_summary, parse_gamma_grid
 from dpd.report import save_test_outputs
 from dpd.resize_cache import ensure_resized
 from dpd.splits import make_validation_split
@@ -435,7 +435,9 @@ def main():
             except Exception:
                 pass
 
-    gammas = np.round(np.arange(*vcfg["gamma_grid"]), 6)
+    gammas = parse_gamma_grid(vcfg.get("gamma_grid"))
+    if len(gammas) == 1 and gammas[0] == 0.0:
+        print("Gamma tuning disabled (gamma_grid=0): evaluating uncalibrated (gamma=0.0) across all stages.", flush=True)
     hidden = pairs["is_unseen"].to_numpy() if vcfg["exclude_real_unseen_from_label_space"] else np.zeros(len(pairs), bool)
     n_splits = vcfg.get("n_splits", 3)
     max_epochs = tcfg["max_epochs"]

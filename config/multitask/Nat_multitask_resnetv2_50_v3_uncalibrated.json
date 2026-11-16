@@ -1,0 +1,112 @@
+{
+  "_note": "Nat_multitask_resnetv2_50_v3_uncalibrated: Multi-task ResNetV2-50 baseline optimized specifically for uncalibrated (gamma=0) generalized zero-shot evaluation. BiT (Big Transfer) ResNetV2-50x1 pretrained on ImageNet-21k and fine-tuned on ImageNet-1k (resnetv2_50x1_bit.goog_in21k_ft_in1k via timm). Gamma tuning is disabled ('gamma_grid': 0) so Stage 1 validation and early stopping target uncalibrated Harmonic Mean directly. Disease head is given higher loss weight (crop 0.7 / disease 1.3) to counter seen-disease dominance and prioritize pathology feature learning across the 175 disease classes. Incorporates symptom-preserving crop scale [0.5, 1.0], 1-epoch backbone warm-up, and 3-split cross-validation.",
+  "_result": "9 Nov: Test HM Top-1 10.55% / Top-5 45.01%; Seen Top-1 66.50% (Top-5 88.50%), Unseen Top-1 5.73% (Top-5 30.18%); Crop Top-1: seen 89.90% / unseen 67.75%; Disease Top-1: seen 68.85% / unseen 12.85%; Uncalibrated (gamma=0.0); Selected epoch 6 (val HM mean 5.36%).",
+  "version": "Nat_multitask_resnetv2_50_v3_uncalibrated",
+  "method": "multi_task_cnn",
+  "seed": 42,
+  "data": {
+    "_note": "Evaluation on test_seen (2,000) and test_unseen (1,448) across all 333 composition pairs.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "BiT ResNetV2-50x1 pretrained backbone (IN-21k) with dual linear heads (crop 55, disease 175) and dropout 0.2.",
+    "backbone": "resnetv2_50x1_bit.goog_in21k_ft_in1k",
+    "pretrained": true,
+    "head_dropout": 0.2
+  },
+  "input": {
+    "_note": "Standard 256x256 cache with 224x224 center crop for evaluation.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "Symptom-preserving crop scale [0.5, 1.0] avoids cropping out isolated lesions, with horizontal and vertical flips and gentle color jitter.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "Rebalanced task weights: disease head weighted 1.3 vs crop 0.7 to counter the severe imbalance between easy crop recognition (55 classes, >90% top-1) and hard disease diagnosis (175 classes, ~9% unseen top-1). Label smoothing 0.1 prevents overconfident logit extremes.",
+    "label_smoothing": 0.1,
+    "weighting": "fixed",
+    "weights": {
+      "crop": 0.7,
+      "disease": 1.3
+    },
+    "init_log_var": 0.0
+  },
+  "optimizer": {
+    "_note": "AdamW with lr_backbone 2e-5, lr_head 2e-4, weight_decay 0.05.",
+    "name": "adamw",
+    "lr_backbone": 2e-05,
+    "lr_head": 0.0002,
+    "weight_decay": 0.05,
+    "momentum": 0.9,
+    "nesterov": true
+  },
+  "scheduler": {
+    "_note": "Cosine annealing scheduler with 2 warmup epochs decaying to min_lr_ratio 0.01.",
+    "name": "cosine",
+    "warmup_epochs": 2,
+    "min_lr_ratio": 0.01,
+    "step_size_epochs": 7,
+    "step_factor": 0.1
+  },
+  "validation": {
+    "_note": "gamma_grid: 0 disables gamma tuning. Stage 1 validation and early stopping evaluate solely at gamma=0.0 to pick the optimal epoch for pure uncalibrated performance across 3 validation splits.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": 0,
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "freeze_backbone_epochs: 1 warms up dual heads. Early stopping with patience 8 monitoring uncalibrated val HM. Refit schedule 'compress' matches schedule to best_epoch.",
+    "batch_size": 16,
+    "max_epochs": 30,
+    "final_fit": "all_train",
+    "freeze_backbone_epochs": 1,
+    "accum_steps": 2,
+    "grad_clip_norm": 1.0,
+    "early_stopping": {
+      "patience": 8,
+      "min_epochs": 5
+    },
+    "refit_schedule": "compress"
+  },
+  "evaluation": {
+    "_note": "Standard DPD benchmark metrics: Top-1, Top-5, per-class means, and Harmonic Mean (HM).",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "AMP mixed precision on CUDA with 4 workers. Checkpointing every 5 epochs.",
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 4,
+    "checkpoint_every_n_epochs": 5,
+    "keep_checkpoints": false
+  },
+  "output_dir": "runs/multitask/Nat_multitask_resnetv2_50_v3_uncalibrated"
+}

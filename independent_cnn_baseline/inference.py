@@ -12,6 +12,8 @@ from .models import CachedImages, IndependentNet, transforms
 class IndependentCnnRunModel:
     logit_scale = 1.0
     score_help = "log P(crop) + log P(disease), after calibration"
+    supports_gradcam = True
+    gradcam_reason = None
 
     def __init__(self, run, pairs):
         self.run, self.pairs = run, pairs
@@ -74,3 +76,24 @@ class IndependentCnnRunModel:
         np.save(output, bank)
         files.write_text(json.dumps(expected), encoding="utf-8")
         return bank
+
+    def explain(self, src, pred_crop_id: int, pred_disease_id: int):
+        from dpd.gradcam import explain_cnn
+
+        for net in self.nets.values():
+            net.to(self.device)
+        try:
+            return explain_cnn(
+                self.nets["crop"],
+                self.transform,
+                self.config["input"]["resize_cache"],
+                src,
+                pred_crop_id,
+                pred_disease_id,
+                is_multi_task=False,
+                crop_net=self.nets["crop"],
+                disease_net=self.nets["disease"],
+            )
+        finally:
+            for net in self.nets.values():
+                net.cpu()
