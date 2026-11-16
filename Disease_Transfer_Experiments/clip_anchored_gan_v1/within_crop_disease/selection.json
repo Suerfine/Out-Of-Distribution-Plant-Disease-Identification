@@ -1,0 +1,60 @@
+{
+  "weight": 1.0,
+  "epochs": 1,
+  "correct": 773,
+  "baseline_correct": 773,
+  "control_best_correct": 778,
+  "all_development": {
+    "0.0": [
+      {
+        "epoch": 1,
+        "correct": 770,
+        "images": 862
+      },
+      {
+        "epoch": 2,
+        "correct": 778,
+        "images": 862
+      },
+      {
+        "epoch": 3,
+        "correct": 771,
+        "images": 862
+      }
+    ],
+    "0.5": [
+      {
+        "epoch": 1,
+        "correct": 770,
+        "images": 862
+      },
+      {
+        "epoch": 2,
+        "correct": 772,
+        "images": 862
+      },
+      {
+        "epoch": 3,
+        "correct": 769,
+        "images": 862
+      }
+    ],
+    "1.0": [
+      {
+        "epoch": 1,
+        "correct": 773,
+        "images": 862
+      },
+      {
+        "epoch": 2,
+        "correct": 770,
+        "images": 862
+      },
+      {
+        "epoch": 3,
+        "correct": 770,
+        "images": 862
+      }
+    ]
+  }
+}

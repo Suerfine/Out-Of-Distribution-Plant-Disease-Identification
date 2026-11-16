@@ -1,0 +1,47 @@
+{
+  "name": "independent_cnn_baseline_convnext_tiny_full_refit_seed42",
+  "legacy_root": "../Plant_Disease",
+  "output_dir": "runs/baseline/independent_cnn_baseline_convnext_tiny_full_refit_seed42",
+  "source_run": "runs/independent_convnext_tiny_22k_seed42",
+  "source_artifact_sha256": {
+    "config.resolved.json": "f3a4ea17196657bdeaa9cf962f3817f00a853d4708ea2fc9897897bde881db9c",
+    "fingerprint.txt": "037c5f201ae65b96ddf08629d85d119eb2ff0bbfe3af87cdc45db9d1c7bb47aa",
+    "fit.csv": "72d7f462aaab9f29eb6d43002b2f46581b7cc82340e8d38adb03b85cf0dc4a3c",
+    "validation.csv": "1b006f023a38f3c2322757fb8f6da4efc54ba263f9cda191c2b6d3578da5c205",
+    "labels.json": "130d19c84d9b53fa1231bc8208d04d268c935b4f8c6e88f31d0182c39e1e1277",
+    "provenance.json": "ccca494b372c34c35fff10c8c50af0b0e09e7cd9d4c888cac15fdca1c8315481",
+    "metrics.json": "6040fb9efab556429bfc97687242337edb991a3badf07dd5d13862fdb48aa49d",
+    "crop/best.pt": "832cdcf8695d4af5aab893c7cb21103e64c14d054f4dc7764aeac1c1a867793c",
+    "crop/last.pt": "09b585a2c17e6cb87546d850418ccedb80ed16890bf27d3a31b44472131800bd",
+    "crop/summary.json": "ad78a2e4910a0c452faf3745501a7052e6dabb5338598232ae5f16057712073b",
+    "crop/history.json": "125c2db2d016b1f8dedfd48ece9b71fcde6cbcbd7126782ed077f9a034f7b8b0",
+    "crop/preprocessing.json": "2d80679c71b254013fb0559f6c3445a26106d93c8957b411cbd30032ef2d076b",
+    "crop/learning_curves.png": "b05c092473c66625250a36bc5627168c42f0a2d8e3e1b521307efff53ee216de",
+    "disease/best.pt": "1691f542e11bbb90ea9c847411545edde46b0c739d0df72a2a9fcb2d25ff2134",
+    "disease/last.pt": "7ce88fdf3822ca2d8e5c7eb44ef85eaae767e0e1a91354321ffa8513b3088371",
+    "disease/summary.json": "f67c1dbb5f97dadb2ad161cd0d6b7142865e03ef13a710f006e1f9bca6b172ea",
+    "disease/history.json": "8711a3a3e82d0c315b1ce873ec296add0c493a91371e2353c400ee46060d71ba",
+    "disease/preprocessing.json": "2d80679c71b254013fb0559f6c3445a26106d93c8957b411cbd30032ef2d076b",
+    "disease/learning_curves.png": "dbac373dbe22468aaf8352d3aa6f91042da9bc05427c468ef0af7918dbd5dd3a"
+  },
+  "legacy_code_sha256": {
+    "baseline/engine.py": "575cf806a019fa03474b7c64b2a4798652ea1fb0758d226789cf4d73d47eadf9",
+    "baseline/data.py": "3b20563336270778e3234b427dcd92357092402197048c8848851f00b3e0b13d",
+    "baseline/metrics.py": "eabd109e26afe25fff9ccdf16946edf750b4e3abec4579425206c601b8459505"
+  },
+  "pretrained_file": ".cache/huggingface/hub/models--timm--convnext_tiny.fb_in22k/snapshots/342f2588bb2ea79d793d0712c9be16ec6ae0149a/model.safetensors",
+  "pretrained_revision": "342f2588bb2ea79d793d0712c9be16ec6ae0149a",
+  "pretrained_sha256": "2b40f8d53b566a8c08c0c75f93ff5ac6fa33bd213afb27ee40766af7ffe5943b",
+  "target_epochs": {
+    "crop": 17,
+    "disease": 16
+  },
+  "target_seeds": {
+    "crop": 42,
+    "disease": 43
+  },
+  "gamma": 0.0,
+  "lr_schedule_horizon": 30,
+  "inference_batch_size": 1,
+  "window_hours": 10
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "epoch": 1,
+    "correct": 765,
+    "images": 862
+  },
+  {
+    "epoch": 2,
+    "correct": 760,
+    "images": 862
+  },
+  {
+    "epoch": 3,
+    "correct": 769,
+    "images": 862
+  }
+]

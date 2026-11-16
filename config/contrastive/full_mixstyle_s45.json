@@ -1,0 +1,119 @@
+{
+  "_note": "Queue 12 (2026-11-14 night): control_full_s45 with ONE change: MixStyle (Zhou et al., ICLR 2021) after ConvNeXt stages 0 and 1 (probability 0.5 per batch, Beta(0.1, 0.1)): each image's per-channel feature mean and standard deviation are blended with another image's in the batch, so the network cannot lean on the crop's look (style) to decide the disease. Aim: disease recognition on unseen crops before gamma. seed 45. Full protocol; validation.save_parts only saves outputs.",
+  "_result": "Queue 12 (2026-11-14 night). Pass rule: beat the control on test on both seeds (70.71 / 68.85; with crop weight 74.02 / 72.76). FAILED. Test HM Top-1 66.31 (seen 59.6, unseen 74.8), epoch 14, gamma 7.75: -2.54 vs control. Gamma 0: HM 18.74. Disease head alone on unseen images 8.0% (control 11.0), crop head alone 82.9%. With crop weight 1.5 gamma 8.5 (own validation): 70.30.",
+  "version": "full_mixstyle_s45",
+  "method": "cnn_supcon",
+  "seed": 45,
+  "data": {
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "ConvNeXt-Base from timm, ImageNet-22k pretraining then 1k fine-tuning; drop_path_rate is stochastic depth. ce_dropout matches the baseline's head dropout.",
+    "backbone": "timm:convnext_base.fb_in22k_ft_in1k",
+    "pretrained": true,
+    "proj_dim": 128,
+    "proj_hidden": null,
+    "ce_dropout": 0.2,
+    "drop_path_rate": 0.1
+  },
+  "input": {
+    "_note": "Bicubic resizing, as ConvNeXt was pretrained.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224,
+    "interpolation": "bicubic"
+  },
+  "augmentation": {
+    "_note": "Same as the independent ConvNeXt-Base baseline.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    },
+    "mixstyle": {
+      "p": 0.5,
+      "alpha": 0.1,
+      "stages": [
+        0,
+        1
+      ]
+    }
+  },
+  "loss": {
+    "_note": "CHANGED from Run 4: SupCon weights 0 (the SupCon term is still computed but has no gradient). Cross-entropy and the pair loss unchanged.",
+    "temperature": 0.1,
+    "weights": {
+      "crop": 0.0,
+      "disease": 0.0
+    },
+    "ce_weight": 1.0,
+    "label_smoothing": 0.1,
+    "pair_loss": {
+      "weight": 1.0,
+      "gamma0": 6.75,
+      "holdout_frac": 0.1,
+      "mask_ce_on_holdout": true
+    }
+  },
+  "scoring": {
+    "_note": "CHANGED: mode heads, the cross-entropy heads' log-probabilities. temperature is only used for the prototypes saved alongside.",
+    "mode": "heads",
+    "temperature": 0.1
+  },
+  "optimizer": {
+    "_note": "As the independent ConvNeXt-Base baseline (lr_head also covers the projection and cross-entropy heads).",
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05
+  },
+  "validation": {
+    "_note": "Same as supcon_resnet50.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      40.0,
+      0.25
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3,
+    "save_parts": true
+  },
+  "training": {
+    "_note": "final_schedule match_validation as in Run 2. No saved validation grid is reused: stage 1 runs in full because the training loss changed.",
+    "batch_size": 64,
+    "max_epochs": 20,
+    "final_fit": "all_train",
+    "final_schedule": "match_validation"
+  },
+  "evaluation": {
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2,
+    "grad_checkpointing": true,
+    "_note": "grad_checkpointing: recompute backbone activations in the backward pass; identical gradients, less GPU memory, somewhat slower. Needed because ConvNeXt-Base with 128 views per step did not fit in 16 GB."
+  },
+  "output_dir": "runs/contrastive/full_mixstyle_s45"
+}

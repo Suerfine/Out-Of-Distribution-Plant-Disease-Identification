@@ -1,0 +1,310 @@
+{
+  "gamma": 3.0,
+  "images": 652,
+  "baseline": {
+    "top1": 593,
+    "top3": 638,
+    "disease_top1": 595,
+    "median_true_disease_margin": 6.215576171875
+  },
+  "epochs": 3,
+  "extra_vectors_per_pair": 16,
+  "total_extra_vectors": 1072,
+  "targets": [
+    {
+      "pair": "apple_alternaria_leaf_spot",
+      "fit_images": 18
+    },
+    {
+      "pair": "apple_black_rot",
+      "fit_images": 18
+    },
+    {
+      "pair": "apple_eriosoma_lanigerum",
+      "fit_images": 15
+    },
+    {
+      "pair": "apple_monillia_laxa",
+      "fit_images": 8
+    },
+    {
+      "pair": "apple_powdery_mildew",
+      "fit_images": 25
+    },
+    {
+      "pair": "banana_cordana_leaf_spot",
+      "fit_images": 12
+    },
+    {
+      "pair": "banana_healthy",
+      "fit_images": 10
+    },
+    {
+      "pair": "banana_pestalotiopsis",
+      "fit_images": 8
+    },
+    {
+      "pair": "banana_segatoka",
+      "fit_images": 10
+    },
+    {
+      "pair": "banana_sigatoka",
+      "fit_images": 9
+    },
+    {
+      "pair": "bean_angular_leaf_spot",
+      "fit_images": 16
+    },
+    {
+      "pair": "bean_bean_rust",
+      "fit_images": 10
+    },
+    {
+      "pair": "bean_healthy",
+      "fit_images": 9
+    },
+    {
+      "pair": "blackgram_healthy",
+      "fit_images": 12
+    },
+    {
+      "pair": "blackgram_yellow_mosaic",
+      "fit_images": 12
+    },
+    {
+      "pair": "cassava_brown_leaf_spot",
+      "fit_images": 24
+    },
+    {
+      "pair": "cassava_red_mite",
+      "fit_images": 12
+    },
+    {
+      "pair": "coffee_miner",
+      "fit_images": 23
+    },
+    {
+      "pair": "coffee_phoma",
+      "fit_images": 11
+    },
+    {
+      "pair": "cotton_healthy",
+      "fit_images": 13
+    },
+    {
+      "pair": "cotton_powdery_mildew",
+      "fit_images": 11
+    },
+    {
+      "pair": "cotton_target_spot",
+      "fit_images": 23
+    },
+    {
+      "pair": "guava_healthy",
+      "fit_images": 16
+    },
+    {
+      "pair": "mango_bacterial_canker",
+      "fit_images": 12
+    },
+    {
+      "pair": "mango_die_back",
+      "fit_images": 11
+    },
+    {
+      "pair": "mango_gall_midge",
+      "fit_images": 13
+    },
+    {
+      "pair": "mango_healthy",
+      "fit_images": 16
+    },
+    {
+      "pair": "mango_sooty_mould",
+      "fit_images": 14
+    },
+    {
+      "pair": "paddy_bacterial_blight",
+      "fit_images": 23
+    },
+    {
+      "pair": "paddy_bacterial_leaf_streak",
+      "fit_images": 12
+    },
+    {
+      "pair": "paddy_bacterial_panicle_blight",
+      "fit_images": 15
+    },
+    {
+      "pair": "paddy_black_stem_borer",
+      "fit_images": 15
+    },
+    {
+      "pair": "paddy_downy_mildew",
+      "fit_images": 17
+    },
+    {
+      "pair": "paddy_yellow_stem_borer",
+      "fit_images": 18
+    },
+    {
+      "pair": "palm_healthy",
+      "fit_images": 15
+    },
+    {
+      "pair": "palm_white_scale",
+      "fit_images": 15
+    },
+    {
+      "pair": "papaya_anthracnose",
+      "fit_images": 11
+    },
+    {
+      "pair": "papaya_ring_spot",
+      "fit_images": 16
+    },
+    {
+      "pair": "peach_healthy",
+      "fit_images": 22
+    },
+    {
+      "pair": "peach_curl",
+      "fit_images": 11
+    },
+    {
+      "pair": "peach_parthenolecanium_corni",
+      "fit_images": 10
+    },
+    {
+      "pair": "peanut_late_leaf_spot",
+      "fit_images": 24
+    },
+    {
+      "pair": "peanut_nutrition_deficiency",
+      "fit_images": 15
+    },
+    {
+      "pair": "peanut_rust",
+      "fit_images": 8
+    },
+    {
+      "pair": "pear_erwinia_amylovora",
+      "fit_images": 9
+    },
+    {
+      "pair": "pear_spot",
+      "fit_images": 21
+    },
+    {
+      "pair": "raspberry_healthy",
+      "fit_images": 11
+    },
+    {
+      "pair": "rose_black_spot",
+      "fit_images": 12
+    },
+    {
+      "pair": "rose_downy_mildew",
+      "fit_images": 10
+    },
+    {
+      "pair": "rose_healthy",
+      "fit_images": 14
+    },
+    {
+      "pair": "strawberry_healthy",
+      "fit_images": 18
+    },
+    {
+      "pair": "sugarcane_brown_spot",
+      "fit_images": 20
+    },
+    {
+      "pair": "sugarcane_grassy_shoot",
+      "fit_images": 14
+    },
+    {
+      "pair": "sugarcane_healthy",
+      "fit_images": 16
+    },
+    {
+      "pair": "sugarcane_mosaic",
+      "fit_images": 16
+    },
+    {
+      "pair": "sugarcane_pokkah_boeng",
+      "fit_images": 8
+    },
+    {
+      "pair": "sugarcane_red_rot",
+      "fit_images": 17
+    },
+    {
+      "pair": "sugarcane_sett_rot",
+      "fit_images": 10
+    },
+    {
+      "pair": "sugarcane_yellowing",
+      "fit_images": 18
+    },
+    {
+      "pair": "tea_brown_blight",
+      "fit_images": 10
+    },
+    {
+      "pair": "tomato_blight_leaf",
+      "fit_images": 9
+    },
+    {
+      "pair": "tomato_verticulium_wilt",
+      "fit_images": 25
+    },
+    {
+      "pair": "wheat_head_scab",
+      "fit_images": 11
+    },
+    {
+      "pair": "wheat_healthy",
+      "fit_images": 15
+    },
+    {
+      "pair": "wheat_loose_smut",
+      "fit_images": 14
+    },
+    {
+      "pair": "wheat_septoria_blotch",
+      "fit_images": 11
+    },
+    {
+      "pair": "wheat_stripe_rust",
+      "fit_images": 17
+    }
+  ],
+  "targeted_validation_images": 93,
+  "arms": {
+    "real_only": {
+      "top1": 593,
+      "top3": 634,
+      "disease_top1": 595,
+      "median_true_disease_margin": 8.581883430480957,
+      "targeted_top1": 72,
+      "other_top1": 521
+    },
+    "repeat_targeted": {
+      "top1": 596,
+      "top3": 635,
+      "disease_top1": 598,
+      "median_true_disease_margin": 8.475171089172363,
+      "targeted_top1": 75,
+      "other_top1": 521
+    },
+    "gan_targeted": {
+      "top1": 596,
+      "top3": 635,
+      "disease_top1": 598,
+      "median_true_disease_margin": 7.515784740447998,
+      "targeted_top1": 74,
+      "other_top1": 522
+    }
+  }
+}

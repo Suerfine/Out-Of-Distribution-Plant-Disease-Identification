@@ -42,11 +42,12 @@ def text_embeddings(model, group, amp):
 def fit(model, feats, y_pair, y_crop, y_disease, trained_pairs, epochs, tcfg, runtime, on_epoch_end=None, history_path=None):
     """Train the crop/disease vectors. `trained_pairs`: pair ids the pair loss may use (the rest stay unseen)."""
     device = runtime["device"]
-    params = [model.crop_vecs, model.disease_vecs]
+    params = [model.crop_vecs, model.disease_vecs, *model.ctx.values()]
     opt = torch.optim.AdamW(params, lr=tcfg["lr"], weight_decay=tcfg["weight_decay"])
     n = len(feats)
     steps_per_epoch = int(np.ceil(n / tcfg["batch_size"]))
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs * steps_per_epoch)
+    # lr_schedule_epochs: fixed cosine horizon, so the stage-2 refit follows the first epochs of stage 1 (see train_lora.py).
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=tcfg.get("lr_schedule_epochs", epochs) * steps_per_epoch)
     scale = tcfg["logit_scale"]
     trained = torch.as_tensor(trained_pairs, device=device)
     # Map pair id -> column in the trained-pairs logits.

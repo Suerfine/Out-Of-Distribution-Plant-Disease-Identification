@@ -1,0 +1,257 @@
+{
+  "split": 42,
+  "images": [
+    862,
+    533
+  ],
+  "totals": {
+    "locked": {
+      "fixed_current": [
+        593,
+        315
+      ],
+      "retuned_gap": [
+        605,
+        313
+      ],
+      "group_label": [
+        652,
+        271
+      ],
+      "expert_correctness": [
+        643,
+        291
+      ]
+    },
+    "matched_unseen": {
+      "fixed_current": [
+        604,
+        315
+      ],
+      "retuned_gap": [
+        604,
+        315
+      ],
+      "group_label": [
+        638,
+        315
+      ],
+      "expert_correctness": [
+        643,
+        315
+      ]
+    }
+  },
+  "folds": [
+    {
+      "fixed_current": {
+        "locked": [
+          77,
+          91
+        ],
+        "matched_unseen": [
+          78,
+          91
+        ]
+      },
+      "retuned_gap": {
+        "locked": [
+          77,
+          91
+        ],
+        "matched_unseen": [
+          78,
+          91
+        ]
+      },
+      "group_label": {
+        "locked": [
+          113,
+          38
+        ],
+        "matched_unseen": [
+          66,
+          91
+        ]
+      },
+      "expert_correctness": {
+        "locked": [
+          112,
+          63
+        ],
+        "matched_unseen": [
+          78,
+          91
+        ]
+      }
+    },
+    {
+      "fixed_current": {
+        "locked": [
+          152,
+          66
+        ],
+        "matched_unseen": [
+          153,
+          66
+        ]
+      },
+      "retuned_gap": {
+        "locked": [
+          153,
+          66
+        ],
+        "matched_unseen": [
+          153,
+          66
+        ]
+      },
+      "group_label": {
+        "locked": [
+          175,
+          70
+        ],
+        "matched_unseen": [
+          187,
+          66
+        ]
+      },
+      "expert_correctness": {
+        "locked": [
+          160,
+          70
+        ],
+        "matched_unseen": [
+          181,
+          66
+        ]
+      }
+    },
+    {
+      "fixed_current": {
+        "locked": [
+          170,
+          47
+        ],
+        "matched_unseen": [
+          171,
+          47
+        ]
+      },
+      "retuned_gap": {
+        "locked": [
+          175,
+          45
+        ],
+        "matched_unseen": [
+          171,
+          47
+        ]
+      },
+      "group_label": {
+        "locked": [
+          177,
+          47
+        ],
+        "matched_unseen": [
+          181,
+          47
+        ]
+      },
+      "expert_correctness": {
+        "locked": [
+          172,
+          47
+        ],
+        "matched_unseen": [
+          181,
+          47
+        ]
+      }
+    },
+    {
+      "fixed_current": {
+        "locked": [
+          122,
+          50
+        ],
+        "matched_unseen": [
+          124,
+          50
+        ]
+      },
+      "retuned_gap": {
+        "locked": [
+          123,
+          50
+        ],
+        "matched_unseen": [
+          124,
+          50
+        ]
+      },
+      "group_label": {
+        "locked": [
+          135,
+          38
+        ],
+        "matched_unseen": [
+          113,
+          50
+        ]
+      },
+      "expert_correctness": {
+        "locked": [
+          134,
+          37
+        ],
+        "matched_unseen": [
+          112,
+          50
+        ]
+      }
+    },
+    {
+      "fixed_current": {
+        "locked": [
+          72,
+          61
+        ],
+        "matched_unseen": [
+          78,
+          61
+        ]
+      },
+      "retuned_gap": {
+        "locked": [
+          77,
+          61
+        ],
+        "matched_unseen": [
+          78,
+          61
+        ]
+      },
+      "group_label": {
+        "locked": [
+          52,
+          78
+        ],
+        "matched_unseen": [
+          91,
+          61
+        ]
+      },
+      "expert_correctness": {
+        "locked": [
+          65,
+          74
+        ],
+        "matched_unseen": [
+          91,
+          61
+        ]
+      }
+    }
+  ]
+}

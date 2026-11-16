@@ -1,0 +1,102 @@
+{
+  "pair_based": {
+    "raw_handoff": {
+      "seen": 0.8839907192575406,
+      "unseen": 0.22889305816135083,
+      "h": 0.36363067415071093,
+      "seen_correct": 762,
+      "unseen_correct": 122
+    },
+    "calibrated_development": {
+      "seen": 0.7111368909512761,
+      "unseen": 0.626641651031895,
+      "h": 0.6662208750856197,
+      "seen_correct": 613,
+      "unseen_correct": 334
+    },
+    "gamma": 2.9,
+    "unseen_expert_only": 375,
+    "standalone_raw": {
+      "seen": 0.8422273781902552,
+      "unseen": 0.22889305816135083,
+      "h": 0.359959522232292,
+      "seen_correct": 726,
+      "unseen_correct": 122
+    }
+  },
+  "disease_real_only": {
+    "raw_handoff": {
+      "seen": 0.8967517401392111,
+      "unseen": 0.03564727954971857,
+      "h": 0.06856884079115379,
+      "seen_correct": 773,
+      "unseen_correct": 19
+    },
+    "calibrated_development": {
+      "seen": 0.7320185614849188,
+      "unseen": 0.41838649155722324,
+      "h": 0.5324501607230361,
+      "seen_correct": 631,
+      "unseen_correct": 223
+    },
+    "gamma": 6.4,
+    "unseen_expert_only": 284,
+    "standalone_raw": {
+      "seen": 0.8480278422273781,
+      "unseen": 0.03564727954971857,
+      "h": 0.06841855069322489,
+      "seen_correct": 731,
+      "unseen_correct": 19
+    }
+  },
+  "disease_repeated_real": {
+    "raw_handoff": {
+      "seen": 0.8932714617169374,
+      "unseen": 0.04878048780487805,
+      "h": 0.09250916080975552,
+      "seen_correct": 770,
+      "unseen_correct": 26
+    },
+    "calibrated_development": {
+      "seen": 0.6937354988399071,
+      "unseen": 0.45590994371482174,
+      "h": 0.5502234002271866,
+      "seen_correct": 598,
+      "unseen_correct": 243
+    },
+    "gamma": 6.5,
+    "unseen_expert_only": 280,
+    "standalone_raw": {
+      "seen": 0.8248259860788864,
+      "unseen": 0.04878048780487805,
+      "h": 0.09211336032388663,
+      "seen_correct": 711,
+      "unseen_correct": 26
+    }
+  },
+  "disease_plus_gan": {
+    "raw_handoff": {
+      "seen": 0.8735498839907193,
+      "unseen": 0.23639774859287055,
+      "h": 0.372099042867984,
+      "seen_correct": 753,
+      "unseen_correct": 126
+    },
+    "calibrated_development": {
+      "seen": 0.6879350348027842,
+      "unseen": 0.5909943714821764,
+      "h": 0.6357907348378741,
+      "seen_correct": 593,
+      "unseen_correct": 315
+    },
+    "gamma": 3.0,
+    "unseen_expert_only": 362,
+    "standalone_raw": {
+      "seen": 0.8259860788863109,
+      "unseen": 0.23639774859287055,
+      "h": 0.36759077908987353,
+      "seen_correct": 712,
+      "unseen_correct": 126
+    }
+  }
+}

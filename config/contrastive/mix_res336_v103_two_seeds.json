@@ -1,0 +1,61 @@
+{
+  "_note": "Final mix, two-seed version (2026-11-16): the four resolution-336 ConvNeXt-Base models of the contrastive family (control and same-crop mixing 0.5, seeds 42 and 45) mixed with v10.3 (CLIP ViT-B/16 with LoRA, the VLM branch's config) trained on seeds 42 and 45 on this machine (test HM 67.09 and 70.48 alone). ConvNeXt side: the four models' crop and disease log-probabilities are averaged, pair score = 1.75 * log P(crop) + log P(disease). CLIP side: mean of the two runs' log-probabilities over the 333 pairs. Mix = clip_weight * CLIP + (1 - clip_weight) * ConvNeXt, gamma subtracted from seen pairs. Built from finished runs by train/supcon_eval/mix_v103_two_seeds.py (validation choice, then one test read) and mix_v103_report.py (report files). Rule fixed before the test read: this version replaces the one-seed mix (mix_res336_v103) whatever its test score, because both sides now use both seeds and the weight is chosen with all four ConvNeXt models. The 384-resolution runs (full_scmix_res384[_s45]) failed the both-seeds rule and are not members.",
+  "_result": "Test HM Top-1 77.00 / Top-5 95.73; seen 66.5, unseen 91.4. Gamma 0: HM 26.81 (seen 75.5, unseen 16.3). Chosen on the mean validation HM of six splits (seeds 42-44 with the seed-42 models, 45-47 with the seed-45 models): clip_weight 0.45, gamma 7.5, validation HM 68.82 (per split 64.37 / 67.69 / 71.12 / 70.58 / 70.56 / 68.59) against 64.74 for the ConvNeXt side alone and 60.12 for CLIP alone. Test read once. For comparison: one-seed mix 76.38, the four 336 models alone 76.11, v6.3 74.99. Gains of this size (+0.6 over the one-seed mix, +0.9 over the ConvNeXt side alone) are inside the seed-to-seed noise of about 2 points (v10.3 itself moved 3.4 points between its two seeds). To disclose: on validation each split sees one CLIP seed and two ConvNeXt models, on test both CLIP seeds and all four ConvNeXt models are averaged; crop weight 1.75 is carried over from Run 23.",
+  "version": "mix_res336_v103_two_seeds",
+  "title": "convnext336_x4_v10.3_x2_mix",
+  "method": "supcon_mix",
+  "seed": 42,
+  "members": {
+    "_note": "convnext: contrastive-family runs (method cnn_supcon), averaged with equal weights. clip: CLIP + LoRA runs, averaged in log-probabilities.",
+    "convnext": [
+      "runs/contrastive/full_res336",
+      "runs/contrastive/full_res336_s45",
+      "runs/contrastive/full_scmix_res336",
+      "runs/contrastive/full_scmix_res336_s45"
+    ],
+    "clip": [
+      "runs/vlm/v10.3",
+      "runs/vlm/v10.3_s45"
+    ]
+  },
+  "ensemble": {
+    "_note": "clip_weight and gamma chosen on validation (grid: clip_weight 0 to 1 in steps of 0.05, gamma 0 to 15 in steps of 0.25); crop_weight fixed beforehand.",
+    "clip_weight": 0.45,
+    "crop_weight": 1.75,
+    "gamma": 7.5,
+    "validation_runs": {
+      "seeds 42-44": [
+        "runs/contrastive/full_res336",
+        "runs/contrastive/full_scmix_res336",
+        "runs/vlm/v10.3"
+      ],
+      "seeds 45-47": [
+        "runs/contrastive/full_res336_s45",
+        "runs/contrastive/full_scmix_res336_s45",
+        "runs/vlm/v10.3_s45"
+      ]
+    },
+    "metrics_file": "runs/contrastive/mix_v103_two_seeds_metrics.json",
+    "validation_result": {
+      "val_hm": 0.6882,
+      "convnext_side_alone_val_hm": 0.6474,
+      "clip_alone_val_hm": 0.6012,
+      "n_splits": 6
+    }
+  },
+  "validation": {
+    "_note": "Only the gamma range the app's slider shows (log-probability units); the splits are those of the member runs.",
+    "gamma_grid": [
+      0.0,
+      15.0,
+      0.25
+    ]
+  },
+  "evaluation": {
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "output_dir": "runs/contrastive/mix_res336_v103_two_seeds"
+}

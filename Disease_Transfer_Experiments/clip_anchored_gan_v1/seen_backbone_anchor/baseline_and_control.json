@@ -1,0 +1,332 @@
+{
+  "gamma": 3.0,
+  "baseline": {
+    "correct": 593,
+    "top3": 638,
+    "images": 652,
+    "by_source": {
+      "APPD": {
+        "images": 1,
+        "correct": 0
+      },
+      "BDPL": {
+        "images": 1,
+        "correct": 1
+      },
+      "BLD2": {
+        "images": 4,
+        "correct": 3
+      },
+      "BLDI": {
+        "images": 5,
+        "correct": 4
+      },
+      "BLSD": {
+        "images": 4,
+        "correct": 4
+      },
+      "BPLD": {
+        "images": 1,
+        "correct": 1
+      },
+      "CC": {
+        "images": 3,
+        "correct": 3
+      },
+      "CD": {
+        "images": 5,
+        "correct": 3
+      },
+      "CDC": {
+        "images": 6,
+        "correct": 3
+      },
+      "CDDM": {
+        "images": 296,
+        "correct": 284
+      },
+      "CDRD": {
+        "images": 2,
+        "correct": 1
+      },
+      "CLDI": {
+        "images": 5,
+        "correct": 4
+      },
+      "COF": {
+        "images": 1,
+        "correct": 1
+      },
+      "COF2": {
+        "images": 4,
+        "correct": 4
+      },
+      "COPD": {
+        "images": 6,
+        "correct": 5
+      },
+      "CPDD": {
+        "images": 39,
+        "correct": 36
+      },
+      "CUPD": {
+        "images": 18,
+        "correct": 13
+      },
+      "DMOS": {
+        "images": 11,
+        "correct": 11
+      },
+      "DPD": {
+        "images": 3,
+        "correct": 3
+      },
+      "ESCA": {
+        "images": 6,
+        "correct": 6
+      },
+      "FN": {
+        "images": 5,
+        "correct": 5
+      },
+      "FP": {
+        "images": 4,
+        "correct": 4
+      },
+      "GD": {
+        "images": 1,
+        "correct": 1
+      },
+      "GLD": {
+        "images": 16,
+        "correct": 10
+      },
+      "LSAN": {
+        "images": 11,
+        "correct": 8
+      },
+      "MLBD": {
+        "images": 9,
+        "correct": 9
+      },
+      "MTID": {
+        "images": 52,
+        "correct": 52
+      },
+      "OD": {
+        "images": 16,
+        "correct": 16
+      },
+      "OSF": {
+        "images": 9,
+        "correct": 8
+      },
+      "PD": {
+        "images": 44,
+        "correct": 34
+      },
+      "PDL2": {
+        "images": 16,
+        "correct": 16
+      },
+      "PDN": {
+        "images": 3,
+        "correct": 3
+      },
+      "PWV2": {
+        "images": 11,
+        "correct": 7
+      },
+      "RDD1": {
+        "images": 2,
+        "correct": 2
+      },
+      "SBL": {
+        "images": 23,
+        "correct": 23
+      },
+      "SCLD": {
+        "images": 1,
+        "correct": 1
+      },
+      "SFLD": {
+        "images": 2,
+        "correct": 1
+      },
+      "SLDD": {
+        "images": 5,
+        "correct": 3
+      },
+      "TSD": {
+        "images": 1,
+        "correct": 0
+      }
+    }
+  },
+  "control": [
+    {
+      "epoch": 2,
+      "correct": 597,
+      "top3": 638,
+      "images": 652,
+      "by_source": {
+        "APPD": {
+          "images": 1,
+          "correct": 0
+        },
+        "BDPL": {
+          "images": 1,
+          "correct": 1
+        },
+        "BLD2": {
+          "images": 4,
+          "correct": 3
+        },
+        "BLDI": {
+          "images": 5,
+          "correct": 4
+        },
+        "BLSD": {
+          "images": 4,
+          "correct": 4
+        },
+        "BPLD": {
+          "images": 1,
+          "correct": 1
+        },
+        "CC": {
+          "images": 3,
+          "correct": 3
+        },
+        "CD": {
+          "images": 5,
+          "correct": 3
+        },
+        "CDC": {
+          "images": 6,
+          "correct": 3
+        },
+        "CDDM": {
+          "images": 296,
+          "correct": 283
+        },
+        "CDRD": {
+          "images": 2,
+          "correct": 1
+        },
+        "CLDI": {
+          "images": 5,
+          "correct": 4
+        },
+        "COF": {
+          "images": 1,
+          "correct": 1
+        },
+        "COF2": {
+          "images": 4,
+          "correct": 4
+        },
+        "COPD": {
+          "images": 6,
+          "correct": 5
+        },
+        "CPDD": {
+          "images": 39,
+          "correct": 36
+        },
+        "CUPD": {
+          "images": 18,
+          "correct": 12
+        },
+        "DMOS": {
+          "images": 11,
+          "correct": 10
+        },
+        "DPD": {
+          "images": 3,
+          "correct": 3
+        },
+        "ESCA": {
+          "images": 6,
+          "correct": 6
+        },
+        "FN": {
+          "images": 5,
+          "correct": 5
+        },
+        "FP": {
+          "images": 4,
+          "correct": 4
+        },
+        "GD": {
+          "images": 1,
+          "correct": 1
+        },
+        "GLD": {
+          "images": 16,
+          "correct": 12
+        },
+        "LSAN": {
+          "images": 11,
+          "correct": 8
+        },
+        "MLBD": {
+          "images": 9,
+          "correct": 9
+        },
+        "MTID": {
+          "images": 52,
+          "correct": 52
+        },
+        "OD": {
+          "images": 16,
+          "correct": 16
+        },
+        "OSF": {
+          "images": 9,
+          "correct": 9
+        },
+        "PD": {
+          "images": 44,
+          "correct": 38
+        },
+        "PDL2": {
+          "images": 16,
+          "correct": 16
+        },
+        "PDN": {
+          "images": 3,
+          "correct": 3
+        },
+        "PWV2": {
+          "images": 11,
+          "correct": 6
+        },
+        "RDD1": {
+          "images": 2,
+          "correct": 1
+        },
+        "SBL": {
+          "images": 23,
+          "correct": 23
+        },
+        "SCLD": {
+          "images": 1,
+          "correct": 1
+        },
+        "SFLD": {
+          "images": 2,
+          "correct": 2
+        },
+        "SLDD": {
+          "images": 5,
+          "correct": 4
+        },
+        "TSD": {
+          "images": 1,
+          "correct": 0
+        }
+      }
+    }
+  ]
+}

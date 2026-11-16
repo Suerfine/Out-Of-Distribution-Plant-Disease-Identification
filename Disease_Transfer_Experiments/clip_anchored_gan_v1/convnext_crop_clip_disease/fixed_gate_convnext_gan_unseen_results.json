@@ -1,0 +1,59 @@
+{
+  "vectors_per_pair": 192,
+  "results": {
+    "42": {
+      "oracle_correct": 1353,
+      "oracle_total": 1448,
+      "gates": {
+        "0": {
+          "seen": 0.733,
+          "unseen": 0.4102209944751381,
+          "unseen_correct": 594,
+          "harmonic_mean": 0.5260435041053918
+        },
+        "2.9": {
+          "seen": 0.6925,
+          "unseen": 0.7700276243093923,
+          "unseen_correct": 1115,
+          "harmonic_mean": 0.7292089680508467
+        }
+      }
+    },
+    "43": {
+      "oracle_correct": 1381,
+      "oracle_total": 1448,
+      "gates": {
+        "0": {
+          "seen": 0.733,
+          "unseen": 0.4136740331491713,
+          "unseen_correct": 599,
+          "harmonic_mean": 0.5288740435947347
+        },
+        "2.9": {
+          "seen": 0.6925,
+          "unseen": 0.7859116022099447,
+          "unseen_correct": 1138,
+          "harmonic_mean": 0.7362547530293263
+        }
+      }
+    },
+    "44": {
+      "oracle_correct": 1349,
+      "oracle_total": 1448,
+      "gates": {
+        "0": {
+          "seen": 0.733,
+          "unseen": 0.4088397790055249,
+          "unseen_correct": 592,
+          "harmonic_mean": 0.5249064948009659
+        },
+        "2.9": {
+          "seen": 0.6925,
+          "unseen": 0.7693370165745856,
+          "unseen_correct": 1114,
+          "harmonic_mean": 0.7288991562497047
+        }
+      }
+    }
+  }
+}

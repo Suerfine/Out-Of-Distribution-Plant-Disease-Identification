@@ -1,0 +1,350 @@
+{
+  "fit_66": [
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_1336.jpg",
+      "index": 2009,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_bacterial_blight_3817.jpg",
+      "index": 171,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_1878.jpg",
+      "index": 227,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_bacterial_blight_3731.jpg",
+      "index": 4277,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_bacterial_blight_3838.jpg",
+      "index": 3953,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_824.jpg",
+      "index": 3050,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_1554.jpg",
+      "index": 2659,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CDC_cassava_bacterial_blight_200.jpg",
+      "index": 4389,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_1411.jpg",
+      "index": 4543,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_114.jpg",
+      "index": 5668,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_514.jpg",
+      "index": 5096,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_1286.jpg",
+      "index": 5120,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_948.jpg",
+      "index": 4460,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_bacterial_blight_4029.jpg",
+      "index": 5478,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_bacterial_blight_3523.jpg",
+      "index": 4043,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_bacterial_blight_4218.jpg",
+      "index": 709,
+      "baseline_pair": null
+    }
+  ],
+  "fit_69": [
+    {
+      "filename": "CDC_cassava_brown_streak_disease_596.jpg",
+      "index": 4597,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5009.jpg",
+      "index": 402,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CDC_cassava_brown_streak_disease_1368.jpg",
+      "index": 3600,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5805.jpg",
+      "index": 4008,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5072.jpg",
+      "index": 4474,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CDC_cassava_brown_streak_disease_669.jpg",
+      "index": 1272,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5609.jpg",
+      "index": 4603,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5235.jpg",
+      "index": 782,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CDC_cassava_brown_streak_disease_946.jpg",
+      "index": 1906,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CLDI_cassava_brown_streak_disease_544.JPG",
+      "index": 392,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5137.jpg",
+      "index": 382,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CLDI_cassava_brown_streak_disease_514.JPG",
+      "index": 2738,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5552.jpg",
+      "index": 656,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CLDI_cassava_brown_streak_disease_480.JPG",
+      "index": 2357,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CLDI_cassava_brown_streak_disease_471.JPG",
+      "index": 4257,
+      "baseline_pair": null
+    },
+    {
+      "filename": "CLDI_cassava_brown_streak_disease_451.JPG",
+      "index": 5580,
+      "baseline_pair": null
+    }
+  ],
+  "validation_66": [
+    {
+      "filename": "CDC_cassava_bacterial_blight_99.jpg",
+      "index": 166,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_1121.jpg",
+      "index": 167,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CUPD_cassava_bacterial_blight_4152.jpg",
+      "index": 168,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_23.jpg",
+      "index": 169,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_2019.jpg",
+      "index": 170,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CDC_cassava_bacterial_blight_290.jpg",
+      "index": 171,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CDC_cassava_bacterial_blight_178.jpg",
+      "index": 172,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CDC_cassava_bacterial_blight_399.jpg",
+      "index": 173,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CUPD_cassava_bacterial_blight_4052.jpg",
+      "index": 174,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CDC_cassava_bacterial_blight_201.jpg",
+      "index": 175,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_1724.jpg",
+      "index": 176,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_1841.jpg",
+      "index": 177,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_1032.jpg",
+      "index": 178,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_620.jpg",
+      "index": 179,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_1827.jpg",
+      "index": 180,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_973.jpg",
+      "index": 181,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CPDD_cassava_bacterial_blight_leaf_1665.jpg",
+      "index": 182,
+      "baseline_pair": 72
+    }
+  ],
+  "validation_69": [
+    {
+      "filename": "CDC_cassava_brown_streak_disease_1830.jpg",
+      "index": 193,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CDC_cassava_brown_streak_disease_1355.jpg",
+      "index": 194,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CLDI_cassava_brown_streak_disease_474.JPG",
+      "index": 195,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5376.jpg",
+      "index": 196,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5908.jpg",
+      "index": 197,
+      "baseline_pair": 66
+    },
+    {
+      "filename": "CLDI_cassava_brown_streak_disease_732.JPG",
+      "index": 198,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5776.jpg",
+      "index": 199,
+      "baseline_pair": 178
+    },
+    {
+      "filename": "CLDI_cassava_brown_streak_disease_434.JPG",
+      "index": 200,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CLDI_cassava_brown_streak_disease_460.JPG",
+      "index": 201,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5177.jpg",
+      "index": 202,
+      "baseline_pair": 72
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_5659.jpg",
+      "index": 203,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CDC_cassava_brown_streak_disease_1010.jpg",
+      "index": 204,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CLDI_cassava_brown_streak_disease_444.JPG",
+      "index": 205,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CDC_cassava_brown_streak_disease_1319.jpg",
+      "index": 206,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_4740.jpg",
+      "index": 207,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CLDI_cassava_brown_streak_disease_516.JPG",
+      "index": 208,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CDC_cassava_brown_streak_disease_1458.jpg",
+      "index": 209,
+      "baseline_pair": 69
+    },
+    {
+      "filename": "CUPD_cassava_brown_streak_disease_4589.jpg",
+      "index": 210,
+      "baseline_pair": 72
+    },
+    {
+      "filename": "CDC_cassava_brown_streak_disease_1249.jpg",
+      "index": 211,
+      "baseline_pair": 72
+    }
+  ]
+}

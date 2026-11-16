@@ -10,7 +10,7 @@ import streamlit as st
 from PIL import Image, ImageOps
 
 from dpd.data import IMAGE_DIR, pair_table, read_metadata
-from dpd.evaluate import calibrate
+from dpd.evaluate import calibrate, ranked_indices
 from dpd.inference import list_runs, load_run_model, model_class
 
 SPLIT_LABELS = {"train": "Train", "test_seen": "Test seen", "test_unseen": "Test unseen"}
@@ -31,8 +31,9 @@ KIND = {
     "cnn_disentangle": "disentangled CNN",
     "cnn_crop_norm": "crop-normalised CNN",
     "cnn_compositional": "compositional CNN",
-    "cnn_supcon": "supervised contrastive CNN",
     "ensemble": "ensemble",
+    "cnn_supcon": "contrastive-family CNN (crop + disease heads)",
+    "supcon_mix": "mix: ConvNeXt ensemble + CLIP",
 }
 
 
@@ -86,7 +87,7 @@ def test_predictions(run_dir: str, method: str, gamma: float, k: int = 5) -> pd.
     for split in ("test_seen", "test_unseen"):
         s = calibrate(z[f"{split}_scores"], unseen_mask, gamma)
         labels = z[f"{split}_labels"]
-        order = np.argsort(-s, axis=1)[:, :k]
+        order = ranked_indices(s, k)
         pred = order[:, 0]
         e = np.exp(logit_scale * (s - s.max(axis=1, keepdims=True)))
         conf = e[np.arange(len(s)), pred] / e.sum(axis=1)
@@ -104,6 +105,16 @@ def backbone(run: dict) -> str:
         from dpd.inference import member_run
 
         return " + ".join(f"{m['version']} ({backbone(m)})" for m in map(member_run, (x["run"] for x in run["cfg"]["members"])))
+    if run["method"] == "supcon_mix":
+        from dpd.inference import member_run
+
+        mem = run["cfg"]["members"]
+        clips = [member_run(p) for p in ([mem["clip"]] if isinstance(mem["clip"], str) else mem["clip"])]
+        return (f"{len(mem['convnext'])} × {backbone(member_run(mem['convnext'][0]))} + "
+                f"{' + '.join(c['version'] for c in clips)} ({backbone(clips[0])})")
+    if run["method"] == "cnn_supcon":
+        name = {"timm:convnext_base.fb_in22k_ft_in1k": "ConvNeXt-Base"}.get(run["cfg"]["model"]["backbone"], run["cfg"]["model"]["backbone"])
+        return f"{name} ({run['cfg']['input']['crop_size']} px)"
     mcfg = run["cfg"].get("model", {})
     if "backbone" in mcfg:
         bb = mcfg["backbone"]

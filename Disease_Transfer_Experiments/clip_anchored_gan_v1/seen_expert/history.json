@@ -1,0 +1,32 @@
+[
+  {
+    "epoch": 1,
+    "correct": 757,
+    "images": 862,
+    "baseline_correct": 773
+  },
+  {
+    "epoch": 2,
+    "correct": 766,
+    "images": 862,
+    "baseline_correct": 773
+  },
+  {
+    "epoch": 3,
+    "correct": 775,
+    "images": 862,
+    "baseline_correct": 773
+  },
+  {
+    "epoch": 4,
+    "correct": 765,
+    "images": 862,
+    "baseline_correct": 773
+  },
+  {
+    "epoch": 5,
+    "correct": 767,
+    "images": 862,
+    "baseline_correct": 773
+  }
+]

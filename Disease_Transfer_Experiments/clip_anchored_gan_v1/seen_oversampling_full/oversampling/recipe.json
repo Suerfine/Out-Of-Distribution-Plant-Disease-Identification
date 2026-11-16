@@ -1,0 +1,9 @@
+{
+  "weight": 0.0,
+  "epochs": 1,
+  "scope": "full-data seen oversampling oversampling",
+  "source_sha256": "02624fc45679320511e1def9d8c3184ba68c8877d4cac52df18a26e969220428",
+  "fit_images": 9003,
+  "microbatch": 4,
+  "accumulation": 8
+}

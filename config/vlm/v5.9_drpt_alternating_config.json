@@ -1,6 +1,6 @@
 {
   "_note": "v5.9: v5.8 + ONE change, a DRPT-style alternating schedule (Lu et al. 2023, 'Disentangled and Recurrent Prompt Tuning'). Instead of updating the crop and disease vectors together, only one set is updated per epoch, swapping every epoch (training.alternating_primitives). DRPT argues that joint tuning lets the two primitives drag each other into an entangled optimum; on DPD this matters because unseen pairs reuse each crop and disease vector with a new partner. Compare with v5.8 (v5.5 recipe, same 3 validation splits, seeds 42-44): mean validation HM 59.75% (per split 56.48 / 62.10 / 60.66); keep only if the mean beats it by more than 2 points (> 61.75), ideally on every split. Never decide on test.",
-  "_result": "Pending.",
+  "_result": "No gain. Mean validation HM 60.57% over 3 splits vs v5.8 59.75% (+0.82, within noise): 54.15 / 66.60 / 60.95 (lower on split 1, much higher on split 2). Epoch 9, gamma 0.075. Test (reported, not used to decide): HM 67.33% (seen 55.85%, unseen 84.74%).",
   "version": "v5.9",
   "title": "drpt_alternating",
   "method": "clip_prompt_lora",

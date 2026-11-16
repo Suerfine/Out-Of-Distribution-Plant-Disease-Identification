@@ -1,0 +1,111 @@
+{
+  "current_gate": {
+    "seen": 0.7436194895591647,
+    "unseen": 0.551594746716698,
+    "h": 0.6333725996965119,
+    "seen_correct": 641,
+    "unseen_correct": 294
+  },
+  "score_only": {
+    "pooled": {
+      "seen": 0.7215777262180975,
+      "unseen": 0.5590994371482176,
+      "h": 0.6300318489740009,
+      "seen_correct": 622,
+      "unseen_correct": 298
+    },
+    "folds": [
+      {
+        "fold": 0,
+        "seen": 0.6941176470588235,
+        "unseen": 0.3150684931506849,
+        "h": 0.4334078569147238,
+        "seen_correct": 118,
+        "unseen_correct": 23
+      },
+      {
+        "fold": 1,
+        "seen": 0.7580645161290323,
+        "unseen": 0.6363636363636364,
+        "h": 0.6919032597266035,
+        "seen_correct": 94,
+        "unseen_correct": 91
+      },
+      {
+        "fold": 2,
+        "seen": 0.7924528301886793,
+        "unseen": 0.5242718446601942,
+        "h": 0.6310517529215359,
+        "seen_correct": 168,
+        "unseen_correct": 54
+      },
+      {
+        "fold": 3,
+        "seen": 0.5955882352941176,
+        "unseen": 0.6492537313432836,
+        "h": 0.6212642158159216,
+        "seen_correct": 81,
+        "unseen_correct": 87
+      },
+      {
+        "fold": 4,
+        "seen": 0.7318181818181818,
+        "unseen": 0.5375,
+        "h": 0.6197851387645479,
+        "seen_correct": 161,
+        "unseen_correct": 43
+      }
+    ]
+  },
+  "image_and_scores": {
+    "pooled": {
+      "seen": 0.43503480278422274,
+      "unseen": 0.5215759849906192,
+      "h": 0.4743908571116537,
+      "seen_correct": 375,
+      "unseen_correct": 278
+    },
+    "folds": [
+      {
+        "fold": 0,
+        "seen": 0.3176470588235294,
+        "unseen": 0.3561643835616438,
+        "h": 0.33580483138005257,
+        "seen_correct": 54,
+        "unseen_correct": 26
+      },
+      {
+        "fold": 1,
+        "seen": 0.2903225806451613,
+        "unseen": 0.6993006993006993,
+        "h": 0.41030316845224524,
+        "seen_correct": 36,
+        "unseen_correct": 100
+      },
+      {
+        "fold": 2,
+        "seen": 0.2169811320754717,
+        "unseen": 0.5242718446601942,
+        "h": 0.3069319164710243,
+        "seen_correct": 46,
+        "unseen_correct": 54
+      },
+      {
+        "fold": 3,
+        "seen": 0.5588235294117647,
+        "unseen": 0.5149253731343284,
+        "h": 0.535977105478332,
+        "seen_correct": 76,
+        "unseen_correct": 69
+      },
+      {
+        "fold": 4,
+        "seen": 0.740909090909091,
+        "unseen": 0.3625,
+        "h": 0.4868177136972194,
+        "seen_correct": 163,
+        "unseen_correct": 29
+      }
+    ]
+  }
+}

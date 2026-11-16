@@ -1,0 +1,40 @@
+{
+  "epochs": 3,
+  "correct": 769,
+  "baseline_correct": 773,
+  "standard_training_best": 778,
+  "close_view_history": [
+    {
+      "epoch": 1,
+      "correct": 765,
+      "images": 862
+    },
+    {
+      "epoch": 2,
+      "correct": 760,
+      "images": 862
+    },
+    {
+      "epoch": 3,
+      "correct": 769,
+      "images": 862
+    }
+  ],
+  "standard_training_history": [
+    {
+      "epoch": 1,
+      "correct": 770,
+      "images": 862
+    },
+    {
+      "epoch": 2,
+      "correct": 778,
+      "images": 862
+    },
+    {
+      "epoch": 3,
+      "correct": 771,
+      "images": 862
+    }
+  ]
+}

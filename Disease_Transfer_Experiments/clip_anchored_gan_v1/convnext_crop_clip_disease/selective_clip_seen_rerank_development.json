@@ -1,0 +1,78 @@
+{
+  "split": 42,
+  "gate_gamma": 2.9,
+  "seen_routed": 667,
+  "baseline_correct": 613,
+  "reranked_correct": 609,
+  "fixes": 1,
+  "regressions": 5,
+  "overrides": 8,
+  "folds": [
+    {
+      "fold": 0,
+      "rule": null,
+      "tuning_gain": 0,
+      "seen_routed": 97,
+      "baseline_correct": 80,
+      "overrides": 0,
+      "fixes": 0,
+      "regressions": 0
+    },
+    {
+      "fold": 1,
+      "rule": {
+        "shortlist": 2,
+        "max_cnn_gap": 1.0,
+        "min_clip_margin": 0.25
+      },
+      "tuning_gain": 3,
+      "seen_routed": 162,
+      "baseline_correct": 154,
+      "overrides": 1,
+      "fixes": 0,
+      "regressions": 1
+    },
+    {
+      "fold": 2,
+      "rule": {
+        "shortlist": 3,
+        "max_cnn_gap": 2.0,
+        "min_clip_margin": 0.25
+      },
+      "tuning_gain": 6,
+      "seen_routed": 184,
+      "baseline_correct": 180,
+      "overrides": 5,
+      "fixes": 0,
+      "regressions": 4
+    },
+    {
+      "fold": 3,
+      "rule": {
+        "shortlist": 2,
+        "max_cnn_gap": 0.25,
+        "min_clip_margin": 0.25
+      },
+      "tuning_gain": 1,
+      "seen_routed": 134,
+      "baseline_correct": 122,
+      "overrides": 0,
+      "fixes": 0,
+      "regressions": 0
+    },
+    {
+      "fold": 4,
+      "rule": {
+        "shortlist": 2,
+        "max_cnn_gap": 1.0,
+        "min_clip_margin": 0.25
+      },
+      "tuning_gain": 1,
+      "seen_routed": 90,
+      "baseline_correct": 77,
+      "overrides": 2,
+      "fixes": 1,
+      "regressions": 0
+    }
+  ]
+}

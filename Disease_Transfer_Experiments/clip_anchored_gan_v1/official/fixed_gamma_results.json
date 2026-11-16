@@ -1,0 +1,32 @@
+{
+  "gamma": 0.03,
+  "gamma_source": "v11.3_lora_features",
+  "arms": {
+    "original": {
+      "test_seen": {
+        "correct": 1192,
+        "images": 2000,
+        "top1": 0.596
+      },
+      "test_unseen": {
+        "correct": 1060,
+        "images": 1448,
+        "top1": 0.7320441988950276
+      },
+      "harmonic_mean": 0.6570539488135254
+    },
+    "anchored": {
+      "test_seen": {
+        "correct": 1212,
+        "images": 2000,
+        "top1": 0.606
+      },
+      "test_unseen": {
+        "correct": 1105,
+        "images": 1448,
+        "top1": 0.763121546961326
+      },
+      "harmonic_mean": 0.6755450726561776
+    }
+  }
+}

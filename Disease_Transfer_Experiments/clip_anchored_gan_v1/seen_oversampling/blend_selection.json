@@ -1,0 +1,299 @@
+{
+  "weights": {
+    "hard_zero": 0.75,
+    "hard_tuned": 0.75,
+    "fixed_zero": 0.0,
+    "fixed_tuned": 0.0
+  },
+  "development": {
+    "0.0": {
+      "hard_zero": {
+        "seen_correct": 753,
+        "unseen_correct": 126,
+        "seen": 0.8735498839907193,
+        "unseen": 0.23639774859287055,
+        "seen_routed": 838,
+        "unseen_routed": 159,
+        "h": 0.372099042867984
+      },
+      "hard_tuned": {
+        "seen_correct": 593,
+        "unseen_correct": 315,
+        "seen": 0.6879350348027842,
+        "unseen": 0.5909943714821764,
+        "seen_routed": 652,
+        "unseen_routed": 447,
+        "h": 0.6357907348378741
+      },
+      "fixed_zero": {
+        "seen_correct": 733,
+        "unseen_correct": 108,
+        "seen": 0.8503480278422274,
+        "unseen": 0.2026266416510319,
+        "seen_routed": 847,
+        "unseen_routed": 131,
+        "h": 0.3272693448536023
+      },
+      "routed_fixed_zero": {
+        "seen_correct": 761,
+        "unseen_correct": 108,
+        "seen": 0.882830626450116,
+        "unseen": 0.2026266416510319,
+        "seen_routed": 847,
+        "unseen_routed": 131,
+        "h": 0.32960303503646415
+      },
+      "fixed_tuned": {
+        "seen_correct": 592,
+        "unseen_correct": 337,
+        "seen": 0.6867749419953596,
+        "unseen": 0.6322701688555347,
+        "seen_routed": 629,
+        "unseen_routed": 477,
+        "h": 0.6583964490206755
+      },
+      "routed_fixed_tuned": {
+        "seen_correct": 593,
+        "unseen_correct": 327,
+        "seen": 0.6879350348027842,
+        "unseen": 0.6135084427767354,
+        "seen_routed": 629,
+        "unseen_routed": 477,
+        "h": 0.6485935950416678
+      }
+    },
+    "0.25": {
+      "hard_zero": {
+        "seen_correct": 755,
+        "unseen_correct": 126,
+        "seen": 0.8758700696055685,
+        "unseen": 0.23639774859287055,
+        "seen_routed": 838,
+        "unseen_routed": 159,
+        "h": 0.37230909521414723
+      },
+      "hard_tuned": {
+        "seen_correct": 595,
+        "unseen_correct": 315,
+        "seen": 0.6902552204176334,
+        "unseen": 0.5909943714821764,
+        "seen_routed": 652,
+        "unseen_routed": 447,
+        "h": 0.6367798323324811
+      },
+      "fixed_zero": {
+        "seen_correct": 733,
+        "unseen_correct": 108,
+        "seen": 0.8503480278422274,
+        "unseen": 0.2026266416510319,
+        "seen_routed": 848,
+        "unseen_routed": 131,
+        "h": 0.3272693448536023
+      },
+      "routed_fixed_zero": {
+        "seen_correct": 764,
+        "unseen_correct": 108,
+        "seen": 0.8863109048723898,
+        "unseen": 0.2026266416510319,
+        "seen_routed": 848,
+        "unseen_routed": 131,
+        "h": 0.32984481559359435
+      },
+      "fixed_tuned": {
+        "seen_correct": 635,
+        "unseen_correct": 328,
+        "seen": 0.7366589327146171,
+        "unseen": 0.6153846153846154,
+        "seen_routed": 677,
+        "unseen_routed": 463,
+        "h": 0.6705827998151938
+      },
+      "routed_fixed_tuned": {
+        "seen_correct": 635,
+        "unseen_correct": 320,
+        "seen": 0.7366589327146171,
+        "unseen": 0.600375234521576,
+        "seen_routed": 677,
+        "unseen_routed": 463,
+        "h": 0.661571394851008
+      }
+    },
+    "0.5": {
+      "hard_zero": {
+        "seen_correct": 756,
+        "unseen_correct": 126,
+        "seen": 0.877030162412993,
+        "unseen": 0.23639774859287055,
+        "seen_routed": 838,
+        "unseen_routed": 159,
+        "h": 0.3724137931034483
+      },
+      "hard_tuned": {
+        "seen_correct": 595,
+        "unseen_correct": 315,
+        "seen": 0.6902552204176334,
+        "unseen": 0.5909943714821764,
+        "seen_routed": 652,
+        "unseen_routed": 447,
+        "h": 0.6367798323324811
+      },
+      "fixed_zero": {
+        "seen_correct": 731,
+        "unseen_correct": 104,
+        "seen": 0.8480278422273781,
+        "unseen": 0.1951219512195122,
+        "seen_routed": 848,
+        "unseen_routed": 127,
+        "h": 0.31724848780752435
+      },
+      "routed_fixed_zero": {
+        "seen_correct": 765,
+        "unseen_correct": 104,
+        "seen": 0.8874709976798144,
+        "unseen": 0.1951219512195122,
+        "seen_routed": 848,
+        "unseen_routed": 127,
+        "h": 0.31990800031363525
+      },
+      "fixed_tuned": {
+        "seen_correct": 667,
+        "unseen_correct": 316,
+        "seen": 0.7737819025522041,
+        "unseen": 0.5928705440900562,
+        "seen_routed": 713,
+        "unseen_routed": 447,
+        "h": 0.671352103748509
+      },
+      "routed_fixed_tuned": {
+        "seen_correct": 666,
+        "unseen_correct": 312,
+        "seen": 0.7726218097447796,
+        "unseen": 0.5853658536585366,
+        "seen_routed": 713,
+        "unseen_routed": 447,
+        "h": 0.666083260407551
+      },
+      "routed_matched_seen": {
+        "seen_correct": 592,
+        "unseen_correct": 329,
+        "seen": 0.6867749419953596,
+        "unseen": 0.6172607879924953,
+        "seen_routed": 626,
+        "unseen_routed": 481,
+        "h": 0.6501650715866567
+      }
+    },
+    "0.75": {
+      "hard_zero": {
+        "seen_correct": 757,
+        "unseen_correct": 126,
+        "seen": 0.8781902552204176,
+        "unseen": 0.23639774859287055,
+        "seen_routed": 838,
+        "unseen_routed": 159,
+        "h": 0.37251827304805957
+      },
+      "hard_tuned": {
+        "seen_correct": 596,
+        "unseen_correct": 315,
+        "seen": 0.691415313225058,
+        "unseen": 0.5909943714821764,
+        "seen_routed": 652,
+        "unseen_routed": 447,
+        "h": 0.6372730389444635
+      },
+      "fixed_zero": {
+        "seen_correct": 733,
+        "unseen_correct": 101,
+        "seen": 0.8503480278422274,
+        "unseen": 0.1894934333958724,
+        "seen_routed": 849,
+        "unseen_routed": 124,
+        "h": 0.30992295149565363
+      },
+      "routed_fixed_zero": {
+        "seen_correct": 767,
+        "unseen_correct": 101,
+        "seen": 0.8897911832946636,
+        "unseen": 0.1894934333958724,
+        "seen_routed": 849,
+        "unseen_routed": 124,
+        "h": 0.3124469370181478
+      },
+      "fixed_tuned": {
+        "seen_correct": 691,
+        "unseen_correct": 307,
+        "seen": 0.8016241299303944,
+        "unseen": 0.575984990619137,
+        "seen_routed": 738,
+        "unseen_routed": 436,
+        "h": 0.670325798618188
+      },
+      "routed_fixed_tuned": {
+        "seen_correct": 690,
+        "unseen_correct": 303,
+        "seen": 0.8004640371229699,
+        "unseen": 0.5684803001876173,
+        "seen_routed": 738,
+        "unseen_routed": 436,
+        "h": 0.6648159807681301
+      }
+    },
+    "1.0": {
+      "hard_zero": {
+        "seen_correct": 757,
+        "unseen_correct": 126,
+        "seen": 0.8781902552204176,
+        "unseen": 0.23639774859287055,
+        "seen_routed": 838,
+        "unseen_routed": 159,
+        "h": 0.37251827304805957
+      },
+      "hard_tuned": {
+        "seen_correct": 596,
+        "unseen_correct": 315,
+        "seen": 0.691415313225058,
+        "unseen": 0.5909943714821764,
+        "seen_routed": 652,
+        "unseen_routed": 447,
+        "h": 0.6372730389444635
+      },
+      "fixed_zero": {
+        "seen_correct": 736,
+        "unseen_correct": 101,
+        "seen": 0.8538283062645011,
+        "unseen": 0.1894934333958724,
+        "seen_routed": 851,
+        "unseen_routed": 123,
+        "h": 0.3101533326379472
+      },
+      "routed_fixed_zero": {
+        "seen_correct": 769,
+        "unseen_correct": 101,
+        "seen": 0.8921113689095128,
+        "unseen": 0.1894934333958724,
+        "seen_routed": 851,
+        "unseen_routed": 123,
+        "h": 0.31258967398413084
+      },
+      "fixed_tuned": {
+        "seen_correct": 706,
+        "unseen_correct": 296,
+        "seen": 0.8190255220417634,
+        "unseen": 0.5553470919324578,
+        "seen_routed": 756,
+        "unseen_routed": 418,
+        "h": 0.6618924697125663
+      },
+      "routed_fixed_tuned": {
+        "seen_correct": 704,
+        "unseen_correct": 291,
+        "seen": 0.8167053364269141,
+        "unseen": 0.5459662288930581,
+        "seen_routed": 756,
+        "unseen_routed": 418,
+        "h": 0.6544402099432335
+      }
+    }
+  }
+}

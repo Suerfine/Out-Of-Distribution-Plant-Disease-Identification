@@ -1,0 +1,2281 @@
+{
+  "development": {
+    "seen_images": 862,
+    "routed_seen": 667,
+    "top1": 613,
+    "top3": 656,
+    "top5": 658,
+    "wrong_crop_only": 4,
+    "wrong_disease_only": 46,
+    "both_wrong": 4,
+    "within_crop_confusions": [
+      {
+        "ids": [
+          66,
+          69
+        ],
+        "pairs": [
+          "cassava_bacterial_blight",
+          "cassava_brown_streak_disease"
+        ],
+        "errors": 5
+      },
+      {
+        "ids": [
+          0,
+          10
+        ],
+        "pairs": [
+          "apple_alternaria_blotch",
+          "apple_rust"
+        ],
+        "errors": 3
+      },
+      {
+        "ids": [
+          224,
+          225
+        ],
+        "pairs": [
+          "peanut_early_leaf_spot",
+          "peanut_healthy"
+        ],
+        "errors": 3
+      },
+      {
+        "ids": [
+          1,
+          11
+        ],
+        "pairs": [
+          "apple_alternaria_leaf_spot",
+          "apple_marssonina_blotch"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          9,
+          14
+        ],
+        "pairs": [
+          "apple_healthy",
+          "apple_powdery_mildew"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          113,
+          116
+        ],
+        "pairs": [
+          "corn_rust",
+          "corn_northern_leaf_blight"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          275,
+          280
+        ],
+        "pairs": [
+          "sugarcane_red_rot",
+          "sugarcane_yellowing"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          0,
+          8
+        ],
+        "pairs": [
+          "apple_alternaria_blotch",
+          "apple_grey_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          7,
+          10
+        ],
+        "pairs": [
+          "apple_frog_eye_leaf_spot",
+          "apple_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          24,
+          29
+        ],
+        "pairs": [
+          "banana_healthy",
+          "banana_xamthomonas"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          34,
+          36
+        ],
+        "pairs": [
+          "bean_bean_rust",
+          "bean_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          66,
+          72
+        ],
+        "pairs": [
+          "cassava_bacterial_blight",
+          "cassava_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          67,
+          69
+        ],
+        "pairs": [
+          "cassava_brown_leaf_spot",
+          "cassava_brown_streak_disease"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          66,
+          68
+        ],
+        "pairs": [
+          "cassava_bacterial_blight",
+          "cassava_brown_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          69,
+          72
+        ],
+        "pairs": [
+          "cassava_brown_streak_disease",
+          "cassava_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          102,
+          104
+        ],
+        "pairs": [
+          "coffee_miner",
+          "coffee_phoma"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          101,
+          104
+        ],
+        "pairs": [
+          "coffee_healthy",
+          "coffee_phoma"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          112,
+          116
+        ],
+        "pairs": [
+          "corn_leaf_blight",
+          "corn_northern_leaf_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          134,
+          135
+        ],
+        "pairs": [
+          "cucumber_gummy_stem_blight",
+          "cucumber_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          140,
+          141
+        ],
+        "pairs": [
+          "garlic_leaf_blight",
+          "garlic_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          200,
+          201
+        ],
+        "pairs": [
+          "paddy_healthy",
+          "paddy_hispa"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          201,
+          202
+        ],
+        "pairs": [
+          "paddy_hispa",
+          "paddy_leaf_roller"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          200,
+          204
+        ],
+        "pairs": [
+          "paddy_healthy",
+          "paddy_tungro"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          196,
+          205
+        ],
+        "pairs": [
+          "paddy_black_stem_borer",
+          "paddy_white_stem_borer"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          205,
+          206
+        ],
+        "pairs": [
+          "paddy_white_stem_borer",
+          "paddy_yellow_stem_borer"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          196,
+          206
+        ],
+        "pairs": [
+          "paddy_black_stem_borer",
+          "paddy_yellow_stem_borer"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          224,
+          226
+        ],
+        "pairs": [
+          "peanut_early_leaf_spot",
+          "peanut_late_leaf_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          224,
+          227
+        ],
+        "pairs": [
+          "peanut_early_leaf_spot",
+          "peanut_nutrition_deficiency"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          226,
+          228
+        ],
+        "pairs": [
+          "peanut_late_leaf_spot",
+          "peanut_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          240,
+          242
+        ],
+        "pairs": [
+          "potato_early_blight",
+          "potato_late_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          281,
+          284
+        ],
+        "pairs": [
+          "sunflower_downy_mildew",
+          "sunflower_leaf_scars"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          288,
+          294
+        ],
+        "pairs": [
+          "tea_brown_blight",
+          "tea_white_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          320,
+          321
+        ],
+        "pairs": [
+          "wheat_healthy",
+          "wheat_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          319,
+          322
+        ],
+        "pairs": [
+          "wheat_head_scab",
+          "wheat_loose_smut"
+        ],
+        "errors": 1
+      }
+    ]
+  },
+  "official": {
+    "seen_images": 2000,
+    "routed_seen": 1816,
+    "top1": 1385,
+    "top3": 1627,
+    "top5": 1684,
+    "wrong_crop_only": 15,
+    "wrong_disease_only": 352,
+    "both_wrong": 64,
+    "within_crop_confusions": [
+      {
+        "ids": [
+          197,
+          200
+        ],
+        "pairs": [
+          "paddy_blast",
+          "paddy_healthy"
+        ],
+        "errors": 21
+      },
+      {
+        "ids": [
+          257,
+          258
+        ],
+        "pairs": [
+          "soybean_caterpillar",
+          "soybean_diabrotica_speciosa"
+        ],
+        "errors": 16
+      },
+      {
+        "ids": [
+          197,
+          201
+        ],
+        "pairs": [
+          "paddy_blast",
+          "paddy_hispa"
+        ],
+        "errors": 14
+      },
+      {
+        "ids": [
+          257,
+          261
+        ],
+        "pairs": [
+          "soybean_caterpillar",
+          "soybean_healthy"
+        ],
+        "errors": 14
+      },
+      {
+        "ids": [
+          72,
+          73
+        ],
+        "pairs": [
+          "cassava_healthy",
+          "cassava_mosaic"
+        ],
+        "errors": 12
+      },
+      {
+        "ids": [
+          224,
+          225
+        ],
+        "pairs": [
+          "peanut_early_leaf_spot",
+          "peanut_healthy"
+        ],
+        "errors": 9
+      },
+      {
+        "ids": [
+          69,
+          72
+        ],
+        "pairs": [
+          "cassava_brown_streak_disease",
+          "cassava_healthy"
+        ],
+        "errors": 8
+      },
+      {
+        "ids": [
+          300,
+          312
+        ],
+        "pairs": [
+          "tomato_bacterial_spot",
+          "tomato_septoria_leaf_spot"
+        ],
+        "errors": 8
+      },
+      {
+        "ids": [
+          306,
+          312
+        ],
+        "pairs": [
+          "tomato_leaf_blight",
+          "tomato_septoria_leaf_spot"
+        ],
+        "errors": 7
+      },
+      {
+        "ids": [
+          66,
+          72
+        ],
+        "pairs": [
+          "cassava_bacterial_blight",
+          "cassava_healthy"
+        ],
+        "errors": 7
+      },
+      {
+        "ids": [
+          71,
+          73
+        ],
+        "pairs": [
+          "cassava_green_mottle",
+          "cassava_mosaic"
+        ],
+        "errors": 6
+      },
+      {
+        "ids": [
+          205,
+          206
+        ],
+        "pairs": [
+          "paddy_white_stem_borer",
+          "paddy_yellow_stem_borer"
+        ],
+        "errors": 6
+      },
+      {
+        "ids": [
+          197,
+          198
+        ],
+        "pairs": [
+          "paddy_blast",
+          "paddy_brown_spot"
+        ],
+        "errors": 6
+      },
+      {
+        "ids": [
+          1,
+          11
+        ],
+        "pairs": [
+          "apple_alternaria_leaf_spot",
+          "apple_marssonina_blotch"
+        ],
+        "errors": 5
+      },
+      {
+        "ids": [
+          69,
+          71
+        ],
+        "pairs": [
+          "cassava_brown_streak_disease",
+          "cassava_green_mottle"
+        ],
+        "errors": 5
+      },
+      {
+        "ids": [
+          301,
+          302
+        ],
+        "pairs": [
+          "tomato_blight_leaf",
+          "tomato_brown_spot"
+        ],
+        "errors": 5
+      },
+      {
+        "ids": [
+          312,
+          315
+        ],
+        "pairs": [
+          "tomato_septoria_leaf_spot",
+          "tomato_verticulium_wilt"
+        ],
+        "errors": 5
+      },
+      {
+        "ids": [
+          321,
+          328
+        ],
+        "pairs": [
+          "wheat_rust",
+          "wheat_stripe_rust"
+        ],
+        "errors": 5
+      },
+      {
+        "ids": [
+          70,
+          73
+        ],
+        "pairs": [
+          "cassava_green_mite",
+          "cassava_mosaic"
+        ],
+        "errors": 3
+      },
+      {
+        "ids": [
+          67,
+          73
+        ],
+        "pairs": [
+          "cassava_brown_leaf_spot",
+          "cassava_mosaic"
+        ],
+        "errors": 3
+      },
+      {
+        "ids": [
+          101,
+          103
+        ],
+        "pairs": [
+          "coffee_healthy",
+          "coffee_rust"
+        ],
+        "errors": 3
+      },
+      {
+        "ids": [
+          70,
+          71
+        ],
+        "pairs": [
+          "cassava_green_mite",
+          "cassava_green_mottle"
+        ],
+        "errors": 3
+      },
+      {
+        "ids": [
+          69,
+          73
+        ],
+        "pairs": [
+          "cassava_brown_streak_disease",
+          "cassava_mosaic"
+        ],
+        "errors": 3
+      },
+      {
+        "ids": [
+          66,
+          68
+        ],
+        "pairs": [
+          "cassava_bacterial_blight",
+          "cassava_brown_spot"
+        ],
+        "errors": 3
+      },
+      {
+        "ids": [
+          300,
+          305
+        ],
+        "pairs": [
+          "tomato_bacterial_spot",
+          "tomato_late_blight"
+        ],
+        "errors": 3
+      },
+      {
+        "ids": [
+          71,
+          72
+        ],
+        "pairs": [
+          "cassava_green_mottle",
+          "cassava_healthy"
+        ],
+        "errors": 3
+      },
+      {
+        "ids": [
+          258,
+          261
+        ],
+        "pairs": [
+          "soybean_diabrotica_speciosa",
+          "soybean_healthy"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          302,
+          310
+        ],
+        "pairs": [
+          "tomato_brown_spot",
+          "tomato_leaf_yellow_virus"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          114,
+          116
+        ],
+        "pairs": [
+          "corn_spot",
+          "corn_northern_leaf_blight"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          232,
+          233
+        ],
+        "pairs": [
+          "pear_slug",
+          "pear_spot"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          197,
+          204
+        ],
+        "pairs": [
+          "paddy_blast",
+          "paddy_tungro"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          194,
+          198
+        ],
+        "pairs": [
+          "paddy_bacterial_leaf_streak",
+          "paddy_brown_spot"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          300,
+          308
+        ],
+        "pairs": [
+          "tomato_bacterial_spot",
+          "tomato_leaf_mold"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          200,
+          201
+        ],
+        "pairs": [
+          "paddy_healthy",
+          "paddy_hispa"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          304,
+          313
+        ],
+        "pairs": [
+          "tomato_healthy",
+          "tomato_spider_mites"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          193,
+          249
+        ],
+        "pairs": [
+          "paddy_bacterial_blight",
+          "paddy_leaf_blight"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          103,
+          105
+        ],
+        "pairs": [
+          "coffee_rust",
+          "coffee_spider_mites"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          11,
+          15
+        ],
+        "pairs": [
+          "apple_marssonina_blotch",
+          "apple_scab"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          240,
+          241
+        ],
+        "pairs": [
+          "potato_early_blight",
+          "potato_healthy"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          307,
+          312
+        ],
+        "pairs": [
+          "tomato_curl",
+          "tomato_septoria_leaf_spot"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          211,
+          213
+        ],
+        "pairs": [
+          "papaya_bacterial_spot",
+          "papaya_healthy"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          93,
+          94
+        ],
+        "pairs": [
+          "citrus_canker",
+          "citrus_greening"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          198,
+          200
+        ],
+        "pairs": [
+          "paddy_brown_spot",
+          "paddy_healthy"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          66,
+          73
+        ],
+        "pairs": [
+          "cassava_bacterial_blight",
+          "cassava_mosaic"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          11,
+          13
+        ],
+        "pairs": [
+          "apple_marssonina_blotch",
+          "apple_mosaic_virus"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          217,
+          220
+        ],
+        "pairs": [
+          "peach_brown_rot",
+          "peach_monillia_laxa"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          0,
+          3
+        ],
+        "pairs": [
+          "apple_alternaria_blotch",
+          "apple_black_rot"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          304,
+          314
+        ],
+        "pairs": [
+          "tomato_healthy",
+          "tomato_target_spot"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          19,
+          22
+        ],
+        "pairs": [
+          "banana_anthracnose",
+          "banana_cigar_end_rot"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          24,
+          29
+        ],
+        "pairs": [
+          "banana_healthy",
+          "banana_xamthomonas"
+        ],
+        "errors": 2
+      },
+      {
+        "ids": [
+          304,
+          312
+        ],
+        "pairs": [
+          "tomato_healthy",
+          "tomato_septoria_leaf_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          200,
+          203
+        ],
+        "pairs": [
+          "paddy_healthy",
+          "paddy_leafblast"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          308,
+          312
+        ],
+        "pairs": [
+          "tomato_leaf_mold",
+          "tomato_septoria_leaf_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          257,
+          262
+        ],
+        "pairs": [
+          "soybean_caterpillar",
+          "soybean_mosaic"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          259,
+          263
+        ],
+        "pairs": [
+          "soybean_downy_mildew",
+          "soybean_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          110,
+          116
+        ],
+        "pairs": [
+          "corn_healthy",
+          "corn_northern_leaf_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          306,
+          307
+        ],
+        "pairs": [
+          "tomato_leaf_blight",
+          "tomato_curl"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          247,
+          248
+        ],
+        "pairs": [
+          "raspberry_spot",
+          "raspberry_yellow_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          198,
+          204
+        ],
+        "pairs": [
+          "paddy_brown_spot",
+          "paddy_tungro"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          49,
+          50
+        ],
+        "pairs": [
+          "blueberry_anthracnose",
+          "blueberry_botrytis_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          204,
+          249
+        ],
+        "pairs": [
+          "paddy_tungro",
+          "paddy_leaf_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          199,
+          204
+        ],
+        "pairs": [
+          "paddy_downy_mildew",
+          "paddy_tungro"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          319,
+          322
+        ],
+        "pairs": [
+          "wheat_head_scab",
+          "wheat_loose_smut"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          2,
+          10
+        ],
+        "pairs": [
+          "apple_aphis_spp",
+          "apple_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          119,
+          165
+        ],
+        "pairs": [
+          "corn_streak",
+          "corn_streak_virus"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          31,
+          32
+        ],
+        "pairs": [
+          "basil_fusarium_wilt",
+          "basil_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          77,
+          78
+        ],
+        "pairs": [
+          "cauliflower_bacterial_soft_rot",
+          "cauliflower_bacterial_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          5,
+          11
+        ],
+        "pairs": [
+          "apple_cedar_apple_rust",
+          "apple_marssonina_blotch"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          299,
+          305
+        ],
+        "pairs": [
+          "tomato_bacterial_leaf_spot",
+          "tomato_late_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          288,
+          294
+        ],
+        "pairs": [
+          "tea_brown_blight",
+          "tea_white_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          300,
+          304
+        ],
+        "pairs": [
+          "tomato_bacterial_spot",
+          "tomato_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          256,
+          263
+        ],
+        "pairs": [
+          "soybean_brown_spot",
+          "soybean_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          151,
+          156
+        ],
+        "pairs": [
+          "guava_canker",
+          "guava_red_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          49,
+          52
+        ],
+        "pairs": [
+          "blueberry_anthracnose",
+          "blueberry_mummy_berry"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          2,
+          11
+        ],
+        "pairs": [
+          "apple_aphis_spp",
+          "apple_marssonina_blotch"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          282,
+          284
+        ],
+        "pairs": [
+          "sunflower_gray_mold",
+          "sunflower_leaf_scars"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          66,
+          71
+        ],
+        "pairs": [
+          "cassava_bacterial_blight",
+          "cassava_green_mottle"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          190,
+          191
+        ],
+        "pairs": [
+          "olive_aculus_olearius",
+          "olive_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          301,
+          305
+        ],
+        "pairs": [
+          "tomato_blight_leaf",
+          "tomato_late_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          281,
+          284
+        ],
+        "pairs": [
+          "sunflower_downy_mildew",
+          "sunflower_leaf_scars"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          4,
+          11
+        ],
+        "pairs": [
+          "apple_brown_spot",
+          "apple_marssonina_blotch"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          70,
+          72
+        ],
+        "pairs": [
+          "cassava_green_mite",
+          "cassava_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          255,
+          257
+        ],
+        "pairs": [
+          "soybean_bacterial_blight",
+          "soybean_caterpillar"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          304,
+          308
+        ],
+        "pairs": [
+          "tomato_healthy",
+          "tomato_leaf_mold"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          195,
+          251
+        ],
+        "pairs": [
+          "paddy_bacterial_panicle_blight",
+          "paddy_sheath_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          305,
+          311
+        ],
+        "pairs": [
+          "tomato_late_blight",
+          "tomato_powdery_mildew"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          97,
+          99
+        ],
+        "pairs": [
+          "coffee_berry_blotch",
+          "coffee_brown_eye_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          244,
+          247
+        ],
+        "pairs": [
+          "raspberry_fire_blight",
+          "raspberry_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          307,
+          310
+        ],
+        "pairs": [
+          "tomato_curl",
+          "tomato_leaf_yellow_virus"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          30,
+          31
+        ],
+        "pairs": [
+          "basil_downy_mildew",
+          "basil_fusarium_wilt"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          153,
+          154
+        ],
+        "pairs": [
+          "guava_healthy",
+          "guava_mummification_leaf"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          178,
+          185
+        ],
+        "pairs": [
+          "mango_healthy",
+          "mango_procontarinia_matteiana"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          89,
+          91
+        ],
+        "pairs": [
+          "chilli_curl",
+          "chilli_yellowing"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          322,
+          328
+        ],
+        "pairs": [
+          "wheat_loose_smut",
+          "wheat_stripe_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          318,
+          319
+        ],
+        "pairs": [
+          "wheat_bacterial_leaf_streak",
+          "wheat_head_scab"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          255,
+          258
+        ],
+        "pairs": [
+          "soybean_bacterial_blight",
+          "soybean_diabrotica_speciosa"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          308,
+          316
+        ],
+        "pairs": [
+          "tomato_leaf_mold",
+          "tomato_yellow_leaf_curl_virus"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          1,
+          7
+        ],
+        "pairs": [
+          "apple_alternaria_leaf_spot",
+          "apple_frog_eye_leaf_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          197,
+          203
+        ],
+        "pairs": [
+          "paddy_blast",
+          "paddy_leafblast"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          97,
+          98
+        ],
+        "pairs": [
+          "coffee_berry_blotch",
+          "coffee_black_rot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          185,
+          186
+        ],
+        "pairs": [
+          "mango_procontarinia_matteiana",
+          "mango_procontarinia_rubus"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          215,
+          217
+        ],
+        "pairs": [
+          "peach_anthracnose",
+          "peach_brown_rot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          112,
+          119
+        ],
+        "pairs": [
+          "corn_leaf_blight",
+          "corn_streak"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          112,
+          165
+        ],
+        "pairs": [
+          "corn_leaf_blight",
+          "corn_streak_virus"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          193,
+          198
+        ],
+        "pairs": [
+          "paddy_bacterial_blight",
+          "paddy_brown_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          0,
+          15
+        ],
+        "pairs": [
+          "apple_alternaria_blotch",
+          "apple_scab"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          257,
+          259
+        ],
+        "pairs": [
+          "soybean_caterpillar",
+          "soybean_downy_mildew"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          25,
+          27
+        ],
+        "pairs": [
+          "banana_panama_disease",
+          "banana_segatoka"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          3,
+          11
+        ],
+        "pairs": [
+          "apple_black_rot",
+          "apple_marssonina_blotch"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          112,
+          116
+        ],
+        "pairs": [
+          "corn_leaf_blight",
+          "corn_northern_leaf_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          198,
+          250
+        ],
+        "pairs": [
+          "paddy_brown_spot",
+          "paddy_smut"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          27,
+          29
+        ],
+        "pairs": [
+          "banana_segatoka",
+          "banana_xamthomonas"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          23,
+          24
+        ],
+        "pairs": [
+          "banana_cordana_leaf_spot",
+          "banana_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          112,
+          120
+        ],
+        "pairs": [
+          "corn_leaf_blight",
+          "corn_stripe"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          210,
+          211
+        ],
+        "pairs": [
+          "papaya_anthracnose",
+          "papaya_bacterial_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          33,
+          34
+        ],
+        "pairs": [
+          "bean_angular_leaf_spot",
+          "bean_bean_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          109,
+          114
+        ],
+        "pairs": [
+          "corn_gray_leaf_spot",
+          "corn_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          286,
+          289
+        ],
+        "pairs": [
+          "tea_anthracnose",
+          "tea_gray_light"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          113,
+          116
+        ],
+        "pairs": [
+          "corn_rust",
+          "corn_northern_leaf_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          49,
+          53
+        ],
+        "pairs": [
+          "blueberry_anthracnose",
+          "blueberry_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          167,
+          173
+        ],
+        "pairs": [
+          "mango_apoderus_javanicus",
+          "mango_dappula_tertia"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          256,
+          259
+        ],
+        "pairs": [
+          "soybean_brown_spot",
+          "soybean_downy_mildew"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          99,
+          102
+        ],
+        "pairs": [
+          "coffee_brown_eye_spot",
+          "coffee_miner"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          102,
+          104
+        ],
+        "pairs": [
+          "coffee_miner",
+          "coffee_phoma"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          110,
+          165
+        ],
+        "pairs": [
+          "corn_healthy",
+          "corn_streak_virus"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          67,
+          72
+        ],
+        "pairs": [
+          "cassava_brown_leaf_spot",
+          "cassava_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          152,
+          156
+        ],
+        "pairs": [
+          "guava_dot_leaf",
+          "guava_red_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          7,
+          9
+        ],
+        "pairs": [
+          "apple_frog_eye_leaf_spot",
+          "apple_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          272,
+          273
+        ],
+        "pairs": [
+          "sugarcane_healthy",
+          "sugarcane_mosaic"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          199,
+          201
+        ],
+        "pairs": [
+          "paddy_downy_mildew",
+          "paddy_hispa"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          286,
+          287
+        ],
+        "pairs": [
+          "tea_anthracnose",
+          "tea_bird_eye_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          193,
+          197
+        ],
+        "pairs": [
+          "paddy_bacterial_blight",
+          "paddy_blast"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          306,
+          315
+        ],
+        "pairs": [
+          "tomato_leaf_blight",
+          "tomato_verticulium_wilt"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          198,
+          199
+        ],
+        "pairs": [
+          "paddy_brown_spot",
+          "paddy_downy_mildew"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          198,
+          202
+        ],
+        "pairs": [
+          "paddy_brown_spot",
+          "paddy_leaf_roller"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          66,
+          69
+        ],
+        "pairs": [
+          "cassava_bacterial_blight",
+          "cassava_brown_streak_disease"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          300,
+          311
+        ],
+        "pairs": [
+          "tomato_bacterial_spot",
+          "tomato_powdery_mildew"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          304,
+          316
+        ],
+        "pairs": [
+          "tomato_healthy",
+          "tomato_yellow_leaf_curl_virus"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          109,
+          119
+        ],
+        "pairs": [
+          "corn_gray_leaf_spot",
+          "corn_streak"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          23,
+          28
+        ],
+        "pairs": [
+          "banana_cordana_leaf_spot",
+          "banana_sigatoka"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          311,
+          312
+        ],
+        "pairs": [
+          "tomato_powdery_mildew",
+          "tomato_septoria_leaf_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          309,
+          314
+        ],
+        "pairs": [
+          "tomato_mosaic_virus",
+          "tomato_target_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          10,
+          16
+        ],
+        "pairs": [
+          "apple_rust",
+          "apple_venturia_inaequalis"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          12,
+          15
+        ],
+        "pairs": [
+          "apple_monillia_laxa",
+          "apple_scab"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          237,
+          239
+        ],
+        "pairs": [
+          "plum_pocket_disease",
+          "plum_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          168,
+          174
+        ],
+        "pairs": [
+          "mango_aulacaspis_tubercularis",
+          "mango_dialeuropora_decempuncta"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          155,
+          159
+        ],
+        "pairs": [
+          "guava_phytophthora",
+          "guava_stylar_end_rot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          215,
+          223
+        ],
+        "pairs": [
+          "peach_anthracnose",
+          "peach_scab"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          193,
+          202
+        ],
+        "pairs": [
+          "paddy_bacterial_blight",
+          "paddy_leaf_roller"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          156,
+          157
+        ],
+        "pairs": [
+          "guava_red_rust",
+          "guava_rust"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          112,
+          123
+        ],
+        "pairs": [
+          "corn_leaf_blight",
+          "corn_yellowing"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          3,
+          12
+        ],
+        "pairs": [
+          "apple_black_rot",
+          "apple_monillia_laxa"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          110,
+          164
+        ],
+        "pairs": [
+          "corn_healthy",
+          "corn_lethal_necrosis"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          252,
+          254
+        ],
+        "pairs": [
+          "rose_black_spot",
+          "rose_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          115,
+          164
+        ],
+        "pairs": [
+          "corn_mildew",
+          "corn_lethal_necrosis"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          49,
+          51
+        ],
+        "pairs": [
+          "blueberry_anthracnose",
+          "blueberry_healthy"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          312,
+          316
+        ],
+        "pairs": [
+          "tomato_septoria_leaf_spot",
+          "tomato_yellow_leaf_curl_virus"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          193,
+          204
+        ],
+        "pairs": [
+          "paddy_bacterial_blight",
+          "paddy_tungro"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          14,
+          16
+        ],
+        "pairs": [
+          "apple_powdery_mildew",
+          "apple_venturia_inaequalis"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          0,
+          8
+        ],
+        "pairs": [
+          "apple_alternaria_blotch",
+          "apple_grey_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          100,
+          102
+        ],
+        "pairs": [
+          "coffee_cercospora",
+          "coffee_miner"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          182,
+          184
+        ],
+        "pairs": [
+          "mango_neomelicharia_sparsa",
+          "mango_powdery_mildew"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          304,
+          309
+        ],
+        "pairs": [
+          "tomato_healthy",
+          "tomato_mosaic_virus"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          304,
+          305
+        ],
+        "pairs": [
+          "tomato_healthy",
+          "tomato_late_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          224,
+          227
+        ],
+        "pairs": [
+          "peanut_early_leaf_spot",
+          "peanut_nutrition_deficiency"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          66,
+          70
+        ],
+        "pairs": [
+          "cassava_bacterial_blight",
+          "cassava_green_mite"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          164,
+          165
+        ],
+        "pairs": [
+          "corn_lethal_necrosis",
+          "corn_streak_virus"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          325,
+          327
+        ],
+        "pairs": [
+          "wheat_septoria",
+          "wheat_septoria_leaf_spot"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          20,
+          25
+        ],
+        "pairs": [
+          "banana_black_leaf_streak",
+          "banana_panama_disease"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          285,
+          288
+        ],
+        "pairs": [
+          "tea_algal_leaf",
+          "tea_brown_blight"
+        ],
+        "errors": 1
+      },
+      {
+        "ids": [
+          109,
+          112
+        ],
+        "pairs": [
+          "corn_gray_leaf_spot",
+          "corn_leaf_blight"
+        ],
+        "errors": 1
+      }
+    ]
+  }
+}

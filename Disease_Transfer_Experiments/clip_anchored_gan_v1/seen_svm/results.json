@@ -1,0 +1,77 @@
+{
+  "gamma": 3.0,
+  "images": 652,
+  "baseline": {
+    "top1": 593,
+    "top3": 638,
+    "disease_top1": 595,
+    "median_true_disease_margin": 6.215576171875
+  },
+  "landmarks": 768,
+  "linear": {
+    "top1": 596,
+    "top3": 640,
+    "disease_top1": 597,
+    "median_true_disease_margin": 1.9090861082077026,
+    "fold_settings": [
+      {
+        "kernel_gamma": null,
+        "strength": 1000.0,
+        "disease_weight": 1.0
+      },
+      {
+        "kernel_gamma": null,
+        "strength": 1000.0,
+        "disease_weight": 1.0
+      },
+      {
+        "kernel_gamma": null,
+        "strength": 1000.0,
+        "disease_weight": 1.0
+      },
+      {
+        "kernel_gamma": null,
+        "strength": 1000.0,
+        "disease_weight": 1.0
+      },
+      {
+        "kernel_gamma": null,
+        "strength": 1000.0,
+        "disease_weight": 1.0
+      }
+    ]
+  },
+  "rbf_nystrom": {
+    "top1": 591,
+    "top3": 628,
+    "disease_top1": 593,
+    "median_true_disease_margin": 1.861691951751709,
+    "fold_settings": [
+      {
+        "kernel_gamma": 0.5,
+        "strength": 1000.0,
+        "disease_weight": 24.0
+      },
+      {
+        "kernel_gamma": 0.5,
+        "strength": 1000.0,
+        "disease_weight": 24.0
+      },
+      {
+        "kernel_gamma": 0.5,
+        "strength": 1000.0,
+        "disease_weight": 24.0
+      },
+      {
+        "kernel_gamma": 0.5,
+        "strength": 1000.0,
+        "disease_weight": 1.0
+      },
+      {
+        "kernel_gamma": 0.5,
+        "strength": 1000.0,
+        "disease_weight": 24.0
+      }
+    ]
+  }
+}

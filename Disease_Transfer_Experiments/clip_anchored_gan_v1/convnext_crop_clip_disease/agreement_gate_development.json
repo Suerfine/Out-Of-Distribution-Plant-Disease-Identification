@@ -1,0 +1,233 @@
+{
+  "split": 42,
+  "seen_images": 862,
+  "unseen_images": 533,
+  "clip_convnext_unseen_agreement": 700,
+  "results": {
+    "locked": {
+      "crop_aware": [
+        612,
+        334
+      ],
+      "older_hybrid": [
+        613,
+        343
+      ],
+      "agreement": [
+        612,
+        334
+      ]
+    },
+    "matched_seen_diagnostic": {
+      "crop_aware": [
+        613,
+        337
+      ],
+      "older_hybrid": [
+        613,
+        346
+      ],
+      "agreement": [
+        613,
+        337
+      ]
+    }
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "rule": null,
+      "results": {
+        "crop_aware": {
+          "locked": [
+            80,
+            85
+          ],
+          "threshold": 2.9023438692092896,
+          "matched_seen_diagnostic": [
+            80,
+            88
+          ]
+        },
+        "older_hybrid": {
+          "locked": [
+            82,
+            87
+          ],
+          "threshold": 0.07333894073963165,
+          "matched_seen_diagnostic": [
+            80,
+            87
+          ]
+        },
+        "agreement": {
+          "locked": [
+            80,
+            85
+          ],
+          "threshold": 2.9023438692092896,
+          "matched_seen_diagnostic": [
+            80,
+            88
+          ]
+        }
+      }
+    },
+    {
+      "fold": 1,
+      "rule": null,
+      "results": {
+        "crop_aware": {
+          "locked": [
+            154,
+            78
+          ],
+          "threshold": 2.9023438692092896,
+          "matched_seen_diagnostic": [
+            154,
+            78
+          ]
+        },
+        "older_hybrid": {
+          "locked": [
+            160,
+            80
+          ],
+          "threshold": 0.07300697267055511,
+          "matched_seen_diagnostic": [
+            154,
+            81
+          ]
+        },
+        "agreement": {
+          "locked": [
+            154,
+            78
+          ],
+          "threshold": 2.9023438692092896,
+          "matched_seen_diagnostic": [
+            154,
+            78
+          ]
+        }
+      }
+    },
+    {
+      "fold": 2,
+      "rule": null,
+      "results": {
+        "crop_aware": {
+          "locked": [
+            179,
+            52
+          ],
+          "threshold": 2.9072269797325134,
+          "matched_seen_diagnostic": [
+            180,
+            52
+          ]
+        },
+        "older_hybrid": {
+          "locked": [
+            174,
+            57
+          ],
+          "threshold": 0.07384829968214035,
+          "matched_seen_diagnostic": [
+            180,
+            57
+          ]
+        },
+        "agreement": {
+          "locked": [
+            179,
+            52
+          ],
+          "threshold": 2.9072269797325134,
+          "matched_seen_diagnostic": [
+            180,
+            52
+          ]
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "rule": null,
+      "results": {
+        "crop_aware": {
+          "locked": [
+            122,
+            56
+          ],
+          "threshold": 2.9023438692092896,
+          "matched_seen_diagnostic": [
+            122,
+            56
+          ]
+        },
+        "older_hybrid": {
+          "locked": [
+            116,
+            54
+          ],
+          "threshold": 0.07384829968214035,
+          "matched_seen_diagnostic": [
+            122,
+            53
+          ]
+        },
+        "agreement": {
+          "locked": [
+            122,
+            56
+          ],
+          "threshold": 2.9023438692092896,
+          "matched_seen_diagnostic": [
+            122,
+            56
+          ]
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "rule": null,
+      "results": {
+        "crop_aware": {
+          "locked": [
+            77,
+            63
+          ],
+          "threshold": 2.9023438692092896,
+          "matched_seen_diagnostic": [
+            77,
+            63
+          ]
+        },
+        "older_hybrid": {
+          "locked": [
+            81,
+            65
+          ],
+          "threshold": 0.07303062081336975,
+          "matched_seen_diagnostic": [
+            77,
+            68
+          ]
+        },
+        "agreement": {
+          "locked": [
+            77,
+            63
+          ],
+          "threshold": 2.9023438692092896,
+          "matched_seen_diagnostic": [
+            77,
+            63
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,556 @@
+{
+  "split": 42,
+  "images": [
+    862,
+    533
+  ],
+  "totals": {
+    "zero": {
+      "hard": {
+        "correct": [
+          753,
+          126
+        ],
+        "h": 0.372099042867984
+      },
+      "fixed": {
+        "correct": [
+          733,
+          108
+        ],
+        "h": 0.3272693448536023
+      },
+      "soft": {
+        "correct": [
+          738,
+          124
+        ],
+        "h": 0.3658709184754579
+      }
+    },
+    "locked": {
+      "hard": {
+        "correct": [
+          592,
+          316
+        ],
+        "h": 0.6363772434719898
+      },
+      "fixed": {
+        "correct": [
+          585,
+          327
+        ],
+        "h": 0.6444391666203454
+      },
+      "soft": {
+        "correct": [
+          588,
+          337
+        ],
+        "h": 0.6562565201408185
+      }
+    },
+    "matched": {
+      "hard": {
+        "correct": [
+          593,
+          316
+        ],
+        "h": 0.6368748311272965
+      },
+      "fixed": {
+        "correct": [
+          593,
+          324
+        ],
+        "h": 0.6454345879867037
+      },
+      "soft": {
+        "correct": [
+          593,
+          336
+        ],
+        "h": 0.6579087701687797
+      }
+    }
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "arms": {
+        "hard": {
+          "zero": {
+            "params": {},
+            "counts": [
+              111,
+              15
+            ]
+          },
+          "locked": {
+            "params": {},
+            "offset": 3.003995895385742,
+            "counts": [
+              77,
+              91
+            ]
+          },
+          "matched": {
+            "counts": [
+              77,
+              91
+            ]
+          }
+        },
+        "fixed": {
+          "zero": {
+            "params": {
+              "weight": 0.1
+            },
+            "counts": [
+              114,
+              8
+            ]
+          },
+          "locked": {
+            "params": {
+              "weight": 0.5
+            },
+            "offset": 5.225327491760254,
+            "counts": [
+              75,
+              89
+            ]
+          },
+          "matched": {
+            "counts": [
+              77,
+              89
+            ]
+          }
+        },
+        "soft": {
+          "zero": {
+            "params": {
+              "center": 3.0,
+              "temperature": 1.0,
+              "strength": 0.75,
+              "bias": -0.15
+            },
+            "counts": [
+              107,
+              15
+            ]
+          },
+          "locked": {
+            "params": {
+              "center": 0.0,
+              "temperature": 1.0,
+              "strength": 0.5,
+              "bias": 0.0
+            },
+            "offset": 6.094635009765625,
+            "counts": [
+              77,
+              90
+            ]
+          },
+          "matched": {
+            "counts": [
+              77,
+              90
+            ]
+          }
+        }
+      }
+    },
+    {
+      "fold": 1,
+      "arms": {
+        "hard": {
+          "zero": {
+            "params": {},
+            "counts": [
+              202,
+              21
+            ]
+          },
+          "locked": {
+            "params": {},
+            "offset": 3.003995895385742,
+            "counts": [
+              152,
+              66
+            ]
+          },
+          "matched": {
+            "counts": [
+              152,
+              67
+            ]
+          }
+        },
+        "fixed": {
+          "zero": {
+            "params": {
+              "weight": 0.1
+            },
+            "counts": [
+              194,
+              19
+            ]
+          },
+          "locked": {
+            "params": {
+              "weight": 0.25
+            },
+            "offset": 4.067056179046631,
+            "counts": [
+              147,
+              76
+            ]
+          },
+          "matched": {
+            "counts": [
+              152,
+              75
+            ]
+          }
+        },
+        "soft": {
+          "zero": {
+            "params": {
+              "center": 3.0,
+              "temperature": 0.5,
+              "strength": 1.0,
+              "bias": 0.0
+            },
+            "counts": [
+              198,
+              21
+            ]
+          },
+          "locked": {
+            "params": {
+              "center": 3.0,
+              "temperature": 0.5,
+              "strength": 0.5,
+              "bias": 0.0
+            },
+            "offset": 5.081999016967984,
+            "counts": [
+              152,
+              80
+            ]
+          },
+          "matched": {
+            "counts": [
+              152,
+              80
+            ]
+          }
+        }
+      }
+    },
+    {
+      "fold": 2,
+      "arms": {
+        "hard": {
+          "zero": {
+            "params": {},
+            "counts": [
+              195,
+              27
+            ]
+          },
+          "locked": {
+            "params": {},
+            "offset": 3.003995895385742,
+            "counts": [
+              170,
+              47
+            ]
+          },
+          "matched": {
+            "counts": [
+              170,
+              47
+            ]
+          }
+        },
+        "fixed": {
+          "zero": {
+            "params": {
+              "weight": 0.1
+            },
+            "counts": [
+              179,
+              23
+            ]
+          },
+          "locked": {
+            "params": {
+              "weight": 0.5
+            },
+            "offset": 5.225327491760254,
+            "counts": [
+              168,
+              51
+            ]
+          },
+          "matched": {
+            "counts": [
+              170,
+              51
+            ]
+          }
+        },
+        "soft": {
+          "zero": {
+            "params": {
+              "center": 3.0,
+              "temperature": 2.0,
+              "strength": 1.0,
+              "bias": -0.15
+            },
+            "counts": [
+              189,
+              26
+            ]
+          },
+          "locked": {
+            "params": {
+              "center": 0.0,
+              "temperature": 1.0,
+              "strength": 0.5,
+              "bias": 0.0
+            },
+            "offset": 6.093256442409938,
+            "counts": [
+              171,
+              50
+            ]
+          },
+          "matched": {
+            "counts": [
+              170,
+              50
+            ]
+          }
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "arms": {
+        "hard": {
+          "zero": {
+            "params": {},
+            "counts": [
+              143,
+              30
+            ]
+          },
+          "locked": {
+            "params": {},
+            "offset": 3.003995895385742,
+            "counts": [
+              122,
+              50
+            ]
+          },
+          "matched": {
+            "counts": [
+              122,
+              50
+            ]
+          }
+        },
+        "fixed": {
+          "zero": {
+            "params": {
+              "weight": 0.1
+            },
+            "counts": [
+              144,
+              28
+            ]
+          },
+          "locked": {
+            "params": {
+              "weight": 0.5
+            },
+            "offset": 5.225327491760254,
+            "counts": [
+              120,
+              46
+            ]
+          },
+          "matched": {
+            "counts": [
+              122,
+              44
+            ]
+          }
+        },
+        "soft": {
+          "zero": {
+            "params": {
+              "center": 3.0,
+              "temperature": 0.5,
+              "strength": 1.0,
+              "bias": 0.0
+            },
+            "counts": [
+              142,
+              30
+            ]
+          },
+          "locked": {
+            "params": {
+              "center": 0.0,
+              "temperature": 1.0,
+              "strength": 0.5,
+              "bias": 0.0
+            },
+            "offset": 6.19051987938542,
+            "counts": [
+              113,
+              50
+            ]
+          },
+          "matched": {
+            "counts": [
+              122,
+              48
+            ]
+          }
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "arms": {
+        "hard": {
+          "zero": {
+            "params": {},
+            "counts": [
+              102,
+              33
+            ]
+          },
+          "locked": {
+            "params": {},
+            "offset": 3.0136146545410156,
+            "counts": [
+              71,
+              62
+            ]
+          },
+          "matched": {
+            "counts": [
+              72,
+              61
+            ]
+          }
+        },
+        "fixed": {
+          "zero": {
+            "params": {
+              "weight": 0.1
+            },
+            "counts": [
+              102,
+              30
+            ]
+          },
+          "locked": {
+            "params": {
+              "weight": 0.5
+            },
+            "offset": 5.188562393188477,
+            "counts": [
+              75,
+              65
+            ]
+          },
+          "matched": {
+            "counts": [
+              72,
+              65
+            ]
+          }
+        },
+        "soft": {
+          "zero": {
+            "params": {
+              "center": 3.0,
+              "temperature": 1.0,
+              "strength": 0.75,
+              "bias": -0.15
+            },
+            "counts": [
+              102,
+              32
+            ]
+          },
+          "locked": {
+            "params": {
+              "center": 0.0,
+              "temperature": 0.5,
+              "strength": 0.75,
+              "bias": -0.15
+            },
+            "offset": 6.094635009765625,
+            "counts": [
+              75,
+              67
+            ]
+          },
+          "matched": {
+            "counts": [
+              72,
+              68
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "official_selection": {
+    "fixed": {
+      "zero": {
+        "params": {
+          "weight": 0.1
+        },
+        "offset": 0.0
+      },
+      "tuned": {
+        "params": {
+          "weight": 0.5
+        },
+        "offset": 5.206473350524902
+      }
+    },
+    "soft": {
+      "zero": {
+        "params": {
+          "center": 3.0,
+          "temperature": 1.0,
+          "strength": 0.75,
+          "bias": -0.15
+        },
+        "offset": 0.0
+      },
+      "tuned": {
+        "params": {
+          "center": 0.0,
+          "temperature": 1.0,
+          "strength": 0.5,
+          "bias": 0.0
+        },
+        "offset": 6.094635009765625
+      }
+    }
+  }
+}
