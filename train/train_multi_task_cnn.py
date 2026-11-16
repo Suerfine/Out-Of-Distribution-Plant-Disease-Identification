@@ -34,9 +34,9 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
-from dpd.cnn import HEAD_SIZES, ImageLabels, MultiHeadNet, build_transforms, compose_pair_scores
+from dpd.cnn import HEAD_SIZES, ImageLabels, MultiHeadNet, build_transforms, compose_pair_scores, log_priors
 from dpd.config import load_config, output_dir
 from dpd.data import pair_table, read_metadata
 from dpd.evaluate import evaluate, format_summary, parse_gamma_grid
@@ -83,13 +83,33 @@ def apply_overrides(cfg: dict, overrides: list[str]) -> list[str]:
 
 
 class LossWeighter(nn.Module):
-    """Handles fixed loss weighting or learned uncertainty weighting (Kendall et al. 2018)."""
+    """Handles fixed loss weighting or learned uncertainty weighting (Kendall et al. 2018).
 
-    def __init__(self, loss_cfg: dict, heads: tuple[str, ...] = ("crop", "disease")):
+    Optional `loss.balanced_softmax` ({head: tau}) trains that head with Balanced Softmax (Ren et al., 2020):
+    the CE is taken on `logits + tau * log_prior`, where the prior is the class frequency of the training frame
+    (`prior_df`). At inference the raw logits are used, so the head scores classes as if the training set were
+    class-balanced. This is a fixed training-time correction, not a tuned post-hoc offset.
+
+    Targets may carry a second label per head (`<head>_b`) with a per-sample mixing weight `lam`
+    (same-disease CutMix): the loss for that head is then (1 - lam) * CE(a) + lam * CE(b).
+    """
+
+    def __init__(self, loss_cfg: dict, heads: tuple[str, ...] = ("crop", "disease"), prior_df: pd.DataFrame | None = None):
         super().__init__()
         self.mode = loss_cfg.get("weighting", "fixed")
         self.label_smoothing = float(loss_cfg.get("label_smoothing", 0.0))
         self.heads = heads
+
+        bs_cfg = {k: v for k, v in (loss_cfg.get("balanced_softmax") or {}).items() if not k.startswith("_")}
+        self.bs_tau = {h: float(bs_cfg.get(h, 0.0)) for h in heads}
+        if any(self.bs_tau.values()):
+            if prior_df is None:
+                raise ValueError("loss.balanced_softmax needs the training frame to compute class priors")
+            priors = log_priors(prior_df)
+            for h in heads:
+                if self.bs_tau[h]:
+                    # Non-persistent: not part of state_dict, so checkpoints stay compatible.
+                    self.register_buffer(f"log_prior_{h}", torch.tensor(priors[h], dtype=torch.float32), persistent=False)
 
         if self.mode == "uncertainty":
             init_s = float(loss_cfg.get("init_log_var", 0.0))
@@ -102,10 +122,21 @@ class LossWeighter(nn.Module):
         else:
             raise ValueError(f"Unknown loss weighting mode {self.mode!r}")
 
+    def head_ce(self, h: str, logits: torch.Tensor, targets: dict[str, torch.Tensor]) -> torch.Tensor:
+        z = logits.float()
+        if self.bs_tau[h]:
+            z = z + self.bs_tau[h] * getattr(self, f"log_prior_{h}")
+        ce = F.cross_entropy(z, targets[h], label_smoothing=self.label_smoothing, reduction="none")
+        if f"{h}_b" in targets:
+            lam = targets["lam"]
+            ce_b = F.cross_entropy(z, targets[f"{h}_b"], label_smoothing=self.label_smoothing, reduction="none")
+            ce = (1.0 - lam) * ce + lam * ce_b
+        return ce.mean()
+
     def forward(self, logits: dict[str, torch.Tensor], targets: dict[str, torch.Tensor]) -> tuple[torch.Tensor, dict[str, float]]:
         ce = {}
         for h in self.heads:
-            ce[h] = F.cross_entropy(logits[h].float(), targets[h], label_smoothing=self.label_smoothing)
+            ce[h] = self.head_ce(h, logits[h], targets)
 
         if self.mode == "uncertainty":
             loss = torch.tensor(0.0, device=logits[self.heads[0]].device)
@@ -187,10 +218,65 @@ def build_scheduler(opt: torch.optim.Optimizer, steps_per_epoch: int, total_epoc
     return torch.optim.lr_scheduler.LambdaLR(opt, lr_lambda)
 
 
+class SameDiseaseCutMix(Dataset):
+    """Training images with same-disease, cross-crop CutMix (config `augmentation.same_disease_cutmix`).
+
+    With probability p, a box from a partner image with the SAME disease but a DIFFERENT crop is pasted into the
+    image. The disease label is unchanged (both regions show it), while the crop label is mixed by pasted area.
+    The disease head therefore sees one disease on two host leaves under one label, which weakens the
+    "leaf type -> its usual diseases" shortcut that fails on unseen compositions.
+
+    Items are (x, crop_a, crop_b, lam, disease); lam is the pasted-area fraction (weight of crop_b), 0 if unmixed.
+    Uses the `random` module, which DataLoader reseeds per worker.
+    """
+
+    def __init__(self, df, image_dir, transform, p: float, alpha: float):
+        self.base = ImageLabels(df, image_dir, transform)
+        self.p, self.alpha = float(p), float(alpha)
+        crops, diseases = df["crop_id"].to_numpy(), df["disease_id"].to_numpy()
+        self.groups = {}
+        for d in np.unique(diseases):
+            idx = np.flatnonzero(diseases == d)
+            self.groups[int(d)] = (idx, crops[idx])
+
+    def __len__(self):
+        return len(self.base)
+
+    def __getitem__(self, i):
+        x, c, d = self.base[i]
+        if self.p <= 0 or random.random() >= self.p:
+            return x, c, c, 0.0, d
+        idx, crops = self.groups[d]
+        cand = idx[crops != c]
+        if len(cand) == 0:
+            return x, c, c, 0.0, d
+        j = int(cand[random.randrange(len(cand))])
+        xj, cj, _ = self.base[j]
+
+        lam = random.betavariate(self.alpha, self.alpha)
+        H, W = x.shape[-2:]
+        bh, bw = int(round(H * np.sqrt(lam))), int(round(W * np.sqrt(lam)))
+        cy, cx = random.randrange(H), random.randrange(W)
+        y1, y2 = max(cy - bh // 2, 0), min(cy + bh // 2, H)
+        x1, x2 = max(cx - bw // 2, 0), min(cx + bw // 2, W)
+        area = (y2 - y1) * (x2 - x1)
+        if area == 0:
+            return x, c, c, 0.0, d
+        x = x.clone()
+        x[:, y1:y2, x1:x2] = xj[:, y1:y2, x1:x2]
+        return x, c, cj, area / float(H * W), d
+
+
 def make_loader(df, image_dir, transform, cfg, shuffle: bool):
+    """shuffle=True marks a training loader; only those get same-disease CutMix (when configured)."""
     rt = cfg["runtime"]
+    cm = cfg["augmentation"].get("same_disease_cutmix") or {}
+    if shuffle and cm.get("p", 0) > 0:
+        ds = SameDiseaseCutMix(df, image_dir, transform, cm["p"], cm.get("alpha", 1.0))
+    else:
+        ds = ImageLabels(df, image_dir, transform)
     return DataLoader(
-        ImageLabels(df, image_dir, transform),
+        ds,
         batch_size=cfg["training"]["batch_size"],
         shuffle=shuffle,
         num_workers=rt["num_workers"],
@@ -315,9 +401,16 @@ def train_epoch(model, loss_weighter, opt, sched, scaler, loader, heads, device,
     n_batches = len(loader)
     log_interval = max(1, n_batches // 5)  # 5 progress checkpoints per epoch
 
-    for step_idx, (x, y_crop, y_dis) in enumerate(loader):
+    for step_idx, batch in enumerate(loader):
+        if len(batch) == 5:  # same-disease CutMix: (x, crop_a, crop_b, lam, disease)
+            x, y_crop, y_crop_b, lam, y_dis = batch
+        else:
+            (x, y_crop, y_dis), y_crop_b, lam = batch, None, None
         x = x.to(device, non_blocking=True)
         targets = {"crop": y_crop.to(device), "disease": y_dis.to(device)}
+        if y_crop_b is not None:
+            targets["crop_b"] = y_crop_b.to(device)
+            targets["lam"] = lam.to(device, dtype=torch.float32)
 
         with torch.autocast(device, enabled=amp):
             logits = model(x)
@@ -500,8 +593,8 @@ def main():
 
             # Build model, loss weighter, optimizer, scheduler
             seed_everything(split_seed)
-            model = MultiHeadNet(mcfg["backbone"], mcfg["pretrained"], {h: HEAD_SIZES[h] for h in heads}, mcfg["head_dropout"]).to(device)
-            loss_weighter = LossWeighter(lcfg, heads).to(device)
+            model = MultiHeadNet(mcfg["backbone"], mcfg["pretrained"], {h: HEAD_SIZES[h] for h in heads}, mcfg["head_dropout"], mcfg.get("drop_path_rate", 0.0)).to(device)
+            loss_weighter = LossWeighter(lcfg, heads, prior_df=fit_df).to(device)
             opt = build_optimizer(model, loss_weighter, cfg)
             sched = build_scheduler(opt, len(train_loader) // tcfg.get("accum_steps", 1), max_epochs, cfg)
             scaler = torch.amp.GradScaler(device, enabled=amp)
@@ -627,8 +720,8 @@ def main():
     total_refit_sched_epochs = best_epoch if refit_schedule == "compress" else max_epochs
 
     seed_everything(cfg["seed"])
-    model = MultiHeadNet(mcfg["backbone"], mcfg["pretrained"], {h: HEAD_SIZES[h] for h in heads}, mcfg["head_dropout"]).to(device)
-    loss_weighter = LossWeighter(lcfg, heads).to(device)
+    model = MultiHeadNet(mcfg["backbone"], mcfg["pretrained"], {h: HEAD_SIZES[h] for h in heads}, mcfg["head_dropout"], mcfg.get("drop_path_rate", 0.0)).to(device)
+    loss_weighter = LossWeighter(lcfg, heads, prior_df=train_all).to(device)
     opt = build_optimizer(model, loss_weighter, cfg)
     sched = build_scheduler(opt, len(full_loader) // tcfg.get("accum_steps", 1), total_refit_sched_epochs, cfg)
     scaler = torch.amp.GradScaler(device, enabled=amp)

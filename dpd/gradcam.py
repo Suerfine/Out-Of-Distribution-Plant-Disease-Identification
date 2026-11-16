@@ -205,6 +205,21 @@ def compute_cam(
     return cam_np
 
 
+def model_view(transform: Any, img: Image.Image) -> Image.Image:
+    """Apply only the geometric (PIL-level) steps of an eval transform, i.e. the image the network actually sees.
+
+    Walks a torchvision Compose and stops at the first tensor conversion (ToImage / ToTensor), so Resize and
+    CenterCrop are applied but ToDtype / Normalize are not.
+    """
+    img = img.convert("RGB")
+    steps = getattr(transform, "transforms", [])
+    for t in steps:
+        if type(t).__name__ in ("ToImage", "ToTensor", "PILToTensor", "ToDtype", "Normalize", "ConvertImageDtype"):
+            break
+        img = t(img)
+    return img if isinstance(img, Image.Image) else img.convert("RGB")
+
+
 def explain_cnn(
     net: nn.Module,
     transform: Any,
@@ -235,7 +250,10 @@ def explain_cnn(
     from dpd.resize_cache import standardise
 
     std_img = standardise(src, resize_cache)
-    orig_pil = Image.open(src if not isinstance(src, bytes) else io.BytesIO(src)).convert("RGB")
+    # The CAM covers exactly what the network saw (Resize + CenterCrop of the standardised image), so it must be
+    # overlaid on that view. Overlaying on the full original stretched the map over regions the model never saw
+    # (and distorted non-square photos), shifting hotspots towards edges / background.
+    orig_pil = model_view(transform, std_img)
     device = next(net.parameters()).device
     x = transform(std_img).unsqueeze(0).to(device)
 
