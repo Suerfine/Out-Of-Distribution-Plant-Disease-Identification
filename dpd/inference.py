@@ -60,6 +60,8 @@ def pair_text_embeddings(run_dir: Path, clip_model, tokenizer, pairs) -> np.ndar
     state = torch.load(run_dir / "prompt_vectors.pt", map_location=device())
     model.crop_vecs.data.copy_(state["crop_vecs"])
     model.disease_vecs.data.copy_(state["disease_vecs"])
+    for k, v in state.get("context", {}).items():  # CoOp context (prompts.learned_context)
+        model.ctx[k].data.copy_(v)
     return model.encode("pairs").float().cpu().numpy()
 
 

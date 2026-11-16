@@ -38,6 +38,16 @@ Options (all in the config, each off by default so older configs behave exactly 
                               al. 2023). Only one of the disease / crop vector sets is updated at a time, swapping every
                               p epochs (LoRA always trains), so the two sets do not drag each other into one entangled
                               optimum. Training only
+  training.lr_schedule_epochs  fixed cosine horizon in epochs (normally = max_epochs). Without it the cosine ends at the
+                              number of epochs being fitted, so the stage-2 refit (selected epoch e < max_epochs) decays to
+                              zero by epoch e and is not the model that was validated; with it, the refit follows the
+                              learning rates of the first e epochs of stage 1. train/ensemble.py retrains members through
+                              fit(), so it follows the same setting
+  validation.save_scores      true: write runs/.../val_scores_split<k>.npz after every stage-1 epoch: raw cosines of the
+                              validation images (val-seen first, then pseudo-unseen) with all 333 pair prompts and with the
+                              crop / disease prompts, per epoch (float32, plain scoring: LoRA scale 1, no fusion, real
+                              unseen pairs not masked), plus labels, files, n_val_seen and the trained pair ids. Post-hoc
+                              ideas (fusion, gates, calibration, ensembles) can then be tested without retraining
   model.primitive_branches    {"lr": lr}: Troika-style crop and disease visual branches (dpd/primitive_branches.py): the
                               crop / disease losses use their own residual linear map of the CLS embedding, and primitive
                               fusion (evaluation.posthoc crop / disease weights) scores with those branch features
@@ -49,6 +59,7 @@ images for that many epochs and evaluate once on test.
 
 import argparse
 import json
+import gc
 import shutil
 import time
 
@@ -99,6 +110,23 @@ def loader(df, image_dir, transform, cfg, shuffle):
     return DataLoader(Images(df, image_dir, transform), batch_size=cfg["training"]["batch_size"],
                       shuffle=shuffle and sampler is None, sampler=sampler,
                       num_workers=rt["num_workers"], pin_memory=True, persistent_workers=rt["num_workers"] > 0, drop_last=shuffle)
+
+
+def release_loader(dl):
+    """Stop a DataLoader's persistent worker processes now (each commits ~1.4 GB on Windows) instead of whenever the
+    loader happens to be garbage-collected; leftover workers from earlier splits pushed later stages into paging."""
+    it = getattr(dl, "_iterator", None)
+    if it is not None and hasattr(it, "_shutdown_workers"):
+        it._shutdown_workers()
+    dl._iterator = None
+
+
+def free_memory():
+    """Collect reference cycles before emptying the CUDA cache: without gc.collect() a deleted model can stay alive
+    and keep its GPU memory, and the next model then spills into (much slower) Windows shared GPU memory."""
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
 
 def build(cfg, pairs, device):
@@ -244,9 +272,10 @@ def fit(model, lora_params, train_df, trained_pairs, epochs, cfg, image_dir, tfs
     wa = tcfg.get("weight_average")
     assert wa is None or wa["type"] == "ema", f"unknown weight_average {wa}"
     branch_params = list(model.branches.parameters()) if model.branches is not None else []
-    ema = WeightEMA([model.crop_vecs, model.disease_vecs, *lora_params, *branch_params], wa["decay"]) if wa else None
+    ctx_params = list(model.ctx.values())  # CoOp context (prompts.learned_context); empty otherwise
+    ema = WeightEMA([model.crop_vecs, model.disease_vecs, *ctx_params, *lora_params, *branch_params], wa["decay"]) if wa else None
     groups_opt = [
-        {"params": [model.crop_vecs, model.disease_vecs], "lr": tcfg["lr"]},
+        {"params": [model.crop_vecs, model.disease_vecs, *ctx_params], "lr": tcfg["lr"]},
         {"params": lora_params, "lr": cfg["image_encoder"]["lora"]["lr"]},
     ]
     if branch_params:
@@ -261,7 +290,9 @@ def fit(model, lora_params, train_df, trained_pairs, epochs, cfg, image_dir, tfs
     assert ssl_w == 0 or local_tf is not None, "loss_weights.ssl > 0 needs augmentation.ssl_local"
     ssl_frac = cfg["augmentation"].get("ssl_local", {}).get("batch_fraction", 1.0)
     dl = loader(train_df, image_dir, TwoViews(tfs[0], local_tf) if local_tf else tfs[0], cfg, shuffle=True)
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs * len(dl))
+    # lr_schedule_epochs: a fixed cosine horizon, so a fit for e epochs follows the learning rates of the first e
+    # epochs of stage 1 (without it the cosine ends at `epochs`, and the stage-2 refit decays faster than validated).
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=tcfg.get("lr_schedule_epochs", epochs) * len(dl))
     scale, lw = tcfg["logit_scale"], tcfg["loss_weights"]
     trained = torch.as_tensor(trained_pairs, device=device)
     col = torch.full((int(trained.max()) + 1,), -1, device=device, dtype=torch.long)
@@ -331,7 +362,8 @@ def fit(model, lora_params, train_df, trained_pairs, epochs, cfg, image_dir, tfs
             totals["loss"] += loss.item()
             for k, l in losses.items():
                 totals[k] = totals.get(k, 0.0) + l.item()
-        rec = {"epoch": epoch, **{k: round(v / n_batches, 4) for k, v in totals.items()}, "sec": round(time.time() - t0)}
+        rec = {"epoch": epoch, **{k: round(v / n_batches, 4) for k, v in totals.items()}, "sec": round(time.time() - t0),
+               "lr": float(f"{sched.get_last_lr()[0]:.3g}")}  # prompt-vector lr at the end of the epoch
         if alt:
             rec["vectors_trained"] = training_set
         if on_epoch_end:
@@ -342,6 +374,7 @@ def fit(model, lora_params, train_df, trained_pairs, epochs, cfg, image_dir, tfs
                 ema.swap()
         if log:
             log(rec)
+    release_loader(dl)
     if ema:
         ema.swap()  # the fitted model keeps the averaged weights
 
@@ -380,6 +413,7 @@ def main():
     hidden = pairs["is_unseen"].to_numpy() if vcfg["exclude_real_unseen_from_label_space"] else np.zeros(len(pairs), bool)
     n_splits = vcfg.get("n_splits", 1)
     posthoc = "posthoc" in ev
+    save_scores = vcfg.get("save_scores", False)
     s_grid, a_grid, b_grid = posthoc_grids(ev)
     fusing = len(a_grid) + len(b_grid) > 2
     hm_grid = np.zeros((n_splits, tcfg["max_epochs"], len(s_grid), len(a_grid), len(b_grid), len(gammas)))
@@ -397,15 +431,23 @@ def main():
         n_vs, y_vs, y_vu = len(val_seen), val_seen["pair_id"].to_numpy(), val_unseen["pair_id"].to_numpy()
         val_dl = loader(val_df, image_dir, tfs[1], cfg, shuffle=False)
         split_info[k] = (val_pairs, y_vs, y_vu, n_vs)
+        saved = {"pair": [], "crop": [], "disease": []}  # validation.save_scores: one array per epoch
 
         seed_everything(split_seed)
         model, lora_params = build(cfg, pairs, device)
         pc, pdis = model.pair_crop.cpu().numpy(), model.pair_disease.cpu().numpy()
 
-        def validate(epoch, k=k):
+        def validate(epoch, k=k, saved=saved, val_df=val_df, trained_ids=trained_ids):
             for si, sc in enumerate(s_grid):
                 feats = encode_scaled(model, val_dl, device, amp, tta, sc)
                 raw = (pair_scores(model, feats, amp), *(primitive_scores(model, feats, amp) if fusing else (None, None)))
+                if save_scores and si == 0:  # s_grid[0] is always 1.0 (plain scoring)
+                    prim = raw[1:] if fusing else primitive_scores(model, feats, amp)
+                    for name, arr in zip(saved, (raw[0], *prim)):
+                        saved[name].append(np.asarray(arr, dtype=np.float32))  # float16 moved val HM by ~0.1 pt
+                    np.savez_compressed(out / f"val_scores_split{k + 1}.npz", **{n: np.stack(v) for n, v in saved.items()},
+                                        labels=val_df["pair_id"].to_numpy(), files=val_df["file"].to_numpy().astype(str),
+                                        n_val_seen=n_vs, trained_pairs=np.asarray(trained_ids))
                 if posthoc:
                     val_raw[k, epoch, si] = raw
                 if si == 0:
@@ -430,8 +472,9 @@ def main():
             return rec
 
         fit(model, lora_params, fit_df, trained_ids, tcfg["max_epochs"], cfg, image_dir, tfs, validate, logger(f"split{k + 1}"))
-        del model, lora_params
-        torch.cuda.empty_cache()
+        release_loader(val_dl)
+        del model, lora_params, validate, val_dl
+        free_memory()
 
     mean_grid = hm_grid.mean(axis=0)
     e, si, ai, bi, g = np.unravel_index(mean_grid.argmax(), mean_grid.shape)
@@ -469,6 +512,7 @@ def main():
     print(f"selected epoch {best_epoch}, gamma {gamma}: mean val HM {best['val_hm_mean']:.2%}", flush=True)
 
     # ---- Stage 2: refit on all training images, evaluate once on test ----
+    free_memory()
     seed_everything(cfg["seed"])
     model, lora_params = build(cfg, pairs, device)
     fit(model, lora_params, train, sorted(set(train["pair_id"])), best_epoch, cfg, image_dir, tfs, log=logger("final"))
@@ -476,7 +520,9 @@ def main():
     scores, labels, files = {}, {}, {}
     for s in ("test_seen", "test_unseen"):
         sub = df[df["split"] == s]
-        scores[s] = score_all(model, loader(sub, image_dir, tfs[1], cfg, shuffle=False), device, amp, tta, knobs)
+        test_dl = loader(sub, image_dir, tfs[1], cfg, shuffle=False)
+        scores[s] = score_all(model, test_dl, device, amp, tta, knobs)
+        release_loader(test_dl)
         labels[s], files[s] = sub["pair_id"].to_numpy(), sub["file"].to_numpy()
     top_k = tuple(ev["top_k"])
     result = evaluate(scores["test_seen"], labels["test_seen"], scores["test_unseen"], labels["test_unseen"], pairs, gamma, top_k)
@@ -495,8 +541,8 @@ def main():
             np.save(out / "disease_text_embeddings.npy", text_embeddings(model, "diseases", amp).float().cpu().numpy())
         if knobs.get("crop_weight"):
             np.save(out / "crop_text_embeddings.npy", text_embeddings(model, "crops", amp).float().cpu().numpy())
-    torch.save({"crop_vecs": model.crop_vecs.detach().cpu(), "disease_vecs": model.disease_vecs.detach().cpu(), "gamma": gamma},
-               out / "prompt_vectors.pt")
+    torch.save({"crop_vecs": model.crop_vecs.detach().cpu(), "disease_vecs": model.disease_vecs.detach().cpu(), "gamma": gamma,
+                "context": {k: v.detach().cpu() for k, v in model.ctx.items()}}, out / "prompt_vectors.pt")
     torch.save(lora_state(model.clip.visual), out / "lora_image_encoder.pt")
     if model.branches is not None:
         torch.save(model.branches.state_dict(), out / "primitive_branches.pt")
