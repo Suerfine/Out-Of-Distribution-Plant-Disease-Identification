@@ -1,0 +1,39 @@
+{
+  "selection": {
+    "split": 42,
+    "cnn_seen_blend": 0.5,
+    "cnn_gate_weight": 0.02,
+    "cnn_gap_scale": 3.1415936946868896,
+    "threshold": 0.0700000000000001,
+    "hybrid_development": {
+      "seen": 0.7459396751740139,
+      "unseen": 0.551594746716698,
+      "h": 0.6342127025716812,
+      "seen_correct": 643,
+      "unseen_correct": 294
+    },
+    "clip_gamma_003_development": {
+      "seen": 0.660092807424594,
+      "unseen": 0.549718574108818,
+      "h": 0.599870826834196,
+      "seen_correct": 569,
+      "unseen_correct": 293
+    }
+  },
+  "official": {
+    "hybrid": {
+      "seen": 0.6735,
+      "unseen": 0.7831491712707183,
+      "h": 0.7241976685308559,
+      "seen_correct": 1347,
+      "unseen_correct": 1134
+    },
+    "clip_gamma_003": {
+      "seen": 0.606,
+      "unseen": 0.763121546961326,
+      "h": 0.6755450726561776,
+      "seen_correct": 1212,
+      "unseen_correct": 1105
+    }
+  }
+}

@@ -1,0 +1,326 @@
+{
+  "chosen": null,
+  "grid": [
+    {
+      "width": 0.005,
+      "votes": 3,
+      "min_margin": 0.0,
+      "overrides": 68,
+      "seen_gain": 38,
+      "unseen_gain": -12
+    },
+    {
+      "width": 0.005,
+      "votes": 3,
+      "min_margin": 0.5,
+      "overrides": 66,
+      "seen_gain": 38,
+      "unseen_gain": -12
+    },
+    {
+      "width": 0.005,
+      "votes": 3,
+      "min_margin": 1.0,
+      "overrides": 63,
+      "seen_gain": 37,
+      "unseen_gain": -12
+    },
+    {
+      "width": 0.005,
+      "votes": 3,
+      "min_margin": 2.0,
+      "overrides": 57,
+      "seen_gain": 36,
+      "unseen_gain": -11
+    },
+    {
+      "width": 0.005,
+      "votes": 4,
+      "min_margin": 0.0,
+      "overrides": 61,
+      "seen_gain": 36,
+      "unseen_gain": -11
+    },
+    {
+      "width": 0.005,
+      "votes": 4,
+      "min_margin": 0.5,
+      "overrides": 60,
+      "seen_gain": 36,
+      "unseen_gain": -11
+    },
+    {
+      "width": 0.005,
+      "votes": 4,
+      "min_margin": 1.0,
+      "overrides": 58,
+      "seen_gain": 35,
+      "unseen_gain": -11
+    },
+    {
+      "width": 0.005,
+      "votes": 4,
+      "min_margin": 2.0,
+      "overrides": 54,
+      "seen_gain": 34,
+      "unseen_gain": -11
+    },
+    {
+      "width": 0.01,
+      "votes": 3,
+      "min_margin": 0.0,
+      "overrides": 120,
+      "seen_gain": 57,
+      "unseen_gain": -33
+    },
+    {
+      "width": 0.01,
+      "votes": 3,
+      "min_margin": 0.5,
+      "overrides": 117,
+      "seen_gain": 57,
+      "unseen_gain": -32
+    },
+    {
+      "width": 0.01,
+      "votes": 3,
+      "min_margin": 1.0,
+      "overrides": 110,
+      "seen_gain": 55,
+      "unseen_gain": -32
+    },
+    {
+      "width": 0.01,
+      "votes": 3,
+      "min_margin": 2.0,
+      "overrides": 95,
+      "seen_gain": 53,
+      "unseen_gain": -27
+    },
+    {
+      "width": 0.01,
+      "votes": 4,
+      "min_margin": 0.0,
+      "overrides": 109,
+      "seen_gain": 54,
+      "unseen_gain": -31
+    },
+    {
+      "width": 0.01,
+      "votes": 4,
+      "min_margin": 0.5,
+      "overrides": 108,
+      "seen_gain": 54,
+      "unseen_gain": -31
+    },
+    {
+      "width": 0.01,
+      "votes": 4,
+      "min_margin": 1.0,
+      "overrides": 105,
+      "seen_gain": 53,
+      "unseen_gain": -31
+    },
+    {
+      "width": 0.01,
+      "votes": 4,
+      "min_margin": 2.0,
+      "overrides": 92,
+      "seen_gain": 51,
+      "unseen_gain": -27
+    },
+    {
+      "width": 0.02,
+      "votes": 3,
+      "min_margin": 0.0,
+      "overrides": 231,
+      "seen_gain": 93,
+      "unseen_gain": -81
+    },
+    {
+      "width": 0.02,
+      "votes": 3,
+      "min_margin": 0.5,
+      "overrides": 220,
+      "seen_gain": 92,
+      "unseen_gain": -74
+    },
+    {
+      "width": 0.02,
+      "votes": 3,
+      "min_margin": 1.0,
+      "overrides": 204,
+      "seen_gain": 90,
+      "unseen_gain": -70
+    },
+    {
+      "width": 0.02,
+      "votes": 3,
+      "min_margin": 2.0,
+      "overrides": 164,
+      "seen_gain": 84,
+      "unseen_gain": -56
+    },
+    {
+      "width": 0.02,
+      "votes": 4,
+      "min_margin": 0.0,
+      "overrides": 210,
+      "seen_gain": 90,
+      "unseen_gain": -72
+    },
+    {
+      "width": 0.02,
+      "votes": 4,
+      "min_margin": 0.5,
+      "overrides": 205,
+      "seen_gain": 89,
+      "unseen_gain": -70
+    },
+    {
+      "width": 0.02,
+      "votes": 4,
+      "min_margin": 1.0,
+      "overrides": 195,
+      "seen_gain": 88,
+      "unseen_gain": -66
+    },
+    {
+      "width": 0.02,
+      "votes": 4,
+      "min_margin": 2.0,
+      "overrides": 161,
+      "seen_gain": 82,
+      "unseen_gain": -56
+    },
+    {
+      "width": 0.03,
+      "votes": 3,
+      "min_margin": 0.0,
+      "overrides": 346,
+      "seen_gain": 118,
+      "unseen_gain": -134
+    },
+    {
+      "width": 0.03,
+      "votes": 3,
+      "min_margin": 0.5,
+      "overrides": 326,
+      "seen_gain": 116,
+      "unseen_gain": -121
+    },
+    {
+      "width": 0.03,
+      "votes": 3,
+      "min_margin": 1.0,
+      "overrides": 292,
+      "seen_gain": 111,
+      "unseen_gain": -109
+    },
+    {
+      "width": 0.03,
+      "votes": 3,
+      "min_margin": 2.0,
+      "overrides": 223,
+      "seen_gain": 102,
+      "unseen_gain": -80
+    },
+    {
+      "width": 0.03,
+      "votes": 4,
+      "min_margin": 0.0,
+      "overrides": 310,
+      "seen_gain": 112,
+      "unseen_gain": -117
+    },
+    {
+      "width": 0.03,
+      "votes": 4,
+      "min_margin": 0.5,
+      "overrides": 301,
+      "seen_gain": 111,
+      "unseen_gain": -112
+    },
+    {
+      "width": 0.03,
+      "votes": 4,
+      "min_margin": 1.0,
+      "overrides": 277,
+      "seen_gain": 107,
+      "unseen_gain": -102
+    },
+    {
+      "width": 0.03,
+      "votes": 4,
+      "min_margin": 2.0,
+      "overrides": 218,
+      "seen_gain": 100,
+      "unseen_gain": -79
+    },
+    {
+      "width": 0.05,
+      "votes": 3,
+      "min_margin": 0.0,
+      "overrides": 472,
+      "seen_gain": 127,
+      "unseen_gain": -200
+    },
+    {
+      "width": 0.05,
+      "votes": 3,
+      "min_margin": 0.5,
+      "overrides": 439,
+      "seen_gain": 124,
+      "unseen_gain": -178
+    },
+    {
+      "width": 0.05,
+      "votes": 3,
+      "min_margin": 1.0,
+      "overrides": 386,
+      "seen_gain": 119,
+      "unseen_gain": -156
+    },
+    {
+      "width": 0.05,
+      "votes": 3,
+      "min_margin": 2.0,
+      "overrides": 274,
+      "seen_gain": 107,
+      "unseen_gain": -109
+    },
+    {
+      "width": 0.05,
+      "votes": 4,
+      "min_margin": 0.0,
+      "overrides": 418,
+      "seen_gain": 120,
+      "unseen_gain": -174
+    },
+    {
+      "width": 0.05,
+      "votes": 4,
+      "min_margin": 0.5,
+      "overrides": 402,
+      "seen_gain": 119,
+      "unseen_gain": -163
+    },
+    {
+      "width": 0.05,
+      "votes": 4,
+      "min_margin": 1.0,
+      "overrides": 363,
+      "seen_gain": 115,
+      "unseen_gain": -146
+    },
+    {
+      "width": 0.05,
+      "votes": 4,
+      "min_margin": 2.0,
+      "overrides": 268,
+      "seen_gain": 105,
+      "unseen_gain": -107
+    }
+  ],
+  "development_candidates": 531
+}

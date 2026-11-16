@@ -1,0 +1,260 @@
+{
+  "split": 42,
+  "seen_images": 862,
+  "unseen_images": 533,
+  "weight_grid": [
+    0.0,
+    0.0025,
+    0.005,
+    0.0075,
+    0.01,
+    0.0125,
+    0.015,
+    0.0175,
+    0.02,
+    0.0225,
+    0.025,
+    0.0275,
+    0.03,
+    0.0325,
+    0.035,
+    0.0375,
+    0.04,
+    0.0425,
+    0.045,
+    0.0475,
+    0.05,
+    0.06,
+    0.075,
+    0.1,
+    0.15,
+    0.2
+  ],
+  "totals": {
+    "locked": {
+      "crop_aware": [
+        612,
+        334
+      ],
+      "older_fixed_weight": [
+        613,
+        343
+      ],
+      "older_tuned_weight": [
+        611,
+        338
+      ]
+    },
+    "matched_seen_diagnostic": {
+      "crop_aware": [
+        613,
+        337
+      ],
+      "older_fixed_weight": [
+        613,
+        346
+      ],
+      "older_tuned_weight": [
+        613,
+        338
+      ]
+    }
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "weight": 0.03,
+      "results": {
+        "crop_aware": {
+          "threshold": 2.9023438692092896,
+          "locked": [
+            80,
+            85
+          ],
+          "matched_seen_diagnostic": [
+            80,
+            88
+          ]
+        },
+        "older_fixed_weight": {
+          "threshold": 0.07333894550800324,
+          "locked": [
+            82,
+            87
+          ],
+          "matched_seen_diagnostic": [
+            80,
+            87
+          ]
+        },
+        "older_tuned_weight": {
+          "threshold": 0.09581677675247192,
+          "locked": [
+            80,
+            85
+          ],
+          "matched_seen_diagnostic": [
+            80,
+            85
+          ]
+        }
+      }
+    },
+    {
+      "fold": 1,
+      "weight": 0.0125,
+      "results": {
+        "crop_aware": {
+          "threshold": 2.9023438692092896,
+          "locked": [
+            154,
+            78
+          ],
+          "matched_seen_diagnostic": [
+            154,
+            78
+          ]
+        },
+        "older_fixed_weight": {
+          "threshold": 0.07300697028636932,
+          "locked": [
+            160,
+            80
+          ],
+          "matched_seen_diagnostic": [
+            154,
+            81
+          ]
+        },
+        "older_tuned_weight": {
+          "threshold": 0.05631242096424103,
+          "locked": [
+            157,
+            80
+          ],
+          "matched_seen_diagnostic": [
+            154,
+            81
+          ]
+        }
+      }
+    },
+    {
+      "fold": 2,
+      "weight": 0.0125,
+      "results": {
+        "crop_aware": {
+          "threshold": 2.9072269797325134,
+          "locked": [
+            179,
+            52
+          ],
+          "matched_seen_diagnostic": [
+            180,
+            52
+          ]
+        },
+        "older_fixed_weight": {
+          "threshold": 0.07384829819202424,
+          "locked": [
+            174,
+            57
+          ],
+          "matched_seen_diagnostic": [
+            180,
+            57
+          ]
+        },
+        "older_tuned_weight": {
+          "threshold": 0.05667103230953217,
+          "locked": [
+            177,
+            55
+          ],
+          "matched_seen_diagnostic": [
+            180,
+            55
+          ]
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "weight": 0.0225,
+      "results": {
+        "crop_aware": {
+          "threshold": 2.9023438692092896,
+          "locked": [
+            122,
+            56
+          ],
+          "matched_seen_diagnostic": [
+            122,
+            56
+          ]
+        },
+        "older_fixed_weight": {
+          "threshold": 0.07384829819202424,
+          "locked": [
+            116,
+            54
+          ],
+          "matched_seen_diagnostic": [
+            122,
+            53
+          ]
+        },
+        "older_tuned_weight": {
+          "threshold": 0.07955487608909606,
+          "locked": [
+            116,
+            53
+          ],
+          "matched_seen_diagnostic": [
+            122,
+            52
+          ]
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "weight": 0.0125,
+      "results": {
+        "crop_aware": {
+          "threshold": 2.9023438692092896,
+          "locked": [
+            77,
+            63
+          ],
+          "matched_seen_diagnostic": [
+            77,
+            63
+          ]
+        },
+        "older_fixed_weight": {
+          "threshold": 0.07303062438964844,
+          "locked": [
+            81,
+            65
+          ],
+          "matched_seen_diagnostic": [
+            77,
+            68
+          ]
+        },
+        "older_tuned_weight": {
+          "threshold": 0.056171602010726934,
+          "locked": [
+            81,
+            65
+          ],
+          "matched_seen_diagnostic": [
+            77,
+            65
+          ]
+        }
+      }
+    }
+  ]
+}

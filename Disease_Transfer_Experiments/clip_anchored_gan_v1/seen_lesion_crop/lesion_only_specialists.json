@@ -1,0 +1,138 @@
+{
+  "reviewed_donors": 29,
+  "backbone": "ImageNet-pretrained ConvNeXt-Base",
+  "protocol": "leave one source leaf out",
+  "results": {
+    "apple": {
+      "donors": 7,
+      "disease_counts": {
+        "brown_spot": 4,
+        "powdery_mildew": 3
+      },
+      "filenames": [
+        "CDDM_apple_brown_spot_10621.jpg",
+        "CDDM_apple_brown_spot_10442.jpg",
+        "CDDM_apple_brown_spot_10634.jpg",
+        "CDDM_apple_brown_spot_8780.jpg",
+        "CDDM_apple_powdery_mildew_39347.jpg",
+        "CDDM_apple_powdery_mildew_39214.jpg",
+        "CDDM_apple_powdery_mildew_39058.jpg"
+      ],
+      "truth": [
+        4,
+        4,
+        4,
+        4,
+        14,
+        14,
+        14
+      ],
+      "arms": {
+        "full_leaf": {
+          "correct": 7,
+          "predictions": [
+            4,
+            4,
+            4,
+            4,
+            14,
+            14,
+            14
+          ]
+        },
+        "corner": {
+          "correct": 7,
+          "predictions": [
+            4,
+            4,
+            4,
+            4,
+            14,
+            14,
+            14
+          ]
+        },
+        "reviewed_lesion": {
+          "correct": 7,
+          "predictions": [
+            4,
+            4,
+            4,
+            4,
+            14,
+            14,
+            14
+          ]
+        }
+      }
+    },
+    "tomato": {
+      "donors": 8,
+      "disease_counts": {
+        "powdery_mildew": 5,
+        "bacterial_spot": 3
+      },
+      "filenames": [
+        "CDDM_tomato_powdery_mildew_108833.jpg",
+        "CDDM_tomato_powdery_mildew_108870.jpg",
+        "CDDM_tomato_powdery_mildew_109503.jpg",
+        "CDDM_tomato_powdery_mildew_108974.jpg",
+        "CDDM_tomato_powdery_mildew_108838.jpg",
+        "CDDM_tomato_bacterial_spot_81503.jpg",
+        "CDDM_tomato_bacterial_spot_80550.jpg",
+        "CDDM_tomato_bacterial_spot_80092.jpg"
+      ],
+      "truth": [
+        14,
+        14,
+        14,
+        14,
+        14,
+        33,
+        33,
+        33
+      ],
+      "arms": {
+        "full_leaf": {
+          "correct": 8,
+          "predictions": [
+            14,
+            14,
+            14,
+            14,
+            14,
+            33,
+            33,
+            33
+          ]
+        },
+        "corner": {
+          "correct": 8,
+          "predictions": [
+            14,
+            14,
+            14,
+            14,
+            14,
+            33,
+            33,
+            33
+          ]
+        },
+        "reviewed_lesion": {
+          "correct": 8,
+          "predictions": [
+            14,
+            14,
+            14,
+            14,
+            14,
+            33,
+            33,
+            33
+          ]
+        }
+      }
+    }
+  }
+}

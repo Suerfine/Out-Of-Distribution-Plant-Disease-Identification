@@ -1,0 +1,53 @@
+{
+  "gamma": 3.0,
+  "images": 652,
+  "epochs": 3,
+  "baseline": {
+    "top1": 593,
+    "top3": 638,
+    "disease_top1": 595,
+    "median_true_disease_margin": 6.215576171875
+  },
+  "cross_entropy": {
+    "fixed_weight": {
+      "top1": 595,
+      "top3": 634,
+      "disease_top1": 597,
+      "median_true_disease_margin": 8.298677444458008
+    },
+    "tuned_weight": {
+      "top1": 595,
+      "top3": 634,
+      "disease_top1": 597,
+      "median_true_disease_margin": 8.298677444458008
+    },
+    "fold_weights": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "hinge": {
+    "fixed_weight": {
+      "top1": 594,
+      "top3": 639,
+      "disease_top1": 595,
+      "median_true_disease_margin": 5.729354381561279
+    },
+    "tuned_weight": {
+      "top1": 594,
+      "top3": 639,
+      "disease_top1": 595,
+      "median_true_disease_margin": 5.729354381561279
+    },
+    "fold_weights": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ]
+  }
+}

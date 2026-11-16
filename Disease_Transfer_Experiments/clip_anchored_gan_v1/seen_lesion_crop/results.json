@@ -1,0 +1,55 @@
+{
+  "gamma": 3.0,
+  "images": 652,
+  "baseline": {
+    "top1": 593,
+    "top3": 638,
+    "disease_top1": 595,
+    "median_true_disease_margin": 6.215576171875
+  },
+  "donors": 29,
+  "extra_views": 116,
+  "donor_pair_ids": [
+    4,
+    14,
+    68,
+    87,
+    210,
+    216,
+    270,
+    300,
+    311
+  ],
+  "targeted_images": 47,
+  "epochs": 3,
+  "arms": {
+    "full_only": {
+      "top1": 593,
+      "top3": 634,
+      "disease_top1": 596,
+      "median_true_disease_margin": 8.417322158813477,
+      "targeted_top1": 45
+    },
+    "repeat_full": {
+      "top1": 593,
+      "top3": 634,
+      "disease_top1": 596,
+      "median_true_disease_margin": 8.41437816619873,
+      "targeted_top1": 45
+    },
+    "corner": {
+      "top1": 595,
+      "top3": 634,
+      "disease_top1": 596,
+      "median_true_disease_margin": 7.796603202819824,
+      "targeted_top1": 45
+    },
+    "reviewed_lesion": {
+      "top1": 595,
+      "top3": 634,
+      "disease_top1": 597,
+      "median_true_disease_margin": 8.01871109008789,
+      "targeted_top1": 45
+    }
+  }
+}

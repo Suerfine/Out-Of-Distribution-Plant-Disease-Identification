@@ -1,0 +1,50 @@
+{
+  "test_seen": {
+    "clip_disease_only": {
+      "correct": 1331,
+      "total": 2000,
+      "accuracy": 0.6655
+    },
+    "convnext_disease_only": {
+      "correct": 1485,
+      "total": 2000,
+      "accuracy": 0.7425
+    },
+    "routed_system_disease": {
+      "0": {
+        "correct": 1482,
+        "total": 2000,
+        "accuracy": 0.741
+      },
+      "3": {
+        "correct": 1364,
+        "total": 2000,
+        "accuracy": 0.682
+      }
+    }
+  },
+  "test_unseen": {
+    "clip_disease_only": {
+      "correct": 652,
+      "total": 1448,
+      "accuracy": 0.45027624309392267
+    },
+    "convnext_disease_only": {
+      "correct": 210,
+      "total": 1448,
+      "accuracy": 0.14502762430939226
+    },
+    "routed_system_disease": {
+      "0": {
+        "correct": 738,
+        "total": 1448,
+        "accuracy": 0.5096685082872928
+      },
+      "3": {
+        "correct": 1218,
+        "total": 1448,
+        "accuracy": 0.8411602209944752
+      }
+    }
+  }
+}

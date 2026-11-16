@@ -1,0 +1,29 @@
+{
+  "selection": {
+    "clip_weight": 0.5,
+    "gamma": 4.9,
+    "development": {
+      "seen": 0.7529002320185615,
+      "unseen": 0.6454033771106942,
+      "h": 0.6950198071430238,
+      "seen_correct": 649,
+      "unseen_correct": 344
+    }
+  },
+  "official": {
+    "0.0": {
+      "seen": 0.741,
+      "unseen": 0.19613259668508287,
+      "h": 0.31016796269329855,
+      "seen_correct": 1482,
+      "unseen_correct": 284
+    },
+    "4.9": {
+      "seen": 0.6615,
+      "unseen": 0.893646408839779,
+      "h": 0.7602462328785372,
+      "seen_correct": 1323,
+      "unseen_correct": 1294
+    }
+  }
+}

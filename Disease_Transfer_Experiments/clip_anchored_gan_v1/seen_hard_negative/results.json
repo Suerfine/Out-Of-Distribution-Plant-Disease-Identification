@@ -1,0 +1,42 @@
+{
+  "gamma": 3.0,
+  "baseline": {
+    "correct": 593,
+    "top3": 638,
+    "images": 652
+  },
+  "control": [
+    {
+      "epoch": 2,
+      "correct": 597,
+      "top3": 638,
+      "images": 652
+    },
+    {
+      "epoch": 3,
+      "correct": 595,
+      "top3": 636,
+      "images": 652
+    }
+  ],
+  "hard_negative": [
+    {
+      "epoch": 1,
+      "correct": 590,
+      "top3": 636,
+      "images": 652
+    },
+    {
+      "epoch": 2,
+      "correct": 592,
+      "top3": 640,
+      "images": 652
+    },
+    {
+      "epoch": 3,
+      "correct": 595,
+      "top3": 635,
+      "images": 652
+    }
+  ]
+}

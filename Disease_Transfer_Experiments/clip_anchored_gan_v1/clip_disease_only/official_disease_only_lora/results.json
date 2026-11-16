@@ -1,0 +1,55 @@
+{
+  "selection": {
+    "gamma": 3.0,
+    "lora_epochs": 8,
+    "head_epochs": 1,
+    "training_images": 8000,
+    "synthetic_per_pair": 300,
+    "candidate_target_pairs": [
+      "pepper_bell_bacterial_spot",
+      "cherry_aphis_spp",
+      "corn_brown_spot",
+      "cotton_bacterial_blight",
+      "cucumber_downy_mildew",
+      "cucumber_powdery_mildew",
+      "grape_black_rot",
+      "mango_anthracnose",
+      "sugarcane_rust",
+      "tomato_early_blight"
+    ],
+    "lora_loss_weights": {
+      "pair": 0.0,
+      "crop": 0.0,
+      "disease": 0.5,
+      "text_anchor": 25.0
+    }
+  },
+  "disease_accuracy": {
+    "test_seen": {
+      "correct": 1362,
+      "images": 2000,
+      "accuracy": 0.681
+    },
+    "test_unseen": {
+      "correct": 525,
+      "images": 1448,
+      "accuracy": 0.36256906077348067
+    }
+  },
+  "official": {
+    "0": {
+      "seen": 0.734,
+      "unseen": 0.406767955801105,
+      "h": 0.5234503266676029,
+      "seen_correct": 1468,
+      "unseen_correct": 589
+    },
+    "3": {
+      "seen": 0.6975,
+      "unseen": 0.7451657458563536,
+      "h": 0.720545433656617,
+      "seen_correct": 1395,
+      "unseen_correct": 1079
+    }
+  }
+}

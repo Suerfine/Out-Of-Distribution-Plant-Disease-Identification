@@ -1,0 +1,55 @@
+{
+  "grid": [
+    {
+      "groups": [],
+      "correct": 773
+    },
+    {
+      "groups": [
+        "flip"
+      ],
+      "correct": 772
+    },
+    {
+      "groups": [
+        "wide"
+      ],
+      "correct": 772
+    },
+    {
+      "groups": [
+        "local"
+      ],
+      "correct": 775
+    },
+    {
+      "groups": [
+        "flip",
+        "wide"
+      ],
+      "correct": 770
+    },
+    {
+      "groups": [
+        "wide",
+        "local"
+      ],
+      "correct": 774
+    },
+    {
+      "groups": [
+        "flip",
+        "wide",
+        "local"
+      ],
+      "correct": 775
+    }
+  ],
+  "selected": {
+    "groups": [
+      "local"
+    ],
+    "correct": 775
+  },
+  "images": 862
+}

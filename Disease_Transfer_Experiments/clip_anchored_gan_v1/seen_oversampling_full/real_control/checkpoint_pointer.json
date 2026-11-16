@@ -1,0 +1,12 @@
+{
+  "fingerprint": "881f8296953fbb5b90415f4066a56a9169683ad789089b9c3a7ad791c8721e1202624fc45679320511e1def9d8c3184ba68c8877d4cac52df18a26e969220428{\"accumulation\": 8, \"epochs\": 1, \"fit_images\": 9003, \"microbatch\": 4, \"scope\": \"full-data seen oversampling real_control\", \"source_sha256\": \"02624fc45679320511e1def9d8c3184ba68c8877d4cac52df18a26e969220428\", \"weight\": 0.0}",
+  "active": {
+    "file": "checkpoint_a.pt",
+    "sha256": "4a700a26ccf76a944eb84ce83d88bdc5fc9b5cb542da2370b4c7d244f7e6c235",
+    "stage": "finetune",
+    "epoch": 1,
+    "cursor": 0,
+    "saved_utc": "2026-11-16T11:40:30.310978+00:00"
+  },
+  "previous": null
+}

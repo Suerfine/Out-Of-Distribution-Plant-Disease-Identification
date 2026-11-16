@@ -1,0 +1,167 @@
+{
+  "unique_pseudo_unseen_pairs": 42,
+  "splits": [
+    {
+      "split": 42,
+      "gate": "raw_clip",
+      "seen": 0.8364269141531323,
+      "unseen": 0.1669793621013133,
+      "h": 0.27838381296758646,
+      "seen_correct": 721,
+      "unseen_correct": 89
+    },
+    {
+      "split": 42,
+      "gate": "tuned_gap",
+      "seen": 0.8375870069605569,
+      "unseen": 0.16322701688555347,
+      "h": 0.2732112565786612,
+      "seen_correct": 722,
+      "unseen_correct": 87
+    },
+    {
+      "split": 42,
+      "gate": "linear",
+      "seen": 0.8294663573085846,
+      "unseen": 0.1801125703564728,
+      "h": 0.29595965911173294,
+      "seen_correct": 715,
+      "unseen_correct": 96
+    },
+    {
+      "split": 42,
+      "gate": "neural_8",
+      "seen": 0.8283062645011601,
+      "unseen": 0.17636022514071295,
+      "h": 0.29080352693949174,
+      "seen_correct": 714,
+      "unseen_correct": 94
+    },
+    {
+      "split": 42,
+      "gate": "neural_16_8",
+      "seen": 0.8271461716937355,
+      "unseen": 0.16885553470919323,
+      "h": 0.2804577707169221,
+      "seen_correct": 713,
+      "unseen_correct": 90
+    },
+    {
+      "split": 43,
+      "gate": "raw_clip",
+      "seen": 0.8539682539682539,
+      "unseen": 0.26703499079189685,
+      "h": 0.4068487863900449,
+      "seen_correct": 807,
+      "unseen_correct": 145
+    },
+    {
+      "split": 43,
+      "gate": "tuned_gap",
+      "seen": 0.8539682539682539,
+      "unseen": 0.26151012891344383,
+      "h": 0.40040461852125553,
+      "seen_correct": 807,
+      "unseen_correct": 142
+    },
+    {
+      "split": 43,
+      "gate": "linear",
+      "seen": 0.855026455026455,
+      "unseen": 0.22467771639042358,
+      "h": 0.3558481970420588,
+      "seen_correct": 808,
+      "unseen_correct": 122
+    },
+    {
+      "split": 43,
+      "gate": "neural_8",
+      "seen": 0.8518518518518519,
+      "unseen": 0.23572744014732966,
+      "h": 0.36926936343681405,
+      "seen_correct": 805,
+      "unseen_correct": 128
+    },
+    {
+      "split": 43,
+      "gate": "neural_16_8",
+      "seen": 0.8465608465608465,
+      "unseen": 0.2504604051565378,
+      "h": 0.38655581610175516,
+      "seen_correct": 800,
+      "unseen_correct": 136
+    },
+    {
+      "split": 44,
+      "gate": "raw_clip",
+      "seen": 0.8568232662192393,
+      "unseen": 0.20781893004115226,
+      "h": 0.33450504788464447,
+      "seen_correct": 766,
+      "unseen_correct": 101
+    },
+    {
+      "split": 44,
+      "gate": "tuned_gap",
+      "seen": 0.8557046979865772,
+      "unseen": 0.21193415637860083,
+      "h": 0.33972733857615894,
+      "seen_correct": 765,
+      "unseen_correct": 103
+    },
+    {
+      "split": 44,
+      "gate": "linear",
+      "seen": 0.8478747203579419,
+      "unseen": 0.21604938271604937,
+      "h": 0.3443531534337967,
+      "seen_correct": 758,
+      "unseen_correct": 105
+    },
+    {
+      "split": 44,
+      "gate": "neural_8",
+      "seen": 0.8501118568232662,
+      "unseen": 0.18724279835390947,
+      "h": 0.3068908443048141,
+      "seen_correct": 760,
+      "unseen_correct": 91
+    },
+    {
+      "split": 44,
+      "gate": "neural_16_8",
+      "seen": 0.8478747203579419,
+      "unseen": 0.23251028806584362,
+      "h": 0.36494322660360884,
+      "seen_correct": 758,
+      "unseen_correct": 113
+    }
+  ],
+  "mean": {
+    "raw_clip": {
+      "seen": 0.8490728114468752,
+      "unseen": 0.2139444276447875,
+      "h": 0.33991254908075863
+    },
+    "tuned_gap": {
+      "seen": 0.849086652971796,
+      "unseen": 0.2122237673925327,
+      "h": 0.33778107122535855
+    },
+    "linear": {
+      "seen": 0.8441225108976605,
+      "unseen": 0.2069465564876486,
+      "h": 0.33205366986252943
+    },
+    "neural_8": {
+      "seen": 0.8434233243920927,
+      "unseen": 0.19977682121398402,
+      "h": 0.32232124489370667
+    },
+    "neural_16_8": {
+      "seen": 0.8405272462041746,
+      "unseen": 0.2172754093105249,
+      "h": 0.3439856044740954
+    }
+  }
+}

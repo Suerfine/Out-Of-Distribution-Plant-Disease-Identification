@@ -1,0 +1,162 @@
+{
+  "current_gate": {
+    "seen": 0.7436194895591647,
+    "unseen": 0.551594746716698,
+    "h": 0.6333725996965119,
+    "seen_correct": 641,
+    "unseen_correct": 294
+  },
+  "linear": {
+    "pooled": {
+      "seen": 0.7215777262180975,
+      "unseen": 0.5590994371482176,
+      "h": 0.6300318489740009,
+      "seen_correct": 622,
+      "unseen_correct": 298
+    },
+    "folds": [
+      {
+        "fold": 0,
+        "seen": 0.6941176470588235,
+        "unseen": 0.3150684931506849,
+        "h": 0.4334078569147238,
+        "seen_correct": 118,
+        "unseen_correct": 23
+      },
+      {
+        "fold": 1,
+        "seen": 0.7580645161290323,
+        "unseen": 0.6363636363636364,
+        "h": 0.6919032597266035,
+        "seen_correct": 94,
+        "unseen_correct": 91
+      },
+      {
+        "fold": 2,
+        "seen": 0.7924528301886793,
+        "unseen": 0.5242718446601942,
+        "h": 0.6310517529215359,
+        "seen_correct": 168,
+        "unseen_correct": 54
+      },
+      {
+        "fold": 3,
+        "seen": 0.5955882352941176,
+        "unseen": 0.6492537313432836,
+        "h": 0.6212642158159216,
+        "seen_correct": 81,
+        "unseen_correct": 87
+      },
+      {
+        "fold": 4,
+        "seen": 0.7318181818181818,
+        "unseen": 0.5375,
+        "h": 0.6197851387645479,
+        "seen_correct": 161,
+        "unseen_correct": 43
+      }
+    ]
+  },
+  "neural": {
+    "pooled": {
+      "seen": 0.7157772621809745,
+      "unseen": 0.5553470919324578,
+      "h": 0.6254381323703411,
+      "seen_correct": 617,
+      "unseen_correct": 296
+    },
+    "folds": [
+      {
+        "fold": 0,
+        "seen": 0.6882352941176471,
+        "unseen": 0.2876712328767123,
+        "h": 0.4057468417141441,
+        "seen_correct": 117,
+        "unseen_correct": 21
+      },
+      {
+        "fold": 1,
+        "seen": 0.7741935483870968,
+        "unseen": 0.6363636363636364,
+        "h": 0.6985446985446985,
+        "seen_correct": 96,
+        "unseen_correct": 91
+      },
+      {
+        "fold": 2,
+        "seen": 0.7877358490566038,
+        "unseen": 0.5242718446601942,
+        "h": 0.629550769660372,
+        "seen_correct": 167,
+        "unseen_correct": 54
+      },
+      {
+        "fold": 3,
+        "seen": 0.5808823529411765,
+        "unseen": 0.6492537313432836,
+        "h": 0.6131679900080292,
+        "seen_correct": 79,
+        "unseen_correct": 87
+      },
+      {
+        "fold": 4,
+        "seen": 0.7181818181818181,
+        "unseen": 0.5375,
+        "h": 0.614841628959276,
+        "seen_correct": 158,
+        "unseen_correct": 43
+      }
+    ]
+  },
+  "reward_neural": {
+    "pooled": {
+      "seen": 0.7459396751740139,
+      "unseen": 0.5440900562851783,
+      "h": 0.629223265097461,
+      "seen_correct": 643,
+      "unseen_correct": 290
+    },
+    "folds": [
+      {
+        "fold": 0,
+        "seen": 0.7352941176470589,
+        "unseen": 0.273972602739726,
+        "h": 0.3992015968063872,
+        "seen_correct": 125,
+        "unseen_correct": 20
+      },
+      {
+        "fold": 1,
+        "seen": 0.8064516129032258,
+        "unseen": 0.6083916083916084,
+        "h": 0.6935586734693877,
+        "seen_correct": 100,
+        "unseen_correct": 87
+      },
+      {
+        "fold": 2,
+        "seen": 0.7830188679245284,
+        "unseen": 0.5242718446601942,
+        "h": 0.6280389546696561,
+        "seen_correct": 166,
+        "unseen_correct": 54
+      },
+      {
+        "fold": 3,
+        "seen": 0.6323529411764706,
+        "unseen": 0.6417910447761194,
+        "h": 0.6370370370370371,
+        "seen_correct": 86,
+        "unseen_correct": 86
+      },
+      {
+        "fold": 4,
+        "seen": 0.7545454545454545,
+        "unseen": 0.5375,
+        "h": 0.6277924362357079,
+        "seen_correct": 166,
+        "unseen_correct": 43
+      }
+    ]
+  }
+}

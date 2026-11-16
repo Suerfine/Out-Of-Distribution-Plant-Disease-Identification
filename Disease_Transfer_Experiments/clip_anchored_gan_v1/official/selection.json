@@ -1,0 +1,18 @@
+{
+  "classifier_epochs": 1,
+  "gamma": 0,
+  "lora_epochs": 8,
+  "vectors_per_pair": 300,
+  "target_pairs": [
+    "pepper_bell_bacterial_spot",
+    "cherry_aphis_spp",
+    "corn_brown_spot",
+    "cotton_bacterial_blight",
+    "cucumber_downy_mildew",
+    "cucumber_powdery_mildew",
+    "grape_black_rot",
+    "mango_anthracnose",
+    "sugarcane_rust",
+    "tomato_early_blight"
+  ]
+}

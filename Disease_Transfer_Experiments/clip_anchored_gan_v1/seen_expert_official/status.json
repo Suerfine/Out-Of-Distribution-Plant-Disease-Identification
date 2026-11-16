@@ -1,0 +1,22 @@
+{
+  "updated_utc": "2026-11-15T08:49:15.466855+00:00",
+  "phase": "complete",
+  "pid": 42264,
+  "epochs": 3,
+  "official": {
+    "old_seen_expert": {
+      "seen": 0.669,
+      "unseen": 0.7831491712707183,
+      "h": 0.721588120484403,
+      "seen_correct": 1338,
+      "unseen_correct": 1134
+    },
+    "direct_seen_expert": {
+      "seen": 0.649,
+      "unseen": 0.7831491712707183,
+      "h": 0.7097917205143142,
+      "seen_correct": 1298,
+      "unseen_correct": 1134
+    }
+  }
+}

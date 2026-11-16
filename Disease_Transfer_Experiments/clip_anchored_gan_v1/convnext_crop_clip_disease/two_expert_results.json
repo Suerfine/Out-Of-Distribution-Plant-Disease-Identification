@@ -1,0 +1,17 @@
+{
+  "gamma": 0,
+  "official": {
+    "test_seen": {
+      "raw_clip_gate": 1458,
+      "crop_clip_gate": 1466,
+      "earlier_two_expert": 1458,
+      "images": 2000
+    },
+    "test_unseen": {
+      "raw_clip_gate": 571,
+      "crop_clip_gate": 589,
+      "earlier_two_expert": 564,
+      "images": 1448
+    }
+  }
+}
