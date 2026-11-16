@@ -82,6 +82,32 @@ def head_ce(logits, y, eps, focal_gamma=None):
     return ce.mean()
 
 
+def cond_ce(logits, y, mask, eps):
+    """Cross-entropy over the allowed classes only (mask: batch x classes, bool). Label smoothing is spread over the
+    allowed classes. Classes outside the mask get no gradient, so they are not pushed down for this image."""
+    lsm = F.log_softmax(logits.masked_fill(~mask, float("-inf")), dim=-1).masked_fill(~mask, 0.0)
+    t = mask.float() * (eps / mask.sum(1, keepdim=True).clamp_min(1))
+    t = t.scatter_add(1, y[:, None], torch.full_like(t[:, :1], 1.0 - eps))
+    return -(t * lsm).sum(1)
+
+
+def add_mixstyle(backbone, p, alpha, stage_ids):
+    """Opt-in MixStyle (Zhou et al., ICLR 2021): after the chosen early stages, with probability p per batch, mix each image's
+    per-channel mean and standard deviation with those of another image in the batch (Beta(alpha, alpha) weight).
+    Only in training; the semantic content is kept, the 'style' (here largely the crop's look) is blended."""
+    def hook(mod, _inp, out):
+        if not mod.training or random.random() >= p:
+            return out
+        B = out.shape[0]
+        mu, sig = out.mean(dim=(2, 3), keepdim=True), (out.var(dim=(2, 3), keepdim=True, unbiased=False) + 1e-6).sqrt()
+        lam = torch.distributions.Beta(alpha, alpha).sample((B, 1, 1, 1)).to(out.device, out.dtype)
+        perm = torch.randperm(B, device=out.device)
+        normed = (out - mu) / sig
+        return normed * (sig * lam + sig[perm] * (1 - lam)) + (mu * lam + mu[perm] * (1 - lam))
+    for i in stage_ids:
+        backbone.stages[i].register_forward_hook(hook)
+
+
 def llrd_groups(backbone, base_lr, decay):
     """Layer-wise learning-rate decay for a timm ConvNeXt: the last stage keeps base_lr, each earlier stage is scaled by decay."""
     depth = {}
@@ -115,6 +141,9 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, on_epoch=None, log=None
                 p.requires_grad_(False)
     if cfg["runtime"].get("grad_checkpointing") and hasattr(model.backbone, "set_grad_checkpointing"):
         model.backbone.set_grad_checkpointing(True)  # same maths, less memory: recompute activations in the backward pass
+    ms = cfg["augmentation"].get("mixstyle")  # opt-in MixStyle on the early stages (ConvNeXt only)
+    if ms:
+        add_mixstyle(model.backbone, ms["p"], ms["alpha"], ms["stages"])
     model.logit_tau = (lcfg.get("logitnorm") or {}).get("tau")  # opt-in LogitNorm (applies in training and in scoring)
     head_params = list(model.proj.parameters()) + (list(model.cls.parameters()) if model.cls is not None else [])
     extra = None  # opt-in alternative training terms (dpd/alt_terms.py): taxonomy heads or hyperbolic heads
@@ -184,6 +213,12 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, on_epoch=None, log=None
         eligible = (cand & (n_d[pair_dis] >= 3) & (n_c[pair_crop] >= 4)) if pl.get("valid_only") else cand
         hold_p = (min(1.0, pl["holdout_frac"] * float(cand.sum()) / max(float(eligible.sum()), 1.0))
                   if pl.get("valid_only") else pl["holdout_frac"])
+    cond = lcfg.get("cond_disease_ce")  # opt-in: the disease cross-entropy of an image only ranges over the diseases its crop
+    if cond:                            # has in the training data, so diseases known from other crops are not pushed down for it
+        assert pl, "the crop-conditional disease loss sits on top of the held-out pairs loss"
+        allowed = torch.zeros(HEAD_SIZES["crop"], HEAD_SIZES["disease"], dtype=torch.bool)
+        allowed[torch.as_tensor(train_df["crop_id"].to_numpy()), torch.as_tensor(train_df["disease_id"].to_numpy())] = True
+        allowed = allowed.to(device)
     smix = lcfg.get("samecrop_mix")  # opt-in: blend two images of the same crop with different diseases (soft disease target)
     sam = ocfg.get("sam")  # opt-in: sharpness-aware minimisation (second pass at weights moved up the gradient by rho)
     if smix:
@@ -255,9 +290,14 @@ def train_network(train_df, epochs, cfg, image_dir, tfs, on_epoch=None, log=None
                       g0 = random.uniform(*pl["gamma0_range"]) if pl.get("gamma0_range") else pl["gamma0"]
                   keep = (~hold[y_pair]).float() if pl.get("mask_ce_on_holdout", True) else torch.ones_like(y_pair, dtype=torch.float)
                   def hce(h):
-                      ce = F.cross_entropy(logits[h].float(), labels[h], label_smoothing=lcfg["label_smoothing"], reduction="none")
+                      if cond and h == "disease":
+                          am = allowed[labels["crop"]]
+                          one = lambda y: cond_ce(logits[h].float(), y, am, lcfg["label_smoothing"])
+                      else:
+                          one = lambda y: F.cross_entropy(logits[h].float(), y, label_smoothing=lcfg["label_smoothing"], reduction="none")
+                      ce = one(labels[h])
                       if smi is not None and h == "disease":  # mixed images: lam on the own disease, 1 - lam on the partner's
-                          ce2 = F.cross_entropy(logits[h].float(), labels[h][smi[1]], label_smoothing=lcfg["label_smoothing"], reduction="none")
+                          ce2 = one(labels[h][smi[1]])
                           ce = torch.where(smi[0], smi[2] * ce + (1 - smi[2]) * ce2, ce)
                       return (ce * keep).sum() / keep.sum().clamp_min(1.0)
 

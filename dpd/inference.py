@@ -14,13 +14,13 @@ from dpd.data import PROJECT_ROOT, pair_table
 from dpd.evaluate import ranked_indices
 
 RUNS_DIR = PROJECT_ROOT / "runs"
-SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen", "cnn_independent", "cnn_multitask", "multi_task_cnn", "pretext_multitask_cnn", "ssl_multitask_cnn", "cnn_crop_norm", "ensemble")
+SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen", "cnn_independent", "cnn_multitask", "multi_task_cnn", "pretext_multitask_cnn", "ssl_multitask_cnn", "cnn_crop_norm", "ensemble", "cnn_supcon", "supcon_mix")
 
 
 def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
     """Finished runs (config.json + metrics.json present) under runs/<family>/<name>/ whose method is in `methods`.
 
-    Families are runs/vlm (versions vN, newest first), runs/baseline, and runs/multitask.
+    Families are runs/vlm (versions vN, newest first), runs/baseline, runs/multitask and runs/contrastive.
     """
     runs = []
     for d in RUNS_DIR.glob("*/*"):
@@ -30,6 +30,8 @@ def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
         if cfg.get("method") not in methods:
             continue
         metrics = json.loads((d / "metrics.json").read_text(encoding="utf-8"))
+        if cfg["method"] == "cnn_supcon" and not supcon_loadable(d, cfg, metrics):
+            continue
         runs.append({"dir": d, "family": d.parent.name, "version": cfg["version"], "method": cfg["method"], "cfg": cfg, "metrics": metrics})
 
     def order(r):
@@ -409,6 +411,121 @@ class CropNormRunModel(CnnRunModel):
         return emb[0], scores[0]
 
 
+def supcon_loadable(d: Path, cfg: dict, metrics: dict) -> bool:
+    """Contrastive runs (train/train_supcon.py) the app can score: full runs that saved their network and test scores and
+    whose pair score is the plain sum of the two cross-entropy heads' log-probabilities (scoring.mode "heads", no learned
+    seen/unseen detector, no extra scoring terms). Screening runs and the other scoring variants are left out of the list."""
+    return ((d / "supcon_net.pt").exists() and (d / "scores.npz").exists() and cfg.get("scoring", {}).get("mode") == "heads"
+            and cfg["model"].get("ce_dropout") is not None and not cfg.get("loss", {}).get("new")
+            and (metrics.get("val") or {}).get("scale") is None)
+
+
+class SupconRunModel:
+    """A contrastive-family run (train/train_supcon.py, method cnn_supcon) in "heads" scoring: one ConvNeXt backbone with a
+    crop head and a disease head; score = log P(crop) + log P(disease). Retrieval uses the L2-normalised backbone features."""
+
+    logit_scale = 1.0  # scores are already log-probabilities
+    score_help = "log P(crop) + log P(disease) from the two cross-entropy heads, after calibration"
+
+    def __init__(self, run: dict, pairs):
+        from dpd.cnn import build_transforms
+        from dpd.supcon import ContrastiveNet
+
+        self.run, self.pairs = run, pairs
+        self.gamma = float(run["metrics"].get("gamma", 0.0))
+        cfg, m = run["cfg"], run["cfg"]["model"]
+        net = ContrastiveNet(m["backbone"], False, m["proj_dim"], m.get("proj_hidden"), m.get("ce_dropout"),
+                             m.get("drop_path_rate", 0.0), m.get("cosine_scale"), m.get("head_hidden"))
+        net.load_state_dict(torch.load(run["dir"] / "supcon_net.pt", map_location="cpu"))
+        net.logit_tau = (cfg["loss"].get("logitnorm") or {}).get("tau")
+        self.flips = bool(cfg["scoring"].get("tta"))  # the run's own flip averaging, as at evaluation
+        self.net = net.to(device()).eval()
+        self.transform = build_transforms(cfg["input"], cfg["augmentation"])[1]
+        self.crop_id, self.disease_id = pairs["crop_id"].to_numpy(), pairs["disease_id"].to_numpy()
+
+    @torch.no_grad()
+    def _forward(self, x):
+        """L2-normalised backbone features and the log-probabilities of the crop and disease heads (as dpd.supcon.embed)."""
+        x = x.to(device())
+        with torch.autocast(device(), enabled=device() == "cuda"):
+            f = self.net.backbone(x)
+            logits = {h: v.float() for h, v in self.net.classify(f).items()}
+            if self.flips:
+                for flip in ((-1,), (-2,)):
+                    lf = self.net.classify(self.net.backbone(x.flip(flip)))
+                    logits = {h: logits[h] + lf[h].float() for h in logits}
+                logits = {h: v / 3 for h, v in logits.items()}
+        emb = torch.nn.functional.normalize(f.float(), dim=-1).cpu().numpy()
+        return emb, {h: torch.log_softmax(v.float(), dim=-1).cpu().numpy() for h, v in logits.items()}
+
+    def head_logprobs(self, src):
+        """(retrieval embedding, {"crop": log-probs, "disease": log-probs}) for one image path or file-like object."""
+        from dpd.resize_cache import standardise
+
+        # Same downscale + JPEG round trip as the training/evaluation cache, so scores match the evaluated model.
+        emb, logp = self._forward(self.transform(standardise(src, self.run["cfg"]["input"]["resize_cache"])).unsqueeze(0))
+        return emb[0], {h: v[0] for h, v in logp.items()}
+
+    def predict(self, src):
+        """(retrieval embedding, uncalibrated score per pair) for an image path or file-like object."""
+        emb, logp = self.head_logprobs(src)
+        return emb, logp["crop"][self.crop_id] + logp["disease"][self.disease_id]
+
+    def train_bank(self, train) -> np.ndarray:
+        """Backbone features of every training image, computed once and saved in the run folder."""
+        from torch.utils.data import DataLoader
+
+        from dpd.cnn import ImageLabels
+        from dpd.resize_cache import ensure_resized
+
+        path = self.run["dir"] / "train_features.npy"
+        if path.exists():
+            bank = np.load(path)
+            if len(bank) == len(train):
+                return bank
+        image_dir = ensure_resized(train["file"], self.run["cfg"]["input"]["resize_cache"])
+        loader = DataLoader(ImageLabels(train, image_dir, self.transform), batch_size=64, num_workers=0)
+        bank = np.concatenate([self._forward(x)[0] for x, _, _ in loader])
+        np.save(path, bank)
+        return bank
+
+
+class SupconMixRunModel:
+    """A mix of contrastive-family ConvNeXt runs with one or more CLIP + LoRA runs (method supcon_mix; built by
+    train/supcon_eval/mix_v103.py or mix_v103_two_seeds.py, and mix_v103_report.py). Several CLIP runs are averaged in log-probabilities. The ConvNeXt members' head log-probabilities are averaged and
+    composed with a crop weight; both sides are put on log-probabilities over the 333 pairs (dpd/ensemble.py) and mixed as
+    clip_weight * CLIP + (1 - clip_weight) * ConvNeXt. Weights and gamma were chosen on validation. Retrieval uses the first
+    ConvNeXt member's backbone features."""
+
+    logit_scale = 1.0  # scores are log-probabilities
+    score_help = "Weighted sum of the CLIP member's and the averaged ConvNeXt members' log-probabilities, after calibration"
+
+    def __init__(self, run: dict, pairs):
+        self.run, self.pairs = run, pairs
+        self.gamma = float(run["metrics"].get("gamma", 0.0))
+        mem, ens = run["cfg"]["members"], run["cfg"]["ensemble"]
+        self.clip_weight, self.crop_weight = float(ens["clip_weight"]), float(ens["crop_weight"])
+        self.cnns = [SupconRunModel(member_run(p), pairs) for p in mem["convnext"]]
+        clip_paths = [mem["clip"]] if isinstance(mem["clip"], str) else list(mem["clip"])  # one CLIP run or several (averaged)
+        self.clip_runs = [member_run(p) for p in clip_paths]
+        self.clips = [build_run_model(r, pairs) for r in self.clip_runs]
+        self.crop_id, self.disease_id = pairs["crop_id"].to_numpy(), pairs["disease_id"].to_numpy()
+
+    def predict(self, src):
+        from dpd.ensemble import to_logprob
+
+        data = Path(src).read_bytes() if isinstance(src, (str, Path)) else src.read()
+        outs = [m.head_logprobs(io.BytesIO(data)) for m in self.cnns]
+        crop = np.mean([o[1]["crop"] for o in outs], axis=0)
+        disease = np.mean([o[1]["disease"] for o in outs], axis=0)
+        cnn = to_logprob(self.crop_weight * crop[self.crop_id] + disease[self.disease_id], "cnn_independent")
+        clip = np.mean([to_logprob(m.predict(io.BytesIO(data))[1], r["method"]) for m, r in zip(self.clips, self.clip_runs)], axis=0)
+        return outs[0][0], self.clip_weight * clip + (1 - self.clip_weight) * cnn
+
+    def train_bank(self, train) -> np.ndarray:
+        return self.cnns[0].train_bank(train)
+
+
 def member_run(path: str) -> dict:
     """A run dict (as list_runs builds) for an ensemble member given its folder relative to the project root."""
     d = PROJECT_ROOT / path
@@ -464,6 +581,10 @@ def model_class(method: str):
         return CropNormRunModel
     if method == "ensemble":
         return EnsembleRunModel
+    if method == "cnn_supcon":
+        return SupconRunModel
+    if method == "supcon_mix":
+        return SupconMixRunModel
     raise ValueError(f"unsupported method {method!r}")
 
 
