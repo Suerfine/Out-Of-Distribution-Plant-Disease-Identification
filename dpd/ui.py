@@ -10,7 +10,7 @@ import streamlit as st
 from PIL import Image, ImageOps
 
 from dpd.data import IMAGE_DIR, pair_table, read_metadata
-from dpd.evaluate import calibrate
+from dpd.evaluate import calibrate, ranked_indices
 from dpd.inference import list_runs, load_run_model, model_class
 
 SPLIT_LABELS = {"train": "Train", "test_seen": "Test seen", "test_unseen": "Test unseen"}
@@ -81,7 +81,7 @@ def test_predictions(run_dir: str, method: str, gamma: float, k: int = 5) -> pd.
     for split in ("test_seen", "test_unseen"):
         s = calibrate(z[f"{split}_scores"], unseen_mask, gamma)
         labels = z[f"{split}_labels"]
-        order = np.argsort(-s, axis=1)[:, :k]
+        order = ranked_indices(s, k)
         pred = order[:, 0]
         e = np.exp(logit_scale * (s - s.max(axis=1, keepdims=True)))
         conf = e[np.arange(len(s)), pred] / e.sum(axis=1)

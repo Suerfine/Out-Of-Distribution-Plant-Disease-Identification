@@ -1,0 +1,137 @@
+{
+  "name": "independent_cnn_baseline_convnext_base_optuna_seed42",
+  "output_dir": "runs/baseline/independent_cnn_baseline_convnext_base_optuna_seed42",
+  "source_root": "runs/baseline/independent_cnn_baseline_study_seed42",
+  "incumbent_folder": "trials/independent_cnn_baseline_convnext_base_r0_seed42",
+  "data_root": "../Plant_Disease",
+  "seed": 42,
+  "window_hours": 10,
+  "max_new_trials": 8,
+  "optuna_version": "5.0.0",
+  "search_space": {
+    "lr_backbone": [
+      1e-05,
+      0.00015
+    ],
+    "weight_decay": [
+      0.005,
+      0.1
+    ],
+    "head_dropout": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4
+    ]
+  },
+  "base_config": {
+    "seed": 42,
+    "input": {
+      "resize_cache": 256,
+      "resize": 256,
+      "crop_size": 224,
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "interpolation": "bicubic"
+    },
+    "augmentation": {
+      "random_resized_crop_scale": [
+        0.5,
+        1.0
+      ],
+      "horizontal_flip_p": 0.5,
+      "vertical_flip_p": 0.5,
+      "color_jitter": {
+        "brightness": 0.2,
+        "contrast": 0.2,
+        "saturation": 0.2,
+        "hue": 0.0
+      }
+    },
+    "optimizer": {
+      "lr_backbone": 5e-05,
+      "lr_head": 0.0005,
+      "weight_decay": 0.05,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08
+    },
+    "training": {
+      "max_epochs": 30,
+      "warmup_epochs": 3,
+      "min_lr_ratio": 0.01,
+      "patience": 8,
+      "effective_batch_size": 32,
+      "initial_batch_size": 4,
+      "head_dropout": 0.2,
+      "label_smoothing": 0.1,
+      "gradient_clip": 1.0,
+      "batch_size": 4,
+      "accumulation_steps": 8
+    },
+    "runtime": {
+      "device": "cuda",
+      "amp": true,
+      "num_workers": 2,
+      "inference_batch_size": 1,
+      "torch_threads": 2
+    },
+    "method": "cnn_independent",
+    "implementation": "independent_cnn_baseline",
+    "display_name": "Independent CNN Baseline",
+    "model": {
+      "name": "convnext_base",
+      "backbone": "convnext_base.fb_in22k_ft_in1k",
+      "drop_path_rate": 0.1,
+      "freeze_bn_stats": false,
+      "pretrained_file": "runs/cache/independent_cnn_baseline/huggingface/hub/models--timm--convnext_base.fb_in22k_ft_in1k/snapshots/67758fcbcf9f007ec7630bf8636b74a8f24e52a0/model.safetensors",
+      "pretrained_sha256": "4853efc8d5dd3ed9b0f888a9c601d7556373599f944f9ac79af8b8ec81aa7381",
+      "pretrained_revision": "67758fcbcf9f007ec7630bf8636b74a8f24e52a0",
+      "head_dropout": 0.2
+    },
+    "version": "independent_cnn_baseline_convnext_base_r0_seed42",
+    "output_dir": "runs/baseline/independent_cnn_baseline_study_seed42/trials/independent_cnn_baseline_convnext_base_r0_seed42"
+  },
+  "source_sha256": {
+    "study_config.json": "2fb5411578c20b495fee248dd08bb63d575e1ea6c72e4ca3d75d72244ad84a74",
+    "prepared_models.json": "d50603cab03879b97650136e7b6a00fbe5427e957a4b4aa6e8a832cd15af020c",
+    "data_provenance.json": "ce85119a93887ab0a17b725e8ecb02ce08b95be4e349524cd5d26f3aa0483510",
+    "audit.json": "7c6d3bce4e04f65093f91011aae83302064238935c43447a311fe4190dff6490",
+    "fit.csv": "58de86e0709e5721a4fe8cb20d7da7ce001abc89a1003454f8b757aac09723c9",
+    "validation_seen.csv": "630af25b9b66d033ac7e2210de937951735a5f94acc194b3ab3bd29f1a77dd2c",
+    "validation_unseen.csv": "d274549c4d343b24d79a6c213fdab2bcd3a4f4c95e5e7ec20df6b80ab44554a2",
+    "selection_excluded.csv": "ee18215beead015dd3b2b6099831092f42eb5182becae3bcb183ba8cfe7178ad",
+    "all_train.csv": "79bde5e62fb70b57b513311f7d39b5e97b4dbf481d87d75e0da5187797d3a892",
+    "pairs.json": "c25ccd2ccf0b1c79e2bb80d7061883529ac728cd0a3a5fbb569c467677163259",
+    "trials/independent_cnn_baseline_convnext_base_r0_seed42/complete.json": "c6ab42e8aa04243214e18507d64b8c6cadd557a5eb57611c678c1a3190013d05",
+    "trials/independent_cnn_baseline_convnext_base_r0_seed42/best_validation_logits.npz": "e9fbd709e49689183c5fd58076f342825a19f727c9cc49af791d54e257be33e3",
+    "trials/independent_cnn_baseline_convnext_base_r0_seed42/crop/best.pt": "988494549ef24a0d8c033d3b0d6245f19697e6e0def433a529954d749d7b611f",
+    "trials/independent_cnn_baseline_convnext_base_r0_seed42/disease/best.pt": "ab6e9ca05540cea670255bc1ee459a866308b93220b22a1b4588ac3e414874ab"
+  },
+  "scope": "validation_selection_only_no_automatic_final_refit_or_official_inference",
+  "authorized_on": "2026-10-31",
+  "sampler": {
+    "type": "independent_TPE",
+    "n_startup_trials": 3,
+    "base_seed": 42,
+    "seed_stream": "SeedSequence([42, trial_number, parameter_index]); crash-safe independent parameter suggestions"
+  },
+  "pruner": {
+    "type": "MedianPruner",
+    "n_startup_trials": 2,
+    "n_warmup_steps": 6,
+    "interval_steps": 3,
+    "n_min_trials": 1
+  }
+}

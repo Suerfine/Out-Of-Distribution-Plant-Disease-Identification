@@ -402,6 +402,10 @@ def model_class(method: str):
 
 
 def build_run_model(run: dict, pairs):
+    if run["cfg"].get("implementation") == "independent_cnn_baseline_tiny_refit":
+        from independent_cnn_baseline.tiny_refit import TinyRefitRunModel
+
+        return TinyRefitRunModel(run, pairs)
     if run["cfg"].get("implementation") == "independent_cnn_baseline":
         from independent_cnn_baseline.inference import IndependentCnnRunModel
 

@@ -7,10 +7,14 @@ Protocol (generalised zero-shot): each test image is ranked against ALL pairs (s
     so seen images misclassified as an unseen pair stay visible.
 `gamma` (calibrated stacking) is subtracted from every seen pair's score before ranking; it must be chosen
 without looking at the test sets.
+Exact score ties prefer the lower pair id, consistently across metrics, predictions and confusion matrices.
 """
 
 import numpy as np
 import pandas as pd
+
+
+TIE_BREAK_POLICY = "score_descending_then_pair_id_ascending"
 
 
 def calibrate(scores: np.ndarray, unseen_mask: np.ndarray, gamma: float) -> np.ndarray:
@@ -18,9 +22,22 @@ def calibrate(scores: np.ndarray, unseen_mask: np.ndarray, gamma: float) -> np.n
     return scores - gamma * (~unseen_mask)[None, :]
 
 
+def ranked_indices(scores: np.ndarray, k: int | None = None) -> np.ndarray:
+    """Rank the last axis by descending score, then ascending pair id on exact ties.
+
+    Columns must follow increasing pair id, as pair_table() and the unseen-only
+    subset do. Stable sorting preserves that order without changing score values.
+    Accepts a single image or a batch; k larger than the candidate count returns all.
+    """
+    if k is not None and k < 1:
+        raise ValueError("k must be positive")
+    order = np.argsort(-np.asarray(scores), axis=-1, kind="stable")
+    return order if k is None else order[..., :k]
+
+
 def topk_hits(scores: np.ndarray, labels: np.ndarray, k: int) -> np.ndarray:
     """Boolean per image: is the true label among the k highest scores?"""
-    topk = np.argpartition(-scores, kth=min(k, scores.shape[1]) - 1, axis=1)[:, :k]
+    topk = ranked_indices(scores, k)
     return (topk == labels[:, None]).any(axis=1)
 
 
@@ -39,10 +56,11 @@ def harmonic_mean(a: float, b: float) -> float:
 
 def evaluate_split(scores: np.ndarray, labels: np.ndarray, pairs: pd.DataFrame, top_k=(1, 5)) -> dict:
     """Accuracy for one split. `pairs` is dpd.data.pair_table() (row i = pair id i)."""
-    pred = scores.argmax(axis=1)
+    order = ranked_indices(scores)
+    pred = order[:, 0]
     out = {"n_images": int(len(labels)), "n_classes": int(len(np.unique(labels)))}
     for k in top_k:
-        hits = topk_hits(scores, labels, k)
+        hits = (order[:, :k] == labels[:, None]).any(axis=1)
         out[f"top{k}"] = float(hits.mean())
         # Mean over classes: guards against one big class (e.g. tomato_early_blight is 1/3 of test_unseen).
         out[f"top{k}_class_mean"] = float(pd.Series(hits).groupby(labels).mean().mean())
@@ -134,7 +152,7 @@ def ausuc(curve: pd.DataFrame) -> float:
 
 def seen_confusion_matrix(scores_seen: np.ndarray, labels_seen: np.ndarray, pairs: pd.DataFrame, gamma: float = 0.0) -> pd.DataFrame:
     """Counts with rows = true seen pair, columns = predicted pair (all 333), labelled by pair name."""
-    pred = calibrate(scores_seen, pairs["is_unseen"].to_numpy(), gamma).argmax(axis=1)
+    pred = ranked_indices(calibrate(scores_seen, pairs["is_unseen"].to_numpy(), gamma), 1)[:, 0]
     seen_ids = pairs.loc[~pairs["is_unseen"], "pair_id"].to_numpy()
     cm = np.zeros((len(seen_ids), len(pairs)), dtype=np.int32)
     row_of = {p: i for i, p in enumerate(seen_ids)}
@@ -146,10 +164,10 @@ def seen_confusion_matrix(scores_seen: np.ndarray, labels_seen: np.ndarray, pair
 def predictions_table(files, scores: np.ndarray, labels: np.ndarray, pairs: pd.DataFrame, gamma: float = 0.0, k: int = 5) -> pd.DataFrame:
     """Per-image top-k predictions, for error analysis and the UI."""
     s = calibrate(scores, pairs["is_unseen"].to_numpy(), gamma)
-    order = np.argsort(-s, axis=1)[:, :k]
+    order = ranked_indices(s, k)
     names = pairs["pair"].to_numpy()
     df = pd.DataFrame({"file": list(files), "true": names[labels], "correct_top1": order[:, 0] == labels})
-    for i in range(k):
+    for i in range(order.shape[1]):
         df[f"pred{i + 1}"] = names[order[:, i]]
         df[f"score{i + 1}"] = np.take_along_axis(s, order[:, i : i + 1], axis=1)[:, 0]
     return df
