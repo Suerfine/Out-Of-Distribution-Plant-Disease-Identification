@@ -13,6 +13,32 @@ import numpy as np
 import pandas as pd
 
 
+def parse_gamma_grid(grid_cfg) -> np.ndarray:
+    """Parse gamma grid configuration into a numpy array of gammas.
+
+    If grid_cfg is 0, 0.0, [0.0], [0.0, 0.0], or None/False, disables gamma tuning and returns np.array([0.0]).
+    """
+    if grid_cfg is None or grid_cfg is False or grid_cfg == 0 or grid_cfg == 0.0:
+        return np.array([0.0], dtype=np.float64)
+    if isinstance(grid_cfg, (int, float)):
+        return np.array([float(grid_cfg)], dtype=np.float64)
+    if isinstance(grid_cfg, (list, tuple)):
+        if len(grid_cfg) == 0:
+            return np.array([0.0], dtype=np.float64)
+        if len(grid_cfg) == 1:
+            return np.array([float(grid_cfg[0])], dtype=np.float64)
+        start = float(grid_cfg[0])
+        stop = float(grid_cfg[1])
+        step = float(grid_cfg[2]) if len(grid_cfg) >= 3 else 1.0
+        if step <= 0.0 or start >= stop:
+            return np.array([start], dtype=np.float64)
+        arr = np.round(np.arange(start, stop, step), 6)
+        if len(arr) == 0:
+            return np.array([start], dtype=np.float64)
+        return arr
+    return np.array([0.0], dtype=np.float64)
+
+
 def calibrate(scores: np.ndarray, unseen_mask: np.ndarray, gamma: float) -> np.ndarray:
     """Subtract `gamma` from the seen-pair columns (counteracts the bias towards seen classes)."""
     return scores - gamma * (~unseen_mask)[None, :]

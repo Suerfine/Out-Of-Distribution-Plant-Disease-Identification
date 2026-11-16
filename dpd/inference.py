@@ -14,7 +14,7 @@ from dpd.data import PROJECT_ROOT, pair_table
 from dpd.evaluate import ranked_indices
 
 RUNS_DIR = PROJECT_ROOT / "runs"
-SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen", "cnn_independent", "cnn_multitask", "multi_task_cnn", "cnn_crop_norm", "ensemble")
+SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen", "cnn_independent", "cnn_multitask", "multi_task_cnn", "pretext_multitask_cnn", "ssl_multitask_cnn", "cnn_crop_norm", "ensemble")
 
 
 def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
@@ -98,6 +98,11 @@ class ClipRunModel:
 
     logit_scale = 100.0  # CLIP's temperature, for turning scores into confidences
     score_help = "Cosine similarity between the image and the pair's text embedding, after calibration"
+    supports_gradcam = False
+    gradcam_reason = (
+        "Grad-CAM is only available for convolutional CNN models. VLM / CLIP zero-shot models "
+        "compute multimodal text-image alignment and do not have convolutional classification heads."
+    )
 
     def __init__(self, run: dict, pairs):
         self.run, self.pairs = run, pairs
@@ -113,6 +118,9 @@ class ClipRunModel:
 
     def train_bank(self, train) -> np.ndarray:
         return train_embeddings(self.clip, self.preprocess, self.run["cfg"]["model"], train["file"])
+
+    def explain(self, src, pred_crop_id: int, pred_disease_id: int):
+        return {"supported": False, "reason": self.gradcam_reason, "cams": {}}
 
 
 class ClipLoraRunModel(ClipRunModel):
@@ -299,6 +307,54 @@ class CnnRunModel:
         np.save(path, bank)
         return bank
 
+    @property
+    def supports_gradcam(self) -> bool:
+        bb = self.run["cfg"].get("model", {}).get("backbone", "")
+        if "vit" in bb.lower():
+            return False
+        return True
+
+    @property
+    def gradcam_reason(self) -> str | None:
+        if not self.supports_gradcam:
+            return "Vision Transformer (ViT) does not use 2D convolutional feature maps. Grad-CAM requires a convolutional backbone."
+        return None
+
+    def explain(self, src, pred_crop_id: int, pred_disease_id: int):
+        if not self.supports_gradcam:
+            return {"supported": False, "reason": self.gradcam_reason, "cams": {}}
+        from dpd.gradcam import explain_cnn
+
+        method = self.run["cfg"]["method"]
+        if "multitask_net" in self.nets:
+            net = self.nets["multitask_net"]
+            return explain_cnn(
+                net,
+                self.transform,
+                self.run["cfg"]["input"]["resize_cache"],
+                src,
+                pred_crop_id,
+                pred_disease_id,
+                is_multi_task=True,
+            )
+        elif "crop_net" in self.nets and "disease_net" in self.nets:
+            return explain_cnn(
+                self.nets["crop_net"],
+                self.transform,
+                self.run["cfg"]["input"]["resize_cache"],
+                src,
+                pred_crop_id,
+                pred_disease_id,
+                is_multi_task=False,
+                crop_net=self.nets["crop_net"],
+                disease_net=self.nets["disease_net"],
+            )
+        return {
+            "supported": False,
+            "reason": f"Grad-CAM is not implemented for method {method!r}.",
+            "cams": {},
+        }
+
 
 class CropNormRunModel(CnnRunModel):
     """A crop-normalisation run (train/train_crop_norm.py): log P(crop) + log P(disease | image normalised for that crop),
@@ -367,6 +423,11 @@ class EnsembleRunModel:
 
     logit_scale = 1.0  # scores are log-probabilities
     score_help = "Weighted sum of the members' log-probabilities, after calibration"
+    supports_gradcam = False
+    gradcam_reason = (
+        "Grad-CAM is not supported for multi-model ensembles. Select an individual CNN model "
+        "(such as Multi-Task CNN or Independent CNN) to view Grad-CAM heatmaps."
+    )
 
     def __init__(self, run: dict, pairs):
         self.run, self.pairs = run, pairs
@@ -387,6 +448,9 @@ class EnsembleRunModel:
     def train_bank(self, train) -> np.ndarray:
         return self.models[0].train_bank(train)
 
+    def explain(self, src, pred_crop_id: int, pred_disease_id: int):
+        return {"supported": False, "reason": self.gradcam_reason, "cams": {}}
+
 
 def model_class(method: str):
     """ClipRunModel or CnnRunModel; class attributes (logit_scale, score_help) are usable without loading weights."""
@@ -394,7 +458,7 @@ def model_class(method: str):
         return ClipRunModel
     if method == "clip_prompt_lora":
         return ClipLoraRunModel
-    if method in ("cnn_independent", "cnn_multitask", "multi_task_cnn"):
+    if method in ("cnn_independent", "cnn_multitask", "multi_task_cnn", "pretext_multitask_cnn", "ssl_multitask_cnn"):
         return CnnRunModel
     if method == "cnn_crop_norm":
         return CropNormRunModel

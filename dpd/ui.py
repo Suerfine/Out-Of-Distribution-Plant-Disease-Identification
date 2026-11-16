@@ -26,7 +26,12 @@ KIND = {
     "clip_feature_gen": "generated unseen features",
     "cnn_independent": "baseline: independent CNNs",
     "cnn_multitask": "baseline: multi-task CNN",
+    "multi_task_cnn": "multi-task CNN",
+    "ssl_multitask_cnn": "SSL multi-task CNN",
+    "cnn_disentangle": "disentangled CNN",
     "cnn_crop_norm": "crop-normalised CNN",
+    "cnn_compositional": "compositional CNN",
+    "cnn_supcon": "supervised contrastive CNN",
     "ensemble": "ensemble",
 }
 
@@ -99,15 +104,20 @@ def backbone(run: dict) -> str:
         from dpd.inference import member_run
 
         return " + ".join(f"{m['version']} ({backbone(m)})" for m in map(member_run, (x["run"] for x in run["cfg"]["members"])))
-    if run["method"].startswith("cnn"):
+    mcfg = run["cfg"].get("model", {})
+    if "backbone" in mcfg:
+        bb = mcfg["backbone"]
         n = "2 × " if run["method"] == "cnn_independent" else ""
-        return n + {"resnet50": "ResNet-50"}.get(run["cfg"]["model"]["backbone"], run["cfg"]["model"]["backbone"])
-    return "BioCLIP" if "bioclip" in run["cfg"]["model"]["arch"] else "OpenAI CLIP"
+        return n + {"resnet50": "ResNet-50"}.get(bb, bb)
+    if "arch" in mcfg:
+        return "BioCLIP" if "bioclip" in mcfg["arch"] else "OpenAI CLIP"
+    return "Unknown"
 
 
 def run_label(run: dict) -> str:
     name = f"{run['version']} {run['cfg']['title']}" if run["cfg"].get("title") else run["version"]
-    return f"{name} · {KIND[run['method']]} · test HM {run['metrics']['harmonic_mean_top1']:.1%}"
+    method_name = KIND.get(run["method"], run["method"].replace("_", " "))
+    return f"{name} · {method_name} · test HM {run['metrics']['harmonic_mean_top1']:.1%}"
 
 
 def best_run_index(runs: list[dict]) -> int:

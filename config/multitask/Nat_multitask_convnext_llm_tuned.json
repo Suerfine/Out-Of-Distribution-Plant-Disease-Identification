@@ -1,0 +1,112 @@
+{
+  "_note": "Nat_multitask_convnext_llm_tuned: Training-free post-hoc weight-space tuning of Nat_multitask_convnext_base_v3_uncalibrated (no retraining; zero test-set labels used). Five closed-form linear-algebraic and mode-connectivity refinements were applied directly to multitask_net.pt: (1) Basin-aligned weight-space Model Soup blending v3_uncalibrated with seed-aligned Nat_multitask_convnext_base_v2 (cos > 0.99988 on LayerNorm backbone: 0.85 v3 + 0.15 v2 on backbone and disease head to preserve epoch-8 pre-collapse generalisation while reducing SGD variance, and 0.65 v3 + 0.35 v2 on crop head to recover v2's 1.0-weighted crop boundary); (2) Exact LayerNorm-metric coordinate factorisation (absorbing backbone.head.norm scale/shift before head surgery and inverting back at machine precision ~2e-15); (3) Bi-directional subspace disentanglement: projecting 85% of the 54-D crop discriminant subspace out of the disease head weights (reducing max crop-disease cosine from +0.41 to +0.057 to eliminate seen-crop shortcut boosts and unseen-crop repulsions) alongside Marchenko-Pastur bulk-edge shrinkage (threshold 0.6104, 13 supercritical canonical directions) on the crop head; (4) Minority-collapse spectral tempering (exponent 0.35 toward Simplex ETF, reducing singular value condition number from 2.99 to 2.04) followed by tau-normalisation (Kang et al., ICLR 2020: tau_disease=0.80, tau_crop=0.65, compressing disease prototype norm skew from 1.45x to 1.06x) and long-tail class-prior bias damping (retaining 0.15 disease / 0.25 crop centered bias); (5) Compositional logit temperature balancing (scaling crop head by 1.22 and disease head by 0.88, effective crop_weight ~0.58) so reliable species predictions lock Top-1/Top-5 candidates onto valid per-crop diseases.",
+  "_result": "Weights tuned post-hoc without training; pending inference evaluation.",
+  "version": "Nat_multitask_convnext_llm_tuned",
+  "method": "multi_task_cnn",
+  "seed": 42,
+  "data": {
+    "_note": "Standard DPD evaluation on test_seen (2,000) and test_unseen (1,448) across all 333 composition pairs.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "ConvNeXt-Base (convnext_base.fb_in22k_ft_in1k) with dual linear heads (crop 55, disease 175). Backbone weights are an 85/15 LayerNorm-compatible Model Soup of v3_uncalibrated and v2; linear heads incorporate closed-form crop-subspace orthogonalisation, Marchenko-Pastur canonical shrinkage, spectral tempering, tau-normalisation, prior-bias damping, and compositional temperature scaling.",
+    "backbone": "convnext_base.fb_in22k_ft_in1k",
+    "pretrained": true,
+    "head_dropout": 0.2
+  },
+  "input": {
+    "_note": "Standard 256x256 cache with 224x224 center crop for evaluation (identical to parent v3_uncalibrated).",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "Inherited from parent Nat_multitask_convnext_base_v3_uncalibrated (no retraining performed; evaluation uses deterministic test transform).",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "Parent v3_uncalibrated trained with crop 0.7 / disease 1.3 and label smoothing 0.1; post-hoc tuning rebalances head norms, removes spurious crop-shortcut directions from W_disease, and applies compositional temperature scaling (1.22 crop / 0.88 disease) directly in multitask_net.pt.",
+    "label_smoothing": 0.1,
+    "weighting": "fixed",
+    "weights": {
+      "crop": 0.7,
+      "disease": 1.3
+    },
+    "init_log_var": 0.0
+  },
+  "optimizer": {
+    "_note": "Inherited from parent v3_uncalibrated (no gradient training run for llm_tuned; weights tuned analytically post-hoc).",
+    "name": "adamw",
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05,
+    "momentum": 0.9,
+    "nesterov": true
+  },
+  "scheduler": {
+    "_note": "Inherited from parent v3_uncalibrated.",
+    "name": "cosine",
+    "warmup_epochs": 2,
+    "min_lr_ratio": 0.01,
+    "step_size_epochs": 7,
+    "step_factor": 0.1
+  },
+  "validation": {
+    "_note": "gamma_grid: 0 targets uncalibrated (gamma=0.0) generalised zero-shot evaluation directly, relying on the debiased/orthogonalised head weights rather than post-hoc seen-pair subtraction.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": 0,
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "No training run executed for Nat_multitask_convnext_llm_tuned; weights in multitask_net.pt were derived analytically from parent v3_uncalibrated (8-epoch Stage 2 refit) and basin-aligned v2 (15-epoch Stage 2 refit).",
+    "batch_size": 16,
+    "max_epochs": 30,
+    "final_fit": "all_train",
+    "freeze_backbone_epochs": 1,
+    "accum_steps": 2,
+    "grad_clip_norm": 1.0,
+    "early_stopping": {
+      "patience": 8,
+      "min_epochs": 5
+    },
+    "refit_schedule": "compress"
+  },
+  "evaluation": {
+    "_note": "Standard DPD benchmark metrics: Top-1, Top-5, per-class means, and Harmonic Mean (HM) over all 333 pairs via log P(crop) + log P(disease).",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "AMP mixed precision on CUDA for inference evaluation.",
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2,
+    "checkpoint_every_n_epochs": 5,
+    "keep_checkpoints": false
+  },
+  "output_dir": "runs/multitask/Nat_multitask_convnext_llm_tuned"
+}

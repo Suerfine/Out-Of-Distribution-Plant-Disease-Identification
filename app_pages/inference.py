@@ -32,6 +32,26 @@ def predict_bytes(run_dir: str, data: bytes):
     return get_model(run_dir).predict(io.BytesIO(data))
 
 
+@st.cache_data(max_entries=64, show_spinner="Computing Grad-CAM attention…")
+def explain_bytes(run_dir: str, data: bytes, pred_crop_id: int, pred_disease_id: int):
+    """Grad-CAM explanation for an image; cached so slider/toggle changes don't re-run backprop."""
+    return get_model(run_dir).explain(io.BytesIO(data), pred_crop_id, pred_disease_id)
+
+
+def check_gradcam_support(run_cfg: dict) -> tuple[bool, str]:
+    bb = run_cfg.get("model", {}).get("backbone", "").lower()
+    method = run_cfg.get("method", "")
+    if "vit" in bb:
+        return False, "ViT backbones do not use 2D convolutional feature maps"
+    if method in ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen"):
+        return False, "VLM / CLIP zero-shot models compute multimodal embeddings without convolutional classification heads"
+    if method == "ensemble":
+        return False, "Multi-model ensembles do not support direct single-backbone Grad-CAM"
+    if "cnn" in method:
+        return True, "Grad-CAM supported"
+    return False, "Unsupported architecture"
+
+
 @st.cache_data(max_entries=64, show_spinner=False)
 def gamma_metrics(run_dir: str, gamma: float) -> dict:
     """Test-set results at any gamma, from the run's saved raw scores (no model needed, milliseconds)."""
@@ -56,9 +76,9 @@ def gamma_curve(run_dir: str, grid: tuple) -> pd.DataFrame:
 def gamma_grid(run: dict) -> tuple:
     """The (start, stop, step) range validation searched for this run; zero-shot runs have none, so use the CLIP one."""
     grid = run["cfg"].get("validation", {}).get("gamma_grid")
-    if grid:
+    if isinstance(grid, (list, tuple)) and len(grid) == 3:
         return tuple(grid)
-    return (0.0, 10.0, 0.1) if run["method"].startswith("cnn") else (0.0, 0.1, 0.0025)
+    return (0.0, 10.0, 0.1) if ("cnn" in run["method"]) else (0.0, 0.1, 0.0025)
 
 
 df = load_metadata()
@@ -75,6 +95,11 @@ with st.container(horizontal=True, vertical_alignment="bottom"):
         "Images", ["Test set", "Upload"], default="Test set", required=True, key="infer_source"
     )
 run_dir, reported_gamma = str(run["dir"]), float(run["metrics"].get("gamma", 0.0))
+gc_supported, gc_msg = check_gradcam_support(run["cfg"])
+if gc_supported:
+    st.caption(":material/visibility: **Grad-CAM supported**: Visual attention heatmaps available in Image Details.")
+else:
+    st.caption(f":material/visibility_off: **Grad-CAM disabled**: {gc_msg}.")
 
 # ---- Calibration gamma: adjustable for exploration; reported results always use the validation choice ----
 grid = gamma_grid(run)
@@ -246,6 +271,70 @@ def show_details(name: str, uploaded: bool) -> None:
                 "score": st.column_config.NumberColumn("Score", format="%.3f", help=m.score_help),
             },
         )
+
+    # ---- Visual Explanations (Grad-CAM) ----
+    st.divider()
+    st.markdown("#### Model Attention (Grad-CAM)")
+    if not getattr(m, "supports_gradcam", False):
+        st.info(
+            f"**Grad-CAM is unavailable for this model:** {getattr(m, 'gradcam_reason', 'Unsupported model type')}. "
+            "To inspect Grad-CAM attention heatmaps, select a convolutional model (e.g. Multi-Task CNN or Independent CNN).",
+            icon=":material/visibility_off:",
+        )
+    else:
+        pred_c, pred_d = int(top["crop_id"]), int(top["disease_id"])
+        expl = explain_bytes(run_dir, data, pred_c, pred_d)
+        if not expl.get("supported"):
+            st.warning(f"Grad-CAM could not be computed: {expl.get('reason', 'Unknown error')}", icon=":material/warning:")
+        else:
+            cams = expl.get("cams", {})
+            orig_pil = Image.open(io.BytesIO(data)).convert("RGB")
+            with st.container(border=True):
+                c_ctrl1, c_ctrl2 = st.columns([3, 2], vertical_alignment="bottom")
+                with c_ctrl1:
+                    view_opts = ["Side-by-Side"] + [k for k in ("disease", "crop", "combined") if k in cams]
+                    view_mode = st.segmented_control(
+                        "Attention Target",
+                        view_opts,
+                        default="Side-by-Side",
+                        format_func=lambda k: {
+                            "Side-by-Side": "Side-by-Side View",
+                            "disease": "Disease Focus",
+                            "crop": "Crop Focus",
+                            "combined": "Combined Pair",
+                        }.get(k, k),
+                        key=f"cam_target_{name}",
+                    )
+                with c_ctrl2:
+                    cam_alpha = st.slider(
+                        "Heatmap Opacity", min_value=0.1, max_value=0.9, value=0.5, step=0.05,
+                        key=f"cam_alpha_{name}",
+                        help="Blend level between the original leaf photo and the attention heatmap."
+                    )
+
+                from dpd.gradcam import overlay_cam
+
+                if view_mode == "Side-by-Side":
+                    show_keys = [k for k in ("disease", "crop") if k in cams]
+                    cols = st.columns(1 + len(show_keys))
+                    with cols[0]:
+                        st.image(orig_pil, caption="Original Input", width="stretch")
+                    for col, k in zip(cols[1:], show_keys):
+                        entry = cams[k]
+                        blended = overlay_cam(orig_pil, entry["cam"], alpha=cam_alpha)
+                        with col:
+                            st.image(blended, caption=entry["title"], width="stretch")
+                            st.caption(entry["desc"])
+                else:
+                    entry = cams[view_mode]
+                    blended = overlay_cam(orig_pil, entry["cam"], alpha=cam_alpha)
+                    c_left, c_right = st.columns(2)
+                    with c_left:
+                        st.image(orig_pil, caption="Original Input", width="stretch")
+                    with c_right:
+                        st.image(blended, caption=entry["title"], width="stretch")
+                        st.caption(entry["desc"])
+    st.divider()
 
     st.markdown("**Similar training images**")
     train, bank = get_train_bank(run_dir)

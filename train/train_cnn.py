@@ -32,7 +32,7 @@ from tqdm import tqdm
 from dpd.cnn import HEAD_SIZES, NETWORKS, ImageLabels, MultiHeadNet, build_transforms, compose_pair_scores, log_priors
 from dpd.config import load_config, output_dir
 from dpd.data import pair_table, read_metadata
-from dpd.evaluate import evaluate, format_summary, hm_top1_over_gammas
+from dpd.evaluate import evaluate, format_summary, hm_top1_over_gammas, parse_gamma_grid
 from dpd.report import save_test_outputs
 from dpd.resize_cache import ensure_resized
 from dpd.splits import make_validation_split
@@ -171,7 +171,9 @@ def main():
         return log
 
     # ---- Stage 1: choose epoch, scoring (crop weight, logit adjustment) and gamma on validation ----
-    gammas = np.round(np.arange(*vcfg["gamma_grid"]), 6)
+    gammas = parse_gamma_grid(vcfg.get("gamma_grid"))
+    if len(gammas) == 1 and gammas[0] == 0.0:
+        print("Gamma tuning disabled (gamma_grid=0): evaluating uncalibrated (gamma=0.0) across all stages.", flush=True)
     # Optional "composition" section; without it the score is the baselines' log P(crop) + log P(disease).
     ccfg = cfg.get("composition", {})
     weights = np.round(np.arange(*ccfg["crop_weight_grid"]), 6) if "crop_weight_grid" in ccfg else np.array([0.5])
