@@ -133,7 +133,7 @@ class ClipLoraRunModel(ClipRunModel):
     """
 
     def __init__(self, run: dict, pairs):
-        from dpd.clip_utils import clip_transforms
+        from dpd.clip_utils import clip_transforms, image_norm_stats
         from dpd.lora import load_lora, set_lora_scale
 
         super().__init__(run, pairs)
@@ -142,7 +142,7 @@ class ClipLoraRunModel(ClipRunModel):
         state = torch.load(run["dir"] / "lora_image_encoder.pt", map_location="cpu")
         load_lora(self.clip.visual, state, lcfg["last_n_blocks"], lcfg["rank"], lcfg["alpha"], lcfg["targets"])
         self.clip.to(device()).eval()
-        self.transform = clip_transforms(cfg["input"], cfg["augmentation"])[1]
+        self.transform = clip_transforms(cfg["input"], cfg["augmentation"], image_norm_stats(cfg["model"], self.preprocess))[1]
         # Patch-level disease scoring (v7+): needs the run's disease text embeddings, saved by train_lora.py.
         self.patch = cfg["model"].get("patch_disease")
         if self.patch:

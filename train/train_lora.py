@@ -70,7 +70,7 @@ import torch.nn.functional as F
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 
-from dpd.clip_utils import TTA_VIEWS, TwoViews, clip_transforms, load_clip, ssl_local_transform
+from dpd.clip_utils import TTA_VIEWS, TwoViews, clip_transforms, image_norm_stats, load_clip, ssl_local_transform
 from dpd.config import load_config, output_dir
 from dpd.data import pair_table, read_metadata
 from dpd.evaluate import calibrate, evaluate, format_summary, hm_top1_over_gammas
@@ -129,12 +129,23 @@ def free_memory():
         torch.cuda.empty_cache()
 
 
+def _set_grad_checkpointing(module, enabled: bool):
+    if not enabled:
+        return
+    if hasattr(module, "transformer") and hasattr(module.transformer, "grad_checkpointing"):
+        module.transformer.grad_checkpointing = True
+    elif hasattr(module, "set_grad_checkpointing"):
+        module.set_grad_checkpointing(True)
+
+
 def build(cfg, pairs, device):
-    """Fresh CLIP + learnable prompt vectors + LoRA adapters on the image encoder."""
-    clip_model, _, tokenizer = load_clip(cfg["model"], device)
-    clip_model.transformer.grad_checkpointing = cfg["runtime"]["grad_checkpointing"]
-    clip_model.visual.transformer.grad_checkpointing = cfg["runtime"].get("grad_checkpointing_image", False)
+    """Fresh CLIP/SigLIP + learnable prompt vectors + LoRA adapters on the image encoder."""
+    clip_model, preprocess, tokenizer = load_clip(cfg["model"], device)
+    text_tower = clip_model.text if hasattr(clip_model, "text") else clip_model
+    _set_grad_checkpointing(text_tower, cfg["runtime"]["grad_checkpointing"])
+    _set_grad_checkpointing(clip_model.visual, cfg["runtime"].get("grad_checkpointing_image", False))
     model = build_model(cfg, clip_model, tokenizer, pairs).to(device)  # freezes all of CLIP
+    model.norm_stats = image_norm_stats(cfg["model"], preprocess)
     lcfg = cfg["image_encoder"]["lora"]
     lora_params = apply_lora(clip_model.visual, lcfg["last_n_blocks"], lcfg["rank"], lcfg["alpha"], lcfg["targets"])
     model.patch = cfg["model"].get("patch_disease")
@@ -286,7 +297,7 @@ def fit(model, lora_params, train_df, trained_pairs, epochs, cfg, image_dir, tfs
         assert alt["first"] in ("disease", "crop"), alt
         vec_sets = {"crop": model.crop_vecs, "disease": model.disease_vecs}
     ssl_w = tcfg["loss_weights"].get("ssl", 0)
-    local_tf = ssl_local_transform(cfg["input"], cfg["augmentation"]) if ssl_w > 0 else None
+    local_tf = ssl_local_transform(cfg["input"], cfg["augmentation"], getattr(model, "norm_stats", None)) if ssl_w > 0 else None
     assert ssl_w == 0 or local_tf is not None, "loss_weights.ssl > 0 needs augmentation.ssl_local"
     ssl_frac = cfg["augmentation"].get("ssl_local", {}).get("batch_fraction", 1.0)
     dl = loader(train_df, image_dir, TwoViews(tfs[0], local_tf) if local_tf else tfs[0], cfg, shuffle=True)
@@ -396,7 +407,7 @@ def main():
     df = read_metadata()
     pairs = pair_table(df)
     image_dir = ensure_resized(df["file"], cfg["input"]["resize_cache"])
-    tfs = clip_transforms(cfg["input"], cfg["augmentation"])
+    tfs = clip_transforms(cfg["input"], cfg["augmentation"], image_norm_stats(cfg["model"]))
     train = df[df["split"] == "train"]
     history = []
 

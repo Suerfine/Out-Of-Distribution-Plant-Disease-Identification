@@ -104,8 +104,12 @@ def build_prompts(pairs: pd.DataFrame, names_cfg: dict, prompts_cfg: dict) -> li
 
 
 def truncated_prompts(tokenizer, prompts: list[list[str]]) -> list[str]:
-    """Prompts longer than CLIP's 77-token context (the tokenizer cuts them silently)."""
+    """Prompts longer than the model's text context (the tokenizer cuts them silently)."""
     flat = [p for ps in prompts for p in ps]
+    if hasattr(tokenizer, "tokenizer"):  # HFTokenizer (e.g. SigLIP)
+        hf = tokenizer.tokenizer
+        ctx_len = getattr(tokenizer, "context_length", None) or getattr(hf, "model_max_length", 64)
+        return [p for p in flat if len(hf.encode(p, add_special_tokens=True)) > ctx_len]
     tokens = tokenizer(flat)
     return [p for p, t in zip(flat, tokens) if t[-1] != 0]
 
@@ -129,10 +133,22 @@ def encode_prompts(model, tokenizer, prompts: list[list[str]], device: str, reno
 CLIP_MEAN, CLIP_STD = (0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)
 
 
-def clip_transforms(input_cfg: dict, aug_cfg: dict):
-    """Train: augmented crops; test: CLIP's own resize + centre crop. Both on the resize-cache images."""
+def image_norm_stats(model_cfg: dict | None = None, preprocess=None) -> tuple[tuple[float, ...], tuple[float, ...]]:
+    """(mean, std) from model_cfg if provided, else inferred from open_clip's preprocess Normalize, else CLIP defaults."""
+    if model_cfg and "mean" in model_cfg and "std" in model_cfg:
+        return tuple(model_cfg["mean"]), tuple(model_cfg["std"])
+    if preprocess is not None and hasattr(preprocess, "transforms"):
+        for t in reversed(preprocess.transforms):
+            if isinstance(t, T.Normalize):
+                return tuple(float(x) for x in t.mean), tuple(float(x) for x in t.std)
+    return CLIP_MEAN, CLIP_STD
+
+
+def clip_transforms(input_cfg: dict, aug_cfg: dict, norm_stats: tuple[tuple[float, ...], tuple[float, ...]] | None = None):
+    """Train: augmented crops; test: resize + centre crop. Both on the resize-cache images."""
     size = input_cfg["crop_size"]
-    norm = [T.ToImage(), T.ToDtype(torch.float32, scale=True), T.Normalize(CLIP_MEAN, CLIP_STD)]
+    mean, std = norm_stats or (CLIP_MEAN, CLIP_STD)
+    norm = [T.ToImage(), T.ToDtype(torch.float32, scale=True), T.Normalize(mean, std)]
     train = [T.RandomResizedCrop(size, scale=tuple(aug_cfg["random_resized_crop_scale"]),
                                  interpolation=T.InterpolationMode.BICUBIC, antialias=True)]
     if aug_cfg["horizontal_flip_p"]:
@@ -145,7 +161,7 @@ def clip_transforms(input_cfg: dict, aug_cfg: dict):
     return T.Compose(train + norm), T.Compose(test + norm)
 
 
-def ssl_local_transform(input_cfg: dict, aug_cfg: dict):
+def ssl_local_transform(input_cfg: dict, aug_cfg: dict, norm_stats: tuple[tuple[float, ...], tuple[float, ...]] | None = None):
     """Small-crop "local" view for the local-to-global self-supervised loss (augmentation.ssl_local), or None.
 
     The crop covers a small part of the image (scale e.g. 0.1-0.35) and is resized to the normal crop size, so the ViT
@@ -155,6 +171,7 @@ def ssl_local_transform(input_cfg: dict, aug_cfg: dict):
     if not loc:
         return None
     size = input_cfg["crop_size"]
+    mean, std = norm_stats or (CLIP_MEAN, CLIP_STD)
     tf = [T.RandomResizedCrop(size, scale=tuple(loc["scale"]), interpolation=T.InterpolationMode.BICUBIC, antialias=True)]
     hp, vp = loc.get("horizontal_flip_p", aug_cfg["horizontal_flip_p"]), loc.get("vertical_flip_p", aug_cfg["vertical_flip_p"])
     if hp:
@@ -164,7 +181,7 @@ def ssl_local_transform(input_cfg: dict, aug_cfg: dict):
     jitter = loc.get("color_jitter", aug_cfg["color_jitter"])
     if any(jitter.values()):
         tf.append(T.ColorJitter(**jitter))
-    return T.Compose(tf + [T.ToImage(), T.ToDtype(torch.float32, scale=True), T.Normalize(CLIP_MEAN, CLIP_STD)])
+    return T.Compose(tf + [T.ToImage(), T.ToDtype(torch.float32, scale=True), T.Normalize(mean, std)])
 
 
 class TwoViews:
