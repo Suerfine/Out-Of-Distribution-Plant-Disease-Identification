@@ -1,0 +1,26 @@
+{
+  "gamma": 2.9,
+  "development": {
+    "seen": 0.7111368909512761,
+    "unseen": 0.626641651031895,
+    "h": 0.6662208750856197,
+    "seen_correct": 613,
+    "unseen_correct": 334
+  },
+  "official": {
+    "0": {
+      "seen": 0.733,
+      "unseen": 0.406767955801105,
+      "h": 0.5231958138227225,
+      "seen_correct": 1466,
+      "unseen_correct": 589
+    },
+    "2.9": {
+      "seen": 0.6925,
+      "unseen": 0.7755524861878453,
+      "h": 0.731676968961397,
+      "seen_correct": 1385,
+      "unseen_correct": 1123
+    }
+  }
+}

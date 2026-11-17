@@ -1,0 +1,20 @@
+[
+  {
+    "epoch": 1,
+    "correct": 590,
+    "top3": 636,
+    "images": 652
+  },
+  {
+    "epoch": 2,
+    "correct": 592,
+    "top3": 640,
+    "images": 652
+  },
+  {
+    "epoch": 3,
+    "correct": 595,
+    "top3": 635,
+    "images": 652
+  }
+]

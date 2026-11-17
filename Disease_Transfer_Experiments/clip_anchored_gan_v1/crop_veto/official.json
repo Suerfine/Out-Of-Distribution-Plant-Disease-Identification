@@ -1,0 +1,14 @@
+{
+  "test_seen": {
+    "images": 2000,
+    "old": 1348,
+    "new": 1402,
+    "overrides": 133
+  },
+  "test_unseen": {
+    "images": 1448,
+    "old": 1134,
+    "new": 1098,
+    "overrides": 140
+  }
+}

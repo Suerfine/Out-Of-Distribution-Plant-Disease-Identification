@@ -69,7 +69,7 @@ def apply_pilot(cfg: dict) -> dict:
     cfg["validation"]["min_holdout_images"] = 4
     cfg["validation"]["max_images_per_holdout_pair"] = 6
     cfg["validation"]["val_fraction"] = 0.25
-    cfg["validation"]["gamma_grid"] = 0
+    cfg["validation"]["gamma_grid"] = [0.0, 10.0, 0.5]
     return cfg
 
 
@@ -576,10 +576,13 @@ def main():
     print(f"  Best Selected Epoch:   {chosen_epoch}")
     print(f"  Tuned Gamma:           {chosen_gamma}")
     print(f"  Validation Mean HM:    {chosen_val_hm:.2%}")
+    eval_main = result if chosen_gamma > 0.0 else no_cal
     print("-" * 65)
-    print(f"  Test Seen Top-1:       {no_cal['test_seen']['top1']:.2%}")
-    print(f"  Test Unseen Top-1:     {no_cal['test_unseen']['top1']:.2%}")
-    print(f"  Test Harmonic Mean:    {no_cal['harmonic_mean_top1']:.2%}")
+    print(f"  Test Seen Top-1:       {eval_main['test_seen']['top1']:.2%}")
+    print(f"  Test Unseen Top-1:     {eval_main['test_unseen']['top1']:.2%}")
+    print(f"  Test Harmonic Mean:    {eval_main['harmonic_mean_top1']:.2%}")
+    if chosen_gamma > 0.0:
+        print(f"  (Uncalibrated HM:      {no_cal['harmonic_mean_top1']:.2%})")
     print("=" * 65)
 
     save_test_outputs(out, result if chosen_gamma > 0.0 else no_cal, scores, labels, files, pairs, chosen_gamma)

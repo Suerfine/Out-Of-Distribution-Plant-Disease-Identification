@@ -1,0 +1,28 @@
+{
+  "selection": {
+    "crop_weight": 1,
+    "validation_images": 862,
+    "grid_correct": {
+      "1": 773,
+      "1.25": 772,
+      "1.5": 772,
+      "1.75": 772,
+      "2": 772,
+      "2.5": 772,
+      "3": 772,
+      "4": 772
+    }
+  },
+  "official": {
+    "test_seen": {
+      "images": 2000,
+      "old": 1338,
+      "weighted": 1338
+    },
+    "test_unseen": {
+      "images": 1448,
+      "old": 1134,
+      "weighted": 1134
+    }
+  }
+}

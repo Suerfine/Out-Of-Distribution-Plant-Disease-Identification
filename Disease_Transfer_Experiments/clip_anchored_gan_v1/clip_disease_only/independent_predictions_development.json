@@ -1,0 +1,226 @@
+{
+  "independent_convnext": {
+    "seen": {
+      "crop": {
+        "correct": 847,
+        "total": 862,
+        "accuracy": 0.9825986078886311
+      },
+      "disease": {
+        "correct": 774,
+        "total": 862,
+        "accuracy": 0.8979118329466357
+      },
+      "disease_given_correct_crop": {
+        "correct": 767,
+        "total": 847,
+        "accuracy": 0.9055489964580874
+      },
+      "both": {
+        "correct": 767,
+        "total": 862,
+        "accuracy": 0.8897911832946636
+      },
+      "outside_development_pair_list": {
+        "correct": 14,
+        "total": 862,
+        "accuracy": 0.016241299303944315
+      }
+    },
+    "unseen": {
+      "crop": {
+        "correct": 491,
+        "total": 533,
+        "accuracy": 0.9212007504690432
+      },
+      "disease": {
+        "correct": 20,
+        "total": 533,
+        "accuracy": 0.0375234521575985
+      },
+      "disease_given_correct_crop": {
+        "correct": 14,
+        "total": 491,
+        "accuracy": 0.028513238289205704
+      },
+      "both": {
+        "correct": 14,
+        "total": 533,
+        "accuracy": 0.02626641651031895
+      },
+      "outside_development_pair_list": {
+        "correct": 98,
+        "total": 533,
+        "accuracy": 0.18386491557223264
+      }
+    }
+  },
+  "disease_real_only": {
+    "seen": {
+      "crop": {
+        "correct": 847,
+        "total": 862,
+        "accuracy": 0.9825986078886311
+      },
+      "disease": {
+        "correct": 728,
+        "total": 862,
+        "accuracy": 0.8445475638051044
+      },
+      "disease_given_correct_crop": {
+        "correct": 721,
+        "total": 847,
+        "accuracy": 0.8512396694214877
+      },
+      "both": {
+        "correct": 721,
+        "total": 862,
+        "accuracy": 0.8364269141531323
+      },
+      "outside_development_pair_list": {
+        "correct": 26,
+        "total": 862,
+        "accuracy": 0.030162412993039442
+      }
+    },
+    "unseen": {
+      "crop": {
+        "correct": 491,
+        "total": 533,
+        "accuracy": 0.9212007504690432
+      },
+      "disease": {
+        "correct": 14,
+        "total": 533,
+        "accuracy": 0.02626641651031895
+      },
+      "disease_given_correct_crop": {
+        "correct": 9,
+        "total": 491,
+        "accuracy": 0.018329938900203666
+      },
+      "both": {
+        "correct": 9,
+        "total": 533,
+        "accuracy": 0.016885553470919325
+      },
+      "outside_development_pair_list": {
+        "correct": 114,
+        "total": 533,
+        "accuracy": 0.21388367729831145
+      }
+    }
+  },
+  "disease_repeated_real": {
+    "seen": {
+      "crop": {
+        "correct": 847,
+        "total": 862,
+        "accuracy": 0.9825986078886311
+      },
+      "disease": {
+        "correct": 709,
+        "total": 862,
+        "accuracy": 0.8225058004640371
+      },
+      "disease_given_correct_crop": {
+        "correct": 702,
+        "total": 847,
+        "accuracy": 0.8288075560802833
+      },
+      "both": {
+        "correct": 702,
+        "total": 862,
+        "accuracy": 0.814385150812065
+      },
+      "outside_development_pair_list": {
+        "correct": 31,
+        "total": 862,
+        "accuracy": 0.03596287703016241
+      }
+    },
+    "unseen": {
+      "crop": {
+        "correct": 491,
+        "total": 533,
+        "accuracy": 0.9212007504690432
+      },
+      "disease": {
+        "correct": 19,
+        "total": 533,
+        "accuracy": 0.03564727954971857
+      },
+      "disease_given_correct_crop": {
+        "correct": 15,
+        "total": 491,
+        "accuracy": 0.03054989816700611
+      },
+      "both": {
+        "correct": 15,
+        "total": 533,
+        "accuracy": 0.028142589118198873
+      },
+      "outside_development_pair_list": {
+        "correct": 109,
+        "total": 533,
+        "accuracy": 0.2045028142589118
+      }
+    }
+  },
+  "disease_plus_gan": {
+    "seen": {
+      "crop": {
+        "correct": 847,
+        "total": 862,
+        "accuracy": 0.9825986078886311
+      },
+      "disease": {
+        "correct": 703,
+        "total": 862,
+        "accuracy": 0.8155452436194895
+      },
+      "disease_given_correct_crop": {
+        "correct": 695,
+        "total": 847,
+        "accuracy": 0.820543093270366
+      },
+      "both": {
+        "correct": 695,
+        "total": 862,
+        "accuracy": 0.8062645011600929
+      },
+      "outside_development_pair_list": {
+        "correct": 31,
+        "total": 862,
+        "accuracy": 0.03596287703016241
+      }
+    },
+    "unseen": {
+      "crop": {
+        "correct": 491,
+        "total": 533,
+        "accuracy": 0.9212007504690432
+      },
+      "disease": {
+        "correct": 105,
+        "total": 533,
+        "accuracy": 0.19699812382739212
+      },
+      "disease_given_correct_crop": {
+        "correct": 88,
+        "total": 491,
+        "accuracy": 0.17922606924643583
+      },
+      "both": {
+        "correct": 88,
+        "total": 533,
+        "accuracy": 0.1651031894934334
+      },
+      "outside_development_pair_list": {
+        "correct": 93,
+        "total": 533,
+        "accuracy": 0.17448405253283303
+      }
+    }
+  }
+}

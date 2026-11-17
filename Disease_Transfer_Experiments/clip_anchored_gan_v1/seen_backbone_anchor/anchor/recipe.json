@@ -1,0 +1,10 @@
+{
+  "weight": 0.0,
+  "epochs": 2,
+  "scope": "development",
+  "source_sha256": "a324bf2c020d0ffe057e00af998155abd2beb3be8aa095ea7326ed3242cba441",
+  "fit_images": 5798,
+  "microbatch": 4,
+  "accumulation": 8,
+  "backbone_anchor": 0.1
+}

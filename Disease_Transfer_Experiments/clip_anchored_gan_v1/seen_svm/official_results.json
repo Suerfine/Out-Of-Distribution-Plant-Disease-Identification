@@ -1,0 +1,35 @@
+{
+  "setting": {
+    "kernel_gamma": null,
+    "strength": 1000.0,
+    "disease_weight": 1.0
+  },
+  "fit_images": 8000,
+  "seen_images": 2000,
+  "results": {
+    "0": {
+      "routed_true_seen": 1965,
+      "baseline_correct": 1458,
+      "svm_correct": 1460,
+      "baseline_top3": 1737,
+      "svm_top3": 1730,
+      "fixes": 47,
+      "regressions": 45,
+      "seen": 0.73,
+      "unseen": 0.48342541436464087,
+      "h": 0.5816600646541912
+    },
+    "3": {
+      "routed_true_seen": 1747,
+      "baseline_correct": 1336,
+      "svm_correct": 1337,
+      "baseline_top3": 1567,
+      "svm_top3": 1565,
+      "fixes": 37,
+      "regressions": 36,
+      "seen": 0.6685,
+      "unseen": 0.8280386740331491,
+      "h": 0.7397655178524294
+    }
+  }
+}

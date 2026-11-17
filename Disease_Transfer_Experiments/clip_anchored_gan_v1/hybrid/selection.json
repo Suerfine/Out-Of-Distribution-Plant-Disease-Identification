@@ -1,0 +1,21 @@
+{
+  "split": 42,
+  "cnn_seen_blend": 0.5,
+  "cnn_gate_weight": 0.02,
+  "cnn_gap_scale": 3.1415936946868896,
+  "threshold": 0.0700000000000001,
+  "hybrid_development": {
+    "seen": 0.7459396751740139,
+    "unseen": 0.551594746716698,
+    "h": 0.6342127025716812,
+    "seen_correct": 643,
+    "unseen_correct": 294
+  },
+  "clip_gamma_003_development": {
+    "seen": 0.660092807424594,
+    "unseen": 0.549718574108818,
+    "h": 0.599870826834196,
+    "seen_correct": 569,
+    "unseen_correct": 293
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "selection": {
+    "fixed": {
+      "zero": {
+        "params": {
+          "weight": 0.1
+        },
+        "offset": 0.0
+      },
+      "tuned": {
+        "params": {
+          "weight": 0.5
+        },
+        "offset": 5.206473350524902
+      }
+    },
+    "soft": {
+      "zero": {
+        "params": {
+          "center": 3.0,
+          "temperature": 1.0,
+          "strength": 0.75,
+          "bias": -0.15
+        },
+        "offset": 0.0
+      },
+      "tuned": {
+        "params": {
+          "center": 0.0,
+          "temperature": 1.0,
+          "strength": 0.5,
+          "bias": 0.0
+        },
+        "offset": 6.094635009765625
+      }
+    }
+  },
+  "official": {
+    "zero": {
+      "hard": {
+        "seen": 0.729,
+        "unseen": 0.48342541436464087,
+        "h": 0.5813423620066621,
+        "seen_correct": 1458,
+        "unseen_correct": 700
+      },
+      "fixed": {
+        "seen": 0.697,
+        "unseen": 0.43715469613259667,
+        "h": 0.5373108699252735,
+        "seen_correct": 1394,
+        "unseen_correct": 633
+      },
+      "soft": {
+        "seen": 0.7225,
+        "unseen": 0.47582872928176795,
+        "h": 0.5737762076556899,
+        "seen_correct": 1445,
+        "unseen_correct": 689
+      }
+    },
+    "tuned": {
+      "hard": {
+        "seen": 0.668,
+        "unseen": 0.8280386740331491,
+        "h": 0.7394592718154389,
+        "seen_correct": 1336,
+        "unseen_correct": 1199
+      },
+      "fixed": {
+        "seen": 0.6555,
+        "unseen": 0.9102209944751382,
+        "h": 0.7621407185364624,
+        "seen_correct": 1311,
+        "unseen_correct": 1318
+      },
+      "soft": {
+        "seen": 0.644,
+        "unseen": 0.9136740331491713,
+        "h": 0.7554932095240459,
+        "seen_correct": 1288,
+        "unseen_correct": 1323
+      }
+    }
+  }
+}

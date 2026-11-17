@@ -72,7 +72,11 @@
     "n_holdout_pairs": 20,
     "min_holdout_images": 8,
     "val_fraction": 0.15,
-    "gamma_grid": 0,
+    "gamma_grid": [
+      0.0,
+      10.0,
+      0.1
+    ],
     "exclude_real_unseen_from_label_space": true,
     "max_images_per_holdout_pair": 40,
     "n_splits": 3

@@ -1,0 +1,19 @@
+{
+  "fingerprint": "310ee82b4d91c3c5452351a04fdecbf37fc623785f2b92b153d9b15dd392ae875efa28d46dfff5675ad0182f136ba76ddc2b75ffc578ee871202a3574917a4ae02624fc45679320511e1def9d8c3184ba68c8877d4cac52df18a26e9692204289f1b729ab08f120c9e8d3a5681aa1ccbdf1d9210f9aaa6143959363dcb106a7dd9b0bbc2d0de34b0570974f4bd5e2909b3a0728538343f6cd157dc5fa5acd6ea3",
+  "active": {
+    "file": "checkpoint_a.pt",
+    "sha256": "48ba8f389878652649ec36e4305b4f906e7cb773b0a50d0532549be99c8ee575",
+    "stage": "finetune",
+    "epoch": 3,
+    "cursor": 0,
+    "saved_utc": "2026-11-15T08:48:06.346893+00:00"
+  },
+  "previous": {
+    "file": "checkpoint_b.pt",
+    "sha256": "4d804e235365f93105d8ee3e26d649a054bdd0eb4a99723488d9bde814ed4826",
+    "stage": "finetune",
+    "epoch": 2,
+    "cursor": 0,
+    "saved_utc": "2026-11-15T08:38:40.390138+00:00"
+  }
+}

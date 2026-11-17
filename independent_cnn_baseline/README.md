@@ -2,6 +2,148 @@
 
 Hein's independent baseline package for the group project.
 
+**Five-hour continuation stopped and verified, 2 November 2026 13:30:23 MYT.**
+The deadline was 13:27:11 MYT; the active crop epoch finished and checkpointed
+before exit. New outcomes: **0 COMPLETE, 5 PRUNED, 1 pending** (trials8–13),
+separate from the inherited2 COMPLETE/6 PRUNED. R0 remains the eligible winner:
+epoch15, gamma0, seen/PU Top1 **89.6752%/4.5028%**, H1 **8.5751%**;
+seen/PU Top5 **98.6079%/27.5797%**, H5 **43.1037%**. TPE never activated because
+there are still only two COMPLETE observations. Pruned recipes are not proven
+inferior at every later epoch; this window does not exhaust the search.
+
+New runtime: **4h57m07s target-epoch time**, **5h03m11s post-audit wall time**,
+35 paired epochs plus one crop epoch (71 target epochs). Trial13 is deliberately
+RUNNING in SQLite with crop3/disease2, paired2; next target is disease epoch3.
+Both full optimizer/scaler/RNG/loader checkpoints are preserved. Controller30408
+and launcher40268 exited positively, all six OS locks are free, and all input,
+parent130/historical131 preservation, terminal, logit and checkpoint audits passed.
+No new official inference, calibration or refit occurred. Existing verified R0
+full-data weights can be reused. Further compute requires explicit authorization.
+The completion monitor is removed after reporting; the chat remains available.
+
+[Verified stop report](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102/window_report_verified_20261102.md),
+[audit](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102/window_stop_verified_20261102.json),
+[validation metrics](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102/validation_metrics_verified_20261102.json),
+[selected recipe](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102/selected_recipe_for_window.json),
+[summary](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102/study_summary.json),
+[results](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102/results.md),
+[crop selection weights](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_seed42/trials/trial_000/crop/best_epoch_15.pt)
+and [disease selection weights](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_seed42/trials/trial_000/disease/best_epoch_15.pt).
+
+**Five-hour continuation launch record, 2 November 2026.**
+This continuation carries forward all eight verified gamma-zero observations
+(2 COMPLETE, 6 PRUNED) and starts new trial numbers at8. The five-hour deadline
+is the stopping rule; there is **no fixed trial-count cap**. The original completed
+run and its checkpoints/reports stay preserved. A verified SQLite backup in the
+new output folder retains previous recipes, objectives, intermediate curves,
+states and sampler numbering. Only verified COMPLETE trials can win.
+
+Controller `optuna_gamma0_continue.py`, fixed
+[continuation manifest](configs/optuna_convnext_base_gamma0_continue_20261102.json),
+launcher `run_optuna_gamma0_continue.ps1 -Detach`, output
+`runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102`.
+Hidden launcher PID40268 / controller PID30408 passed input audits and CUDA
+preflight. The five-hour window began **2 November
+08:27:11 MYT** with deadline **13:27:11 MYT** (finish/checkpoint the active target
+epoch at the cap). Gamma0, the original search space, seeds,
+training schedule and median-pruner settings are unchanged. Prior completed
+curves inform pruning immediately; TPE still requires three COMPLETE observations
+(two inherited). Twelve continuation/controller checks passed before launch.
+Six OS locks protect the new run, its completed parent and the other preserved
+studies. No official inference, calibration or full-data refit is included.
+[Live status](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102/status.json).
+[Summary](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102/study_summary.json),
+[results](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102/results.md),
+[history copy verification](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102/history_import_verified.json)
+and [launch verification](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_continue_20261102/launch_verified.json).
+Summaries refresh at terminal outcomes; status/logs show the current active epoch.
+
+**Gamma-zero Optuna selection completed and verified, 1 November 2026 20:54 MYT.**
+All eight fresh paired trials are terminal: **2 COMPLETE, 6 PRUNED, none pending**.
+Fresh R0 wins at **epoch15 / gamma0**: seen validation Top1 **89.68%**,
+pseudo-unseen **4.50%**, H1 **8.5751%**; H5 **43.1037%**. The best completed
+sampled candidate is trial1, epoch2, H1 **6.8246%**. No sampled recipe improved R0.
+Only two trials completed, so the three-COMPLETE threshold for TPE was never
+reached; the sampled recipes used the verified deterministic startup streams.
+
+Fresh selection used **10h11m20s target-epoch time** (including validation) across
+144 target epochs, and **10h22m38s post-audit wall time**. These exclude the earlier
+calibrated window, original R0 selection and all earlier full-data refits. The
+authorized ten-hour extension was safely applied once; all eight outcomes became
+terminal well before its final deadline. Controllers/launchers/supervisor exited,
+all study/supervisor locks are free, and all retained model/logit/terminal hashes,
+source14, pretrained, data/cache/code and 131 preservation hashes passed.
+
+Existing verified full-data R0 weights and separately labeled gamma-zero metrics
+match this selected recipe and can be reused. Historical calibrated outputs/app
+gamma metadata remain preserved. No new full-data refit or official inference
+was launched by this search. The completion monitor is removed after reporting.
+See [verified report](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_seed42/selection_report_verified_20261101.md),
+[controller results](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_seed42/results.md),
+[study summary](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_seed42/study_summary.json),
+[selected recipe](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_seed42/selected_recipe.json),
+[validation metrics](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_seed42/validation_metrics_verified_20261101.json),
+[completion audit](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_seed42/selection_completion_audit_20261101.json),
+[crop selection weights](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_seed42/trials/trial_000/crop/best_epoch_15.pt)
+and [disease selection weights](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_seed42/trials/trial_000/disease/best_epoch_15.pt).
+The corrected controller is `optuna_gamma0.py`, with fixed manifest
+[configs/optuna_convnext_base_gamma0_seed42.json](configs/optuna_convnext_base_gamma0_seed42.json)
+and launcher `run_optuna_gamma0.ps1 -Detach -Hours 10`. It trains a fresh R0 pair
+first, then sampled recipes, with at most eight fresh pairs total. Gamma is zero
+for checkpoint/epoch selection, early stopping, pruning, TPE and ranking. No
+historical calibrated observations are imported; all older runs stay preserved.
+The run folder is `runs/baseline/independent_cnn_baseline_convnext_base_optuna_gamma0_seed42`.
+The clock starts after audits/CUDA preflight. Recovery uses `-Resume -DeadlineUtc`
+with the exact saved deadline and never silently opens another window. Official
+test inference and final full-data refitting remain separate later work.
+
+**Tuning objective corrected on 1 November 2026: gamma zero throughout.**
+Trial ranking, checkpoint selection, early stopping, pruning and TPE observations
+must use uncalibrated validation composition Top-1 H. The preceding run optimized
+calibrated H; its 62.95% result is historical and does not establish a tuning
+improvement under the corrected objective. At retained checkpoints, gamma-zero H
+is R0 8.58%, trial 1 6.51% and trial 2 5.46%. Some other epochs' gamma-zero peaks
+exist only in logs because their model pairs were not retained.
+The historical database/checkpoints remain intact. The old launcher is blocked;
+the new authorization and separate gamma-zero controller are described above.
+See the [corrected plan](OPTUNA_CONVNEXT_BASE_PLAN.md)
+and [objective review](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_seed42/uncalibrated_objective_review.md).
+
+**Historical calibrated window stopped on 1 November 2026, 06:14 MYT.**
+Two new trials completed, three were pruned, and trial 6 is checkpointed after
+crop/disease epoch 1; two configurations have not started. The best completed
+candidate so far is trial 2, epoch 30 / gamma 6.4: held-out validation Top-1 H
+**62.95%**, versus R0 **59.74%**. Gamma-zero validation H is **5.46%**, versus
+R0 **8.58%**. These are training-holdout results; no new official evaluation or
+full-data refit occurred. Controller exit, locks and checkpoints are verified.
+Further training requires an explicitly approved additional compute budget.
+See [window results and checkpoint links](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_seed42/results.md),
+[validation metrics](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_seed42/window_validation_metrics.json)
+and [stop audit](../runs/baseline/independent_cnn_baseline_convnext_base_optuna_seed42/window_stop_verified_20261101.json).
+
+**Historical Optuna authorization, superseded by the objective correction:**
+[ConvNeXt-Base IN22K -> IN1K](OPTUNA_CONVNEXT_BASE_PLAN.md), validation selection
+only, at most ten hours / eight new paired trials. The existing R0 is a verified
+incumbent. Full-data refitting and official test inference are separate later work.
+The fixed manifest is [configs/optuna_convnext_base_seed42.json](configs/optuna_convnext_base_seed42.json).
+The old `run_optuna.ps1` launcher now rejects this superseded objective; `status.json` in
+`runs/baseline/independent_cnn_baseline_convnext_base_optuna_seed42` records progress.
+The initial ten-hour window has expired; this launcher does not grant another
+budget. The SQLite study and active full recovery checkpoints survive pauses. Recovery
+uses `-Resume -DeadlineUtc '<saved deadline>'`, after confirming exit/lock release.
+Creating `STOP.request` in that run folder pauses after the active target epoch;
+only explicit user resume may add `-ClearStop`. The controller never extends the
+saved selection budget or automatically starts final refitting.
+
+**Tiny follow-up completed and verified on 30 October 2026 at 01:27 MYT.**
+The original Tiny recipe was freshly refitted on all 8,000 images for 17 crop /
+16 disease epochs, gamma zero. Official Top-1 H is **19.85%** (original 21.16%);
+Top-5 H is **64.06%** (original 58.08%). Training took **1h 36m 13s** and
+post-audit finalization **1h 42m 10s**. The completion monitor is stopped.
+See [Tiny results and checkpoint links](../runs/baseline/independent_cnn_baseline_convnext_tiny_full_refit_seed42/results.md),
+[verification](../runs/baseline/independent_cnn_baseline_convnext_tiny_full_refit_seed42/final_review_verified.json)
+and [TINY_REFIT_PLAN.md](TINY_REFIT_PLAN.md). The completed R0 results below remain preserved.
+
 **Completed and verified on 29 October 2026 at 04:06 MYT.**
 All six fresh R0 crop/disease refits finished on all 8,000 training images,
 followed by official evaluation on 2,000 seen and 1,448 unseen images against

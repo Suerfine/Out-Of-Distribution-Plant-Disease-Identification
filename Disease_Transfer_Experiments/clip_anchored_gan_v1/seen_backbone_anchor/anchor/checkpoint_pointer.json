@@ -1,0 +1,19 @@
+{
+  "fingerprint": "51a9c80b632781b93220d5735256810f1ac9cb75a788ba0b7b1e844daf545727a324bf2c020d0ffe057e00af998155abd2beb3be8aa095ea7326ed3242cba441{\"accumulation\": 8, \"backbone_anchor\": 0.1, \"epochs\": 2, \"fit_images\": 5798, \"microbatch\": 4, \"scope\": \"development\", \"source_sha256\": \"a324bf2c020d0ffe057e00af998155abd2beb3be8aa095ea7326ed3242cba441\", \"weight\": 0.0}",
+  "active": {
+    "file": "checkpoint_b.pt",
+    "sha256": "0a6f653608433668c3de8b954a6d04f95a5d6ed7f0d07383e96ececc6d5dc28e",
+    "stage": "finetune",
+    "epoch": 2,
+    "cursor": 0,
+    "saved_utc": "2026-11-16T12:39:18.529723+00:00"
+  },
+  "previous": {
+    "file": "checkpoint_a.pt",
+    "sha256": "4db6b50c32cad68dcd9940946e452b61ca6065985636756a36afb1742ad7914b",
+    "stage": "finetune",
+    "epoch": 1,
+    "cursor": 0,
+    "saved_utc": "2026-11-16T12:31:18.962663+00:00"
+  }
+}

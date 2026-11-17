@@ -1,0 +1,66 @@
+{
+  "selection": {
+    "grid": [
+      {
+        "groups": [],
+        "correct": 773
+      },
+      {
+        "groups": [
+          "flip"
+        ],
+        "correct": 772
+      },
+      {
+        "groups": [
+          "wide"
+        ],
+        "correct": 772
+      },
+      {
+        "groups": [
+          "local"
+        ],
+        "correct": 775
+      },
+      {
+        "groups": [
+          "flip",
+          "wide"
+        ],
+        "correct": 770
+      },
+      {
+        "groups": [
+          "wide",
+          "local"
+        ],
+        "correct": 774
+      },
+      {
+        "groups": [
+          "flip",
+          "wide",
+          "local"
+        ],
+        "correct": 775
+      }
+    ],
+    "selected": {
+      "groups": [
+        "local"
+      ],
+      "correct": 775
+    },
+    "images": 862
+  },
+  "official": {
+    "old_seen_correct": 1338,
+    "new_seen_correct": 1348,
+    "seen_images": 2000,
+    "unseen_correct": 1134,
+    "unseen_images": 1448,
+    "fixes": 15,
+    "regressions": 5
+  }
+}

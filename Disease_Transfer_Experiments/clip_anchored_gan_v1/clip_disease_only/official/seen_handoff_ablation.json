@@ -1,0 +1,38 @@
+{
+  "0": {
+    "calibration_only": {
+      "seen": 0.677,
+      "unseen": 0.48342541436464087,
+      "h": 0.564067283383404,
+      "seen_correct": 1354,
+      "unseen_correct": 700
+    },
+    "two_experts": {
+      "seen": 0.729,
+      "unseen": 0.48342541436464087,
+      "h": 0.5813423620066621,
+      "seen_correct": 1458,
+      "unseen_correct": 700
+    },
+    "fixed_seen_errors": 195,
+    "introduced_seen_errors": 91
+  },
+  "3": {
+    "calibration_only": {
+      "seen": 0.628,
+      "unseen": 0.8280386740331491,
+      "h": 0.7142781253913023,
+      "seen_correct": 1256,
+      "unseen_correct": 1199
+    },
+    "two_experts": {
+      "seen": 0.668,
+      "unseen": 0.8280386740331491,
+      "h": 0.7394592718154389,
+      "seen_correct": 1336,
+      "unseen_correct": 1199
+    },
+    "fixed_seen_errors": 160,
+    "introduced_seen_errors": 80
+  }
+}

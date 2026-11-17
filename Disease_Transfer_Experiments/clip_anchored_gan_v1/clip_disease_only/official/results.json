@@ -1,0 +1,37 @@
+{
+  "selection": {
+    "gamma": 3.0,
+    "lora_epochs": 8,
+    "head_epochs": 1,
+    "training_images": 8000,
+    "synthetic_per_pair": 300,
+    "candidate_target_pairs": [
+      "pepper_bell_bacterial_spot",
+      "cherry_aphis_spp",
+      "corn_brown_spot",
+      "cotton_bacterial_blight",
+      "cucumber_downy_mildew",
+      "cucumber_powdery_mildew",
+      "grape_black_rot",
+      "mango_anthracnose",
+      "sugarcane_rust",
+      "tomato_early_blight"
+    ]
+  },
+  "official": {
+    "0": {
+      "seen": 0.729,
+      "unseen": 0.48342541436464087,
+      "h": 0.5813423620066621,
+      "seen_correct": 1458,
+      "unseen_correct": 700
+    },
+    "3": {
+      "seen": 0.668,
+      "unseen": 0.8280386740331491,
+      "h": 0.7394592718154389,
+      "seen_correct": 1336,
+      "unseen_correct": 1199
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "gamma": 0,
+  "clip_scale": 100,
+  "development": {
+    "seen": {
+      "images": 862,
+      "clip_correct": 721,
+      "combined_correct": 726,
+      "clip_crop_correct": 836,
+      "combined_crop_correct": 846
+    },
+    "unseen": {
+      "images": 533,
+      "clip_correct": 89,
+      "combined_correct": 122,
+      "clip_crop_correct": 439,
+      "combined_crop_correct": 495
+    }
+  },
+  "official": {
+    "test_seen": {
+      "images": 2000,
+      "clip_correct": 1322,
+      "combined_correct": 1360,
+      "clip_crop_correct": 1811,
+      "combined_crop_correct": 1889
+    },
+    "test_unseen": {
+      "images": 1448,
+      "clip_correct": 564,
+      "combined_correct": 589,
+      "clip_crop_correct": 1146,
+      "combined_crop_correct": 1240
+    }
+  }
+}
