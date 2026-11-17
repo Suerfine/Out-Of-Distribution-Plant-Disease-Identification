@@ -1,0 +1,121 @@
+{
+  "_note": "Nat_multitask_convnext_base_v4_decoupled: v3_uncalibrated plus three changes aimed at the crop->disease shortcut found in v3's head outputs. Uncalibrated, the v3 disease head scored 73.8% Top-1 on test_seen but 9.0% on test_unseen (median true-disease rank 17). 74% of its wrong unseen predictions were a disease paired with the TRUE crop in training (tomato_early_blight -> late_blight, grape_black_rot -> esca), and it predicted frequent diseases (mean train freq 195 vs 117 for the true ones). Changes: (1) Balanced Softmax on the disease head (fixed tau=1, training-time, nothing tuned); (2) same-disease cross-crop CutMix (p=0.5) so one disease is seen on two hosts under one label; (3) stochastic depth 0.1 and loss weights back to 1.0/1.0, since upweighting disease (v3) only strengthened the shortcut. Backbone uses the explicit 'timm:' prefix (same weights as v3) so drop_path_rate is applied. Gamma tuning stays disabled.",
+  "_result": "Dropped vs v3_uncalibrated (gamma=0.0, epoch 6): test_seen top1 61.10% (crop 93.70%, disease 62.30%), test_unseen top1 0.90% (crop 78.25%, disease 4.70%), HM top1 1.77%, HM top5 36.41%, diagnostic unseen-only top1 87.15%.",
+  "version": "Nat_multitask_convnext_base_v4_decoupled",
+  "method": "multi_task_cnn",
+  "seed": 42,
+  "data": {
+    "_note": "Standard DPD evaluation on test_seen (2,000) and test_unseen (1,448) across all 333 composition pairs.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "ConvNeXt-Base (ImageNet-22k -> 1k, timm) with dual linear heads (crop 55, disease 175), head dropout 0.2, stochastic depth 0.1 (new vs v3).",
+    "backbone": "timm:convnext_base.fb_in22k_ft_in1k",
+    "pretrained": true,
+    "head_dropout": 0.2,
+    "drop_path_rate": 0.1
+  },
+  "input": {
+    "_note": "Unchanged from v3: 256 cache, 224 centre crop for evaluation.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224
+  },
+  "augmentation": {
+    "_note": "v3 augmentation plus same-disease cross-crop CutMix: with p=0.5 a box (area ~ Beta(1,1)) from a training image with the same disease but a different crop is pasted in. Disease label unchanged; crop label mixed by pasted area. Partners come only from the current fit frame, so pseudo-unseen validation pairs never leak.",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    },
+    "same_disease_cutmix": {
+      "p": 0.5,
+      "alpha": 1.0
+    }
+  },
+  "loss": {
+    "_note": "Equal task weights (v3 used crop 0.7 / disease 1.3). Balanced Softmax on the disease head: CE on logits + 1.0 * log class prior of the training frame, raw logits at inference. Counters the head's bias to frequent diseases; the unseen pairs' diseases are rare (aphis_spp 7, black_rot 36, anthracnose 51 train images). Crop head left as plain CE to isolate the effect.",
+    "label_smoothing": 0.1,
+    "weighting": "fixed",
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    },
+    "init_log_var": 0.0,
+    "balanced_softmax": {
+      "crop": 0.0,
+      "disease": 1.0
+    }
+  },
+  "optimizer": {
+    "_note": "Unchanged from v3: AdamW, lr_backbone 5e-5, lr_head 5e-4, weight_decay 0.05.",
+    "name": "adamw",
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05,
+    "momentum": 0.9,
+    "nesterov": true
+  },
+  "scheduler": {
+    "_note": "Unchanged from v3: cosine, 2 warmup epochs, min_lr_ratio 0.01.",
+    "name": "cosine",
+    "warmup_epochs": 2,
+    "min_lr_ratio": 0.01,
+    "step_size_epochs": 7,
+    "step_factor": 0.1
+  },
+  "validation": {
+    "_note": "Unchanged from v3: gamma_grid 0 (uncalibrated selection), 3 pseudo-unseen splits of 20 holdout pairs.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": 0,
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "Unchanged from v3. CutMix and drop-path regularise more, so max_epochs stays at 30 with patience 8 to allow a later best epoch.",
+    "batch_size": 16,
+    "max_epochs": 30,
+    "final_fit": "all_train",
+    "freeze_backbone_epochs": 1,
+    "accum_steps": 2,
+    "grad_clip_norm": 1.0,
+    "early_stopping": {
+      "patience": 8,
+      "min_epochs": 5
+    },
+    "refit_schedule": "compress"
+  },
+  "evaluation": {
+    "_note": "Standard DPD benchmark metrics: Top-1, Top-5, per-class means, and Harmonic Mean (HM).",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "AMP mixed precision on CUDA with 4 workers. Checkpointing every 5 epochs.",
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 4,
+    "checkpoint_every_n_epochs": 5,
+    "keep_checkpoints": false
+  },
+  "output_dir": "runs/multitask/Nat_multitask_convnext_base_v4_decoupled"
+}
