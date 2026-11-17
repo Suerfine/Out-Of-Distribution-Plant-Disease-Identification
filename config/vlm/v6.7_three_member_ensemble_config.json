@@ -1,0 +1,52 @@
+{
+  "_note": "v6.7: v6.6 (v5.13 + ConvNeXt-Base 336) with a third member, the 224 px ConvNeXt-Base independent CNN (aniq_baseline_independent_convnext_base, the CNN of v6.3 / v6.5). First three-member ensemble: score = sum_k w_k * logprob(member k), weights on the simplex in steps of 0.1 (66 combinations) x gamma, chosen on the same validation split (seed 42). Single change from v6.6. No training: v5.13's and ConvNeXt-Base's validation scores are copied from v6.5 and ConvNeXt-Base 336's from v6.4 (same split, same scoring). Compare on the same split with v6.6 68.25% (test 75.48%), v6.4 67.64%, v6.5 67.12%, v6.3 66.02%. Keep over v6.6 only if validation HM is > 2 points higher (> 70.25%). The v14 follow-up weight search already showed 68.66% for these three, so the expected outcome is +0.4, inside noise; a third member also means 66 weightings are tried instead of 11, which makes the validation number slightly more optimistic.",
+  "_result": "Best validation HM of the v6 ensembles, but not a win by the 2-point rule over v6.6: validation HM 68.66% (split seed 42) vs v6.6 68.25% (+0.41, needed > 70.25%), v6.4 67.64% (+1.02), v6.5 67.12% (+1.54) and v6.3 66.02% (+2.64). Weights 0.2 on v5.13, 0.3 on ConvNeXt-Base, 0.5 on ConvNeXt-Base 336; gamma 6.4. Members alone on this split: v5.13 58.37%, ConvNeXt-Base 57.34%, ConvNeXt-Base 336 63.58%. Test (reported only): HM 77.07% (seen 67.55, unseen 89.71) vs v6.6 75.48%, v6.5 76.03%, v6.3 74.99%, v6.4 74.62%. train/ensemble.py was extended to three or more members for this run; v6.6 re-run with the new code gave byte-identical scores, and the app's EnsembleRunModel reproduces this run's saved test scores (max difference 0.008 log-probability on 6 images).",
+  "version": "v6.7",
+  "title": "three_member_ensemble",
+  "method": "ensemble",
+  "seed": 42,
+  "members": [
+    {
+      "run": "runs/vlm/v5.13"
+    },
+    {
+      "run": "runs/baseline/aniq_baseline_independent_convnext_base"
+    },
+    {
+      "run": "runs/baseline/aniq_independent_convnext_base_336_1split"
+    }
+  ],
+  "ensemble": {
+    "_note": "One weight per member (v5.13, ConvNeXt-Base, ConvNeXt-Base 336), each a multiple of the grid step 0.1, summing to 1; a weight of 0 drops that member, so every two-member ensemble of these runs is included.",
+    "weight_grid": [
+      0.0,
+      1.0001,
+      0.1
+    ]
+  },
+  "validation": {
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      15.0,
+      0.1
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 1,
+    "_note": "Same split procedure, seed and settings as v5. gamma is in log-probability units here (both members are on the log-prob scale), so the grid is 0-15 in steps of 0.1; v5's 0.0725 cosine corresponds to 7.25."
+  },
+  "evaluation": {
+    "_note": "Unchanged.",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "output_dir": "runs/vlm/v6.7"
+}

@@ -6,6 +6,8 @@ Each member's scores are put on a common scale, log-probabilities over the 333 p
     CLIP runs:  log_softmax(logit_scale * cosine)
     CNN runs:   log_softmax(log P(crop) + log P(disease))     (renormalised over the 333 pairs)
 and combined as  w * member_1 + (1 - w) * member_2.  The weight w and gamma are chosen on the validation split.
+With three or more members (v6.7+) the combination is  sum_k w_k * member_k  with the weights on the simplex
+(each a multiple of the weight grid's step, summing to 1), all combinations tried with every gamma.
 
 Validation scores: each member is retrained on the validation split's training part (same split procedure and seed
 as the members used) for the epoch count it selected, and its scores on the validation images are computed. They are
@@ -14,6 +16,7 @@ member's saved scores.npz (its final model, refit on all training data), so no m
 """
 
 import argparse
+import itertools
 import json
 import shutil
 
@@ -90,6 +93,16 @@ def member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs, sam
     raise ValueError(f"ensemble does not support member method {method!r}")
 
 
+def weight_combos(n_members: int, weight_grid) -> list[tuple[float, ...]]:
+    """Every weighting tried, one weight per member, summing to 1. Two members: the first member's weight runs over
+    the grid, as always. More: all points of the simplex whose coordinates are multiples of the grid's step."""
+    if n_members == 2:
+        return [(float(w), float(1 - w)) for w in np.round(np.arange(*weight_grid), 4)]
+    n = round(1 / weight_grid[2])
+    combos = [c + (n - sum(c),) for c in itertools.product(range(n + 1), repeat=n_members - 1) if sum(c) <= n]
+    return [tuple(round(x / n, 4) for x in c) for c in combos]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
@@ -131,41 +144,48 @@ def main():
         members.append({"name": run_dir.name, "method": mcfg["method"], "val": to_logprob(val, mcfg["method"]),
                         "test": {s: to_logprob(test[f"{s}_scores"], mcfg["method"]) for s in ("test_seen", "test_unseen")},
                         "labels": {s: test[f"{s}_labels"] for s in ("test_seen", "test_unseen")}})
-    assert len(members) == 2, "this script mixes exactly two members"
-    a, b = members
+    assert len(members) >= 2, "an ensemble needs at least two members"
+    names = [m["name"] for m in members]
 
-    # ---- choose the weight and gamma on validation ----
+    def mixed(ws, key, subset=None):  # sum_k w_k * member_k (two members: w * a + (1 - w) * b, as before)
+        return sum(w * (m[key] if subset is None else m[key][subset]) for w, m in zip(ws, members))
+
+    # ---- choose the weights and gamma on validation ----
     hidden = pairs["is_unseen"].to_numpy() if vcfg["exclude_real_unseen_from_label_space"] else np.zeros(len(pairs), bool)
     val_pairs = pairs.assign(is_unseen=~pairs["pair_id"].isin(set(fit_df["pair_id"])))
     y_vs, y_vu = val_seen["pair_id"].to_numpy(), val_unseen["pair_id"].to_numpy()
-    weights = np.round(np.arange(*cfg["ensemble"]["weight_grid"]), 4)
+    combos = weight_combos(len(members), cfg["ensemble"]["weight_grid"])
     gammas = np.round(np.arange(*vcfg["gamma_grid"]), 4)
-    grid = np.zeros((len(weights), len(gammas)))
-    for i, w in enumerate(weights):
-        s = w * a["val"] + (1 - w) * b["val"]
+    grid = np.zeros((len(combos), len(gammas)))  # two members: one row per weight on the first member
+    for i, ws in enumerate(combos):
+        s = mixed(ws, "val")
         s[:, hidden] = -1e9
         grid[i] = [evaluate(s[:n_vs], y_vs, s[n_vs:], y_vu, val_pairs, g, (1,))["harmonic_mean_top1"] for g in gammas]
     i, j = np.unravel_index(grid.argmax(), grid.shape)
-    w, gamma = float(weights[i]), float(gammas[j])
-    alone = {a["name"]: float(grid[np.argmin(np.abs(weights - 1))].max()), b["name"]: float(grid[np.argmin(np.abs(weights))].max())}
-    print(f"selected weight {w} on {a['name']} ({1 - w:.2f} on {b['name']}), gamma {gamma}: val HM {grid[i, j]:.2%}  "
+    ws, gamma = combos[i], float(gammas[j])
+    w = ws[0]
+    alone = {n: float(grid[np.argmin([abs(c[k] - 1) for c in combos])].max()) for k, n in enumerate(names)}
+    chosen = (f"weight {w} on {names[0]} ({1 - w:.2f} on {names[1]})" if len(members) == 2
+              else "weights " + ", ".join(f"{x} on {n}" for x, n in zip(ws, names)))
+    print(f"selected {chosen}, gamma {gamma}: val HM {grid[i, j]:.2%}  "
           f"(members alone, same split: {', '.join(f'{k} {v:.2%}' for k, v in alone.items())})", flush=True)
 
     # ---- test once ----
-    scores = {s: w * a["test"][s] + (1 - w) * b["test"][s] for s in ("test_seen", "test_unseen")}
-    labels = a["labels"]
-    assert all((labels[s] == b["labels"][s]).all() for s in labels), "members' test images are not in the same order"
+    scores = {s: mixed(ws, "test", s) for s in ("test_seen", "test_unseen")}
+    labels = members[0]["labels"]
+    assert all((labels[s] == m["labels"][s]).all() for m in members[1:] for s in labels), "members' test images are not in the same order"
     files = {s: df[df["split"] == s]["file"].to_numpy() for s in scores}
     top_k = tuple(ev["top_k"])
     result = evaluate(scores["test_seen"], labels["test_seen"], scores["test_unseen"], labels["test_unseen"], pairs, gamma, top_k)
     no_cal = evaluate(scores["test_seen"], labels["test_seen"], scores["test_unseen"], labels["test_unseen"], pairs, 0.0, top_k)
-    result.update(version=cfg["version"], weight=w, members=[m["name"] for m in members],
-                  val={"weight": w, "gamma": gamma, "val_hm": round(float(grid[i, j]), 4), "members_alone_val_hm": alone},
+    # "weight" (the first member's) is what two-member runs have always stored; "weights" lists every member's.
+    result.update(version=cfg["version"], weight=w, weights=list(ws), members=names,
+                  val={"weight": w, "weights": list(ws), "gamma": gamma, "val_hm": round(float(grid[i, j]), 4), "members_alone_val_hm": alone},
                   harmonic_mean_top1_gamma0=no_cal["harmonic_mean_top1"])
     print("\nTest, uncalibrated:\n" + format_summary(no_cal))
     print("\nTest, gamma from validation:\n" + format_summary(result))
     save_test_outputs(out, result, scores, labels, files, pairs, gamma)
-    np.save(out / "val_hm_grid.npy", grid)
+    np.save(out / "val_hm_grid.npy", grid)  # weight combinations (in weight_combos order) x gammas
     print(f"Saved to {out}")
 
 
