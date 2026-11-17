@@ -535,8 +535,8 @@ def member_run(path: str) -> dict:
 
 
 class EnsembleRunModel:
-    """An ensemble run (train/ensemble.py): w * logprob(member 1) + (1 - w) * logprob(member 2), with the weight and
-    gamma chosen on validation. Loads both members; retrieval uses the first member's image features."""
+    """An ensemble run (train/ensemble.py): sum_k w_k * logprob(member k), with the weights and gamma chosen on
+    validation (two members: w and 1 - w). Loads every member; retrieval uses the first member's image features."""
 
     logit_scale = 1.0  # scores are log-probabilities
     score_help = "Weighted sum of the members' log-probabilities, after calibration"
@@ -550,17 +550,19 @@ class EnsembleRunModel:
         self.run, self.pairs = run, pairs
         self.gamma = float(run["metrics"].get("gamma", 0.0))
         self.weight = float(run["metrics"]["weight"])
+        # Runs from before three-member ensembles store only the first member's weight.
+        self.weights = [float(w) for w in run["metrics"].get("weights", [self.weight, 1 - self.weight])]
         self.members = [member_run(m["run"]) for m in run["cfg"]["members"]]
+        assert len(self.weights) == len(self.members), "metrics.json weights do not match the config's members"
         self.models = [build_run_model(m, pairs) for m in self.members]
 
     def predict(self, src):
         from dpd.ensemble import to_logprob
 
         data = Path(src).read_bytes() if isinstance(src, (str, Path)) else src.read()
-        (emb, a), (_, b) = (m.predict(io.BytesIO(data)) for m in self.models)
-        mixed = (self.weight * to_logprob(a, self.members[0]["method"])
-                 + (1 - self.weight) * to_logprob(b, self.members[1]["method"]))
-        return emb, mixed
+        outs = [m.predict(io.BytesIO(data)) for m in self.models]
+        mixed = sum(w * to_logprob(s, m["method"]) for w, (_, s), m in zip(self.weights, outs, self.members))
+        return outs[0][0], mixed
 
     def train_bank(self, train) -> np.ndarray:
         return self.models[0].train_bank(train)
