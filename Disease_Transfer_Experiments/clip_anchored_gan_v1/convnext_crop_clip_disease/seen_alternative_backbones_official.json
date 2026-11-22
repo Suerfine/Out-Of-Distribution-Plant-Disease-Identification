@@ -1,0 +1,91 @@
+{
+  "seen_images": 2000,
+  "crop_model": "ConvNeXt-Base",
+  "gate": "disease-only CLIP + GAN",
+  "results": {
+    "ConvNeXt-Base": {
+      "disease_only_correct": 1485,
+      "oracle_seen_correct": 1479,
+      "gates": {
+        "0": {
+          "routed": 1965,
+          "top1": 1458,
+          "top3": 1737,
+          "same_crop_wrong_disease": 405,
+          "fixes": 0,
+          "regressions": 0,
+          "seen": 0.729,
+          "unseen": 0.48342541436464087,
+          "h": 0.5813423620066621
+        },
+        "3": {
+          "routed": 1747,
+          "top1": 1336,
+          "top3": 1567,
+          "same_crop_wrong_disease": 338,
+          "fixes": 0,
+          "regressions": 0,
+          "seen": 0.668,
+          "unseen": 0.8280386740331491,
+          "h": 0.7394592718154389
+        }
+      }
+    },
+    "EfficientNetV2-L": {
+      "disease_only_correct": 1328,
+      "oracle_seen_correct": 1356,
+      "gates": {
+        "0": {
+          "routed": 1965,
+          "top1": 1338,
+          "top3": 1716,
+          "same_crop_wrong_disease": 524,
+          "fixes": 77,
+          "regressions": 197,
+          "seen": 0.669,
+          "unseen": 0.48342541436464087,
+          "h": 0.5612712079735749
+        },
+        "3": {
+          "routed": 1747,
+          "top1": 1241,
+          "top3": 1570,
+          "same_crop_wrong_disease": 433,
+          "fixes": 67,
+          "regressions": 162,
+          "seen": 0.6205,
+          "unseen": 0.8280386740331491,
+          "h": 0.7094018357231807
+        }
+      }
+    },
+    "BiT-R50": {
+      "disease_only_correct": 1287,
+      "oracle_seen_correct": 1322,
+      "gates": {
+        "0": {
+          "routed": 1965,
+          "top1": 1306,
+          "top3": 1669,
+          "same_crop_wrong_disease": 547,
+          "fixes": 84,
+          "regressions": 236,
+          "seen": 0.653,
+          "unseen": 0.48342541436464087,
+          "h": 0.5555609573490591
+        },
+        "3": {
+          "routed": 1747,
+          "top1": 1209,
+          "top3": 1533,
+          "same_crop_wrong_disease": 458,
+          "fixes": 76,
+          "regressions": 203,
+          "seen": 0.6045,
+          "unseen": 0.8280386740331491,
+          "h": 0.698828433083484
+        }
+      }
+    }
+  }
+}

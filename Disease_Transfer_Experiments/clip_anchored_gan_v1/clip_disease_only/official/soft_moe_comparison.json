@@ -1,0 +1,238 @@
+{
+  "selection": {
+    "model": {
+      "center": [
+        3.9951891899108887,
+        4.073358058929443,
+        3.1721792221069336
+      ],
+      "scale": [
+        4.149423122406006,
+        2.396402359008789,
+        2.9508793354034424
+      ],
+      "weight": [
+        0.8115521888746754,
+        0.7093345342501981,
+        0.17819229486113364
+      ],
+      "bias": 0.6539384818369006
+    },
+    "seen_temperature": 2.0,
+    "unseen_temperature": 8.0
+  },
+  "development": {
+    "folds": [
+      {
+        "two_way": {
+          "seen_correct": 115,
+          "unseen_correct": 45,
+          "seen": 0.8041958041958042,
+          "unseen": 0.4639175257731959,
+          "h": 0.588402501421262
+        },
+        "plain_gap": {
+          "seen_correct": 111,
+          "unseen_correct": 15,
+          "seen": 0.7762237762237763,
+          "unseen": 0.15463917525773196,
+          "h": 0.2578996282527881
+        },
+        "learned_hard": {
+          "seen_correct": 114,
+          "unseen_correct": 34,
+          "seen": 0.7972027972027972,
+          "unseen": 0.35051546391752575,
+          "h": 0.48693467336683416
+        },
+        "learned_soft": {
+          "seen_correct": 115,
+          "unseen_correct": 35,
+          "seen": 0.8041958041958042,
+          "unseen": 0.36082474226804123,
+          "h": 0.4981435643564356
+        }
+      },
+      {
+        "two_way": {
+          "seen_correct": 197,
+          "unseen_correct": 27,
+          "seen": 0.8873873873873874,
+          "unseen": 0.1956521739130435,
+          "h": 0.32061482820976495
+        },
+        "plain_gap": {
+          "seen_correct": 202,
+          "unseen_correct": 21,
+          "seen": 0.9099099099099099,
+          "unseen": 0.15217391304347827,
+          "h": 0.26074128711045547
+        },
+        "learned_hard": {
+          "seen_correct": 189,
+          "unseen_correct": 63,
+          "seen": 0.8513513513513513,
+          "unseen": 0.45652173913043476,
+          "h": 0.5943396226415094
+        },
+        "learned_soft": {
+          "seen_correct": 198,
+          "unseen_correct": 39,
+          "seen": 0.8918918918918919,
+          "unseen": 0.2826086956521739,
+          "h": 0.42921460730365185
+        }
+      },
+      {
+        "two_way": {
+          "seen_correct": 197,
+          "unseen_correct": 32,
+          "seen": 0.9656862745098039,
+          "unseen": 0.3902439024390244,
+          "h": 0.555859271669165
+        },
+        "plain_gap": {
+          "seen_correct": 195,
+          "unseen_correct": 27,
+          "seen": 0.9558823529411765,
+          "unseen": 0.32926829268292684,
+          "h": 0.48981300586101034
+        },
+        "learned_hard": {
+          "seen_correct": 190,
+          "unseen_correct": 43,
+          "seen": 0.9313725490196079,
+          "unseen": 0.524390243902439,
+          "h": 0.6709921156373194
+        },
+        "learned_soft": {
+          "seen_correct": 195,
+          "unseen_correct": 33,
+          "seen": 0.9558823529411765,
+          "unseen": 0.4024390243902439,
+          "h": 0.5664114074465276
+        }
+      },
+      {
+        "two_way": {
+          "seen_correct": 143,
+          "unseen_correct": 25,
+          "seen": 0.8614457831325302,
+          "unseen": 0.24509803921568626,
+          "h": 0.38161827497865075
+        },
+        "plain_gap": {
+          "seen_correct": 143,
+          "unseen_correct": 30,
+          "seen": 0.8614457831325302,
+          "unseen": 0.29411764705882354,
+          "h": 0.4385157927016252
+        },
+        "learned_hard": {
+          "seen_correct": 137,
+          "unseen_correct": 38,
+          "seen": 0.8253012048192772,
+          "unseen": 0.37254901960784315,
+          "h": 0.5133616014199783
+        },
+        "learned_soft": {
+          "seen_correct": 145,
+          "unseen_correct": 27,
+          "seen": 0.8734939759036144,
+          "unseen": 0.2647058823529412,
+          "h": 0.4062889165628892
+        }
+      },
+      {
+        "two_way": {
+          "seen_correct": 101,
+          "unseen_correct": 35,
+          "seen": 0.7952755905511811,
+          "unseen": 0.30701754385964913,
+          "h": 0.4430102136725359
+        },
+        "plain_gap": {
+          "seen_correct": 102,
+          "unseen_correct": 33,
+          "seen": 0.8031496062992126,
+          "unseen": 0.2894736842105263,
+          "h": 0.4255641949554333
+        },
+        "learned_hard": {
+          "seen_correct": 95,
+          "unseen_correct": 55,
+          "seen": 0.7480314960629921,
+          "unseen": 0.4824561403508772,
+          "h": 0.5865843390401347
+        },
+        "learned_soft": {
+          "seen_correct": 103,
+          "unseen_correct": 47,
+          "seen": 0.8110236220472441,
+          "unseen": 0.41228070175438597,
+          "h": 0.5466659138388572
+        }
+      }
+    ],
+    "development_fit": {
+      "two_way": {
+        "seen_correct": 753,
+        "unseen_correct": 164,
+        "seen": 0.8735498839907193,
+        "unseen": 0.3076923076923077,
+        "h": 0.45508801087859796
+      },
+      "plain_gap": {
+        "seen_correct": 753,
+        "unseen_correct": 126,
+        "seen": 0.8735498839907193,
+        "unseen": 0.23639774859287055,
+        "h": 0.372099042867984
+      },
+      "learned_hard": {
+        "seen_correct": 729,
+        "unseen_correct": 264,
+        "seen": 0.845707656612529,
+        "unseen": 0.49530956848030017,
+        "h": 0.6247303712720632
+      },
+      "learned_soft": {
+        "seen_correct": 758,
+        "unseen_correct": 186,
+        "seen": 0.8793503480278422,
+        "unseen": 0.34896810506566606,
+        "h": 0.49965092336970585
+      }
+    }
+  },
+  "official": {
+    "two_way": {
+      "seen_correct": 1447,
+      "unseen_correct": 863,
+      "seen": 0.7235,
+      "unseen": 0.5959944751381215,
+      "h": 0.6535866741197135
+    },
+    "plain_gap": {
+      "seen_correct": 1458,
+      "unseen_correct": 700,
+      "seen": 0.729,
+      "unseen": 0.48342541436464087,
+      "h": 0.5813423620066621
+    },
+    "learned_hard": {
+      "seen_correct": 1374,
+      "unseen_correct": 1090,
+      "seen": 0.687,
+      "unseen": 0.7527624309392266,
+      "h": 0.7183793366769381
+    },
+    "learned_soft": {
+      "seen_correct": 1386,
+      "unseen_correct": 1010,
+      "seen": 0.693,
+      "unseen": 0.6975138121546961,
+      "h": 0.6952495798285939
+    }
+  }
+}

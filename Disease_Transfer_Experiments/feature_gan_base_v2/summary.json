@@ -1,0 +1,238 @@
+{
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "epoch": 3,
+  "baseline": {
+    "seen": {
+      "correct": 773,
+      "images": 862
+    },
+    "held_out": {
+      "correct": 24,
+      "images": 533
+    },
+    "synthesized_pairs": {
+      "correct": 8,
+      "images": 137
+    },
+    "untouched_pairs": {
+      "correct": 16,
+      "images": 396
+    }
+  },
+  "budgets": {
+    "32": {
+      "gan": {
+        "seen": {
+          "correct_by_seed": [
+            777,
+            774,
+            776
+          ],
+          "images": 862
+        },
+        "held_out": {
+          "correct_by_seed": [
+            22,
+            19,
+            19
+          ],
+          "images": 533
+        },
+        "synthesized_pairs": {
+          "correct_by_seed": [
+            9,
+            10,
+            10
+          ],
+          "images": 137
+        },
+        "untouched_pairs": {
+          "correct_by_seed": [
+            13,
+            9,
+            9
+          ],
+          "images": 396
+        }
+      },
+      "real_only": {
+        "seen": {
+          "correct_by_seed": [
+            776,
+            776,
+            775
+          ],
+          "images": 862
+        },
+        "held_out": {
+          "correct_by_seed": [
+            23,
+            23,
+            23
+          ],
+          "images": 533
+        },
+        "synthesized_pairs": {
+          "correct_by_seed": [
+            8,
+            8,
+            8
+          ],
+          "images": 137
+        },
+        "untouched_pairs": {
+          "correct_by_seed": [
+            15,
+            15,
+            15
+          ],
+          "images": 396
+        }
+      }
+    },
+    "96": {
+      "gan": {
+        "seen": {
+          "correct_by_seed": [
+            776,
+            772,
+            775
+          ],
+          "images": 862
+        },
+        "held_out": {
+          "correct_by_seed": [
+            19,
+            19,
+            19
+          ],
+          "images": 533
+        },
+        "synthesized_pairs": {
+          "correct_by_seed": [
+            9,
+            10,
+            10
+          ],
+          "images": 137
+        },
+        "untouched_pairs": {
+          "correct_by_seed": [
+            10,
+            9,
+            9
+          ],
+          "images": 396
+        }
+      },
+      "real_only": {
+        "seen": {
+          "correct_by_seed": [
+            776,
+            775,
+            777
+          ],
+          "images": 862
+        },
+        "held_out": {
+          "correct_by_seed": [
+            23,
+            23,
+            22
+          ],
+          "images": 533
+        },
+        "synthesized_pairs": {
+          "correct_by_seed": [
+            8,
+            8,
+            8
+          ],
+          "images": 137
+        },
+        "untouched_pairs": {
+          "correct_by_seed": [
+            15,
+            15,
+            14
+          ],
+          "images": 396
+        }
+      }
+    },
+    "192": {
+      "gan": {
+        "seen": {
+          "correct_by_seed": [
+            773,
+            774,
+            771
+          ],
+          "images": 862
+        },
+        "held_out": {
+          "correct_by_seed": [
+            20,
+            18,
+            19
+          ],
+          "images": 533
+        },
+        "synthesized_pairs": {
+          "correct_by_seed": [
+            11,
+            10,
+            11
+          ],
+          "images": 137
+        },
+        "untouched_pairs": {
+          "correct_by_seed": [
+            9,
+            8,
+            8
+          ],
+          "images": 396
+        }
+      },
+      "real_only": {
+        "seen": {
+          "correct_by_seed": [
+            776,
+            777,
+            775
+          ],
+          "images": 862
+        },
+        "held_out": {
+          "correct_by_seed": [
+            23,
+            22,
+            22
+          ],
+          "images": 533
+        },
+        "synthesized_pairs": {
+          "correct_by_seed": [
+            8,
+            8,
+            8
+          ],
+          "images": 137
+        },
+        "untouched_pairs": {
+          "correct_by_seed": [
+            15,
+            14,
+            14
+          ],
+          "images": 396
+        }
+      }
+    }
+  }
+}

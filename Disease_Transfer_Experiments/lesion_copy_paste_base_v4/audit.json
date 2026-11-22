@@ -1,0 +1,15 @@
+{
+  "novel_pairs": {
+    "apple / bacterial_spot": 18,
+    "cassava / powdery_mildew": 24,
+    "cassava / bacterial_spot": 18,
+    "cherry / brown_spot": 24,
+    "cherry / bacterial_spot": 18,
+    "peach / brown_spot": 24,
+    "peach / powdery_mildew": 24,
+    "sugarcane / powdery_mildew": 24,
+    "sugarcane / bacterial_spot": 18
+  },
+  "total_composites": 1028,
+  "proposals_excluded_by_test_overlap": 0
+}

@@ -1,0 +1,152 @@
+[
+  {
+    "epoch": 1,
+    "train_loss": 1.7036712467920334,
+    "train_top1": 0.7316786852255576,
+    "seconds": 386.03099999999904,
+    "lr_backbone": 1.6666666666666667e-05,
+    "lr_head": 0.00016666666666666666,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 1
+  },
+  {
+    "epoch": 2,
+    "train_loss": 0.9663270679412623,
+    "train_top1": 0.9389569008888143,
+    "seconds": 368.3129999999983,
+    "lr_backbone": 3.3333333333333335e-05,
+    "lr_head": 0.0003333333333333333,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 3,
+    "train_loss": 0.8643261254603444,
+    "train_top1": 0.9647828274358544,
+    "seconds": 366.625,
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 4,
+    "train_loss": 0.8057315076994812,
+    "train_top1": 0.9802113030353848,
+    "seconds": 358.5629999999983,
+    "lr_backbone": 4.983264935411309e-05,
+    "lr_head": 0.0004983264935411309,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 1
+  },
+  {
+    "epoch": 5,
+    "train_loss": 0.7791357843763533,
+    "train_top1": 0.987590139191682,
+    "seconds": 365.3899999999994,
+    "lr_backbone": 4.933286054685064e-05,
+    "lr_head": 0.0004933286054685064,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 6,
+    "train_loss": 0.7564285856234474,
+    "train_top1": 0.9942981720610431,
+    "seconds": 362.2029999999977,
+    "lr_backbone": 4.850739236445124e-05,
+    "lr_head": 0.00048507392364451236,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 7,
+    "train_loss": 0.7488594099956732,
+    "train_top1": 0.9954720778131813,
+    "seconds": 373.53099999999904,
+    "lr_backbone": 4.7367407848004456e-05,
+    "lr_head": 0.00047367407848004456,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 8,
+    "train_loss": 0.7387856946942312,
+    "train_top1": 0.9973167868522556,
+    "seconds": 363.20300000000134,
+    "lr_backbone": 4.592832333247018e-05,
+    "lr_head": 0.0004592832333247018,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 9,
+    "train_loss": 0.7342650275112058,
+    "train_top1": 0.9974844876739896,
+    "seconds": 365.76600000000326,
+    "lr_backbone": 4.42095999671947e-05,
+    "lr_head": 0.00044209599967194704,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 10,
+    "train_loss": 0.7323483450589076,
+    "train_top1": 0.9973167868522556,
+    "seconds": 359.67199999999866,
+    "lr_backbone": 4.223448053725116e-05,
+    "lr_head": 0.0004223448053725116,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 11,
+    "train_loss": 0.726603493661703,
+    "train_top1": 0.9994968975347979,
+    "seconds": 379.6100000000006,
+    "lr_backbone": 4.002967514464396e-05,
+    "lr_head": 0.00040029675144643954,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 12,
+    "train_loss": 0.7275003779260341,
+    "train_top1": 0.9988260942478618,
+    "seconds": 362.2970000000023,
+    "lr_backbone": 3.7625e-05,
+    "lr_head": 0.00037624999999999996,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 13,
+    "train_loss": 0.7255382579823938,
+    "train_top1": 0.9991614958913299,
+    "seconds": 365.25,
+    "lr_backbone": 3.5052974209469134e-05,
+    "lr_head": 0.00035052974209469134,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 14,
+    "train_loss": 0.723182785766908,
+    "train_top1": 0.999664598356532,
+    "seconds": 360.0149999999994,
+    "lr_backbone": 3.234838000959949e-05,
+    "lr_head": 0.0003234838000959949,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  },
+  {
+    "epoch": 15,
+    "train_loss": 0.7211763415683661,
+    "train_top1": 0.999832299178266,
+    "seconds": 366.14100000000326,
+    "lr_backbone": 2.954779239725653e-05,
+    "lr_head": 0.0002954779239725653,
+    "optimizer_steps": 187,
+    "amp_skipped_steps": 0
+  }
+]

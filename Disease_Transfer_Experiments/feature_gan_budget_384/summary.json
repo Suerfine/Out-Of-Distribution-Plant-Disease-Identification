@@ -1,0 +1,133 @@
+{
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "epoch": 3,
+  "baseline": {
+    "seen": 773,
+    "held_out": 24,
+    "held_out_macro": 0.08222222222222222,
+    "per_pair": {
+      "apple_mosaic_virus": {
+        "correct": 0,
+        "images": 40
+      },
+      "apple_scab": {
+        "correct": 0,
+        "images": 40
+      },
+      "blackgram_anthracnose": {
+        "correct": 0,
+        "images": 14
+      },
+      "cassava_mosaic": {
+        "correct": 0,
+        "images": 40
+      },
+      "cauliflower_downy_mildew": {
+        "correct": 1,
+        "images": 8
+      },
+      "citrus_canker": {
+        "correct": 0,
+        "images": 23
+      },
+      "corn_spot": {
+        "correct": 0,
+        "images": 40
+      },
+      "corn_yellowing": {
+        "correct": 0,
+        "images": 14
+      },
+      "mango_powdery_mildew": {
+        "correct": 8,
+        "images": 18
+      },
+      "paddy_brown_spot": {
+        "correct": 0,
+        "images": 40
+      },
+      "papaya_bacterial_spot": {
+        "correct": 0,
+        "images": 14
+      },
+      "papaya_curl": {
+        "correct": 0,
+        "images": 14
+      },
+      "peach_monillia_laxa": {
+        "correct": 7,
+        "images": 8
+      },
+      "strawberry_scorch": {
+        "correct": 7,
+        "images": 40
+      },
+      "sugarcane_smut": {
+        "correct": 0,
+        "images": 9
+      },
+      "tomato_leaf_blight": {
+        "correct": 0,
+        "images": 37
+      },
+      "tomato_curl": {
+        "correct": 0,
+        "images": 14
+      },
+      "tomato_mosaic_virus": {
+        "correct": 1,
+        "images": 40
+      },
+      "tomato_septoria_leaf_spot": {
+        "correct": 0,
+        "images": 40
+      },
+      "tomato_spider_mites": {
+        "correct": 0,
+        "images": 40
+      }
+    }
+  },
+  "budgets": {
+    "384": {
+      "gan": {
+        "seen": [
+          771,
+          768,
+          773
+        ],
+        "held_out": [
+          40,
+          43,
+          29
+        ],
+        "held_out_macro": [
+          0.10559782608695652,
+          0.1158756038647343,
+          0.0933756038647343
+        ]
+      },
+      "real_only": {
+        "seen": [
+          775,
+          777,
+          776
+        ],
+        "held_out": [
+          23,
+          22,
+          21
+        ],
+        "held_out_macro": [
+          0.07597222222222222,
+          0.07472222222222222,
+          0.07347222222222222
+        ]
+      }
+    }
+  }
+}

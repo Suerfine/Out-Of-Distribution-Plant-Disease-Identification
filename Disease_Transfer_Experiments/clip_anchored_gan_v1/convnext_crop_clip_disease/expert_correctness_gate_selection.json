@@ -1,0 +1,47 @@
+{
+  "split": 42,
+  "calibration_target": 315,
+  "fit_answerable": 1135,
+  "features": [
+    "clip_seen_unseen_gap",
+    "convnext_seen_margin",
+    "clip_unseen_margin"
+  ],
+  "model": {
+    "center": [
+      4.306355953216553,
+      4.524010181427002,
+      3.407008647918701
+    ],
+    "scale": [
+      4.353324890136719,
+      2.3065602779388428,
+      2.9966888427734375
+    ],
+    "weight": [
+      0.7651292046181281,
+      0.7970979812833265,
+      -0.015986422033999356
+    ],
+    "bias": 1.01962946544599
+  },
+  "cutoffs": {
+    "current": 3.0,
+    "retuned_gap": 2.917720794677735,
+    "expert_correctness": 0.6827164042626915
+  },
+  "development_correct": {
+    "current": [
+      593,
+      315
+    ],
+    "retuned_gap": [
+      598,
+      315
+    ],
+    "expert_correctness": [
+      668,
+      315
+    ]
+  }
+}

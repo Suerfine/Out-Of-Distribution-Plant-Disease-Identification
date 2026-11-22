@@ -1,0 +1,11 @@
+{
+  "chat_notifications": false,
+  "mode": "hidden resumable background process with checked checkpoint I/O",
+  "run": "runs/full_seed42",
+  "stderr": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\crop_conditioned_base_v1\\logs\\recovery_20261106_230800.stderr.log",
+  "training_recipe_changed": false,
+  "started_utc": "2026-11-06T15:08:00.6673411Z",
+  "progress_interval_minutes": 15,
+  "stdout": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\crop_conditioned_base_v1\\logs\\recovery_20261106_230800.stdout.log",
+  "pid": 37660
+}

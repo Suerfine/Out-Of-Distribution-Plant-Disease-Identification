@@ -1,0 +1,42 @@
+[
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\synthetic\\CDDM_tomato_healthy_90979.png",
+    "disease_id": 33,
+    "recipient": "CDDM_tomato_healthy_90979.jpg"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\synthetic\\CDDM_tomato_healthy_90485.png",
+    "disease_id": 33,
+    "recipient": "CDDM_tomato_healthy_90485.jpg"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\synthetic\\CDDM_tomato_healthy_93057.png",
+    "disease_id": 33,
+    "recipient": "CDDM_tomato_healthy_93057.jpg"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\synthetic\\CDDM_tomato_healthy_90229.png",
+    "disease_id": 33,
+    "recipient": "CDDM_tomato_healthy_90229.jpg"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\synthetic\\CDDM_tomato_healthy_89796.png",
+    "disease_id": 33,
+    "recipient": "CDDM_tomato_healthy_89796.jpg"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\synthetic\\CDDM_tomato_healthy_92195.png",
+    "disease_id": 33,
+    "recipient": "CDDM_tomato_healthy_92195.jpg"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\synthetic\\CDDM_tomato_healthy_89915.png",
+    "disease_id": 33,
+    "recipient": "CDDM_tomato_healthy_89915.jpg"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\synthetic\\CDDM_tomato_healthy_91199.png",
+    "disease_id": 33,
+    "recipient": "CDDM_tomato_healthy_91199.jpg"
+  }
+]

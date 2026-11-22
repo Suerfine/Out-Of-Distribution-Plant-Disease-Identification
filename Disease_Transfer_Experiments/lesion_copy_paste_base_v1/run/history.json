@@ -1,0 +1,71 @@
+[
+  {
+    "epoch": 1,
+    "seen": {
+      "images": 862,
+      "correct": 774,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 27,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 10,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 17,
+      "baseline_correct": 16
+    }
+  },
+  {
+    "epoch": 2,
+    "seen": {
+      "images": 862,
+      "correct": 775,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 25,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 10,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 15,
+      "baseline_correct": 16
+    }
+  },
+  {
+    "epoch": 3,
+    "seen": {
+      "images": 862,
+      "correct": 776,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 25,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 10,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 15,
+      "baseline_correct": 16
+    }
+  }
+]

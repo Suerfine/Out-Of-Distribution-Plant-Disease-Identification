@@ -1,0 +1,132 @@
+{
+  "baseline": {
+    "seen": {
+      "correct": 773,
+      "images": 862
+    },
+    "held_out": {
+      "correct": 24,
+      "images": 533
+    },
+    "synthesized_pairs": {
+      "correct": 8,
+      "images": 137
+    },
+    "untouched_pairs": {
+      "correct": 16,
+      "images": 396
+    }
+  },
+  "gan": [
+    {
+      "seen": {
+        "correct": 773,
+        "images": 862
+      },
+      "held_out": {
+        "correct": 24,
+        "images": 533
+      },
+      "synthesized_pairs": {
+        "correct": 9,
+        "images": 137
+      },
+      "untouched_pairs": {
+        "correct": 15,
+        "images": 396
+      }
+    },
+    {
+      "seen": {
+        "correct": 773,
+        "images": 862
+      },
+      "held_out": {
+        "correct": 24,
+        "images": 533
+      },
+      "synthesized_pairs": {
+        "correct": 9,
+        "images": 137
+      },
+      "untouched_pairs": {
+        "correct": 15,
+        "images": 396
+      }
+    },
+    {
+      "seen": {
+        "correct": 777,
+        "images": 862
+      },
+      "held_out": {
+        "correct": 22,
+        "images": 533
+      },
+      "synthesized_pairs": {
+        "correct": 9,
+        "images": 137
+      },
+      "untouched_pairs": {
+        "correct": 13,
+        "images": 396
+      }
+    }
+  ],
+  "real_only": [
+    {
+      "seen": {
+        "correct": 773,
+        "images": 862
+      },
+      "held_out": {
+        "correct": 23,
+        "images": 533
+      },
+      "synthesized_pairs": {
+        "correct": 8,
+        "images": 137
+      },
+      "untouched_pairs": {
+        "correct": 15,
+        "images": 396
+      }
+    },
+    {
+      "seen": {
+        "correct": 773,
+        "images": 862
+      },
+      "held_out": {
+        "correct": 22,
+        "images": 533
+      },
+      "synthesized_pairs": {
+        "correct": 8,
+        "images": 137
+      },
+      "untouched_pairs": {
+        "correct": 14,
+        "images": 396
+      }
+    },
+    {
+      "seen": {
+        "correct": 776,
+        "images": 862
+      },
+      "held_out": {
+        "correct": 23,
+        "images": 533
+      },
+      "synthesized_pairs": {
+        "correct": 8,
+        "images": 137
+      },
+      "untouched_pairs": {
+        "correct": 15,
+        "images": 396
+      }
+    }
+  ]
+}

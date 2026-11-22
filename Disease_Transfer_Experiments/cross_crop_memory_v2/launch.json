@@ -1,0 +1,10 @@
+{
+  "started_utc": "2026-11-05T13:02:45.9583109Z",
+  "stderr": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\cross_crop_memory_v2\\logs\\study_20261105_210245.stderr.log",
+  "mode": "hidden resumable background process",
+  "progress_interval_minutes": 15,
+  "chat_notifications": false,
+  "stdout": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\cross_crop_memory_v2\\logs\\study_20261105_210245.stdout.log",
+  "pid": 7296,
+  "exec_session_id": 77639
+}

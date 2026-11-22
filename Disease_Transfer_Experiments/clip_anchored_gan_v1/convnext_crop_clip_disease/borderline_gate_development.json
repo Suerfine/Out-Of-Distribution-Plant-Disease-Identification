@@ -1,0 +1,575 @@
+{
+  "gamma": 3.0,
+  "grid_size": 392,
+  "development_rule": [
+    2.0,
+    6.0,
+    1.0
+  ],
+  "development": {
+    "overrides": 9,
+    "seen_recovered": 7,
+    "unseen_lost": 0
+  },
+  "checks": {
+    "pair_folds": {
+      "overrides": 12,
+      "seen_recovered": 9,
+      "unseen_lost": 1,
+      "folds": [
+        {
+          "fold": "0",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 1,
+          "seen_recovered": 1,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "1",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 3,
+          "seen_recovered": 3,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "2",
+          "rule": [
+            2.0,
+            6.0,
+            2.0
+          ],
+          "overrides": 4,
+          "seen_recovered": 3,
+          "unseen_lost": 1
+        },
+        {
+          "fold": "3",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 3,
+          "seen_recovered": 1,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "4",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 1,
+          "seen_recovered": 1,
+          "unseen_lost": 0
+        }
+      ],
+      "by_source": {
+        "CDDM": {
+          "overrides": 8,
+          "seen_recovered": 6,
+          "unseen_lost": 1
+        },
+        "CPDD": {
+          "overrides": 1,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        "FP": {
+          "overrides": 1,
+          "seen_recovered": 1,
+          "unseen_lost": 0
+        },
+        "MTID": {
+          "overrides": 2,
+          "seen_recovered": 2,
+          "unseen_lost": 0
+        }
+      }
+    },
+    "leave_one_source_out": {
+      "overrides": 27,
+      "seen_recovered": 23,
+      "unseen_lost": 2,
+      "folds": [
+        {
+          "fold": "APPD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "BDPL",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "BLD2",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "BLDI",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "BLSD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "BPLD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "CC",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "CD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "CDC",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "CDDM",
+          "rule": [
+            2.0,
+            6.0,
+            4.0
+          ],
+          "overrides": 25,
+          "seen_recovered": 22,
+          "unseen_lost": 2
+        },
+        {
+          "fold": "CDRD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "CLDI",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "COF",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "COF2",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "COPD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "CPDD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 1,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "CUPD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "DMOS",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "DPD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "ESCA",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "FN",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "FP",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "GD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "GLD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "LSAN",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "MLBD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "MTID",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 1,
+          "seen_recovered": 1,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "OD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "OSF",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "PD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "PDL2",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "PDN",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "PWV2",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "RDD1",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "RDD2",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "SBL",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "SCLD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "SFLD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "SLDD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "TSD",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        {
+          "fold": "VN",
+          "rule": [
+            2.0,
+            6.0,
+            1.0
+          ],
+          "overrides": 0,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        }
+      ],
+      "by_source": {
+        "CDDM": {
+          "overrides": 25,
+          "seen_recovered": 22,
+          "unseen_lost": 2
+        },
+        "CPDD": {
+          "overrides": 1,
+          "seen_recovered": 0,
+          "unseen_lost": 0
+        },
+        "MTID": {
+          "overrides": 1,
+          "seen_recovered": 1,
+          "unseen_lost": 0
+        }
+      }
+    }
+  }
+}

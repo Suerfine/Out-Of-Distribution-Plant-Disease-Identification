@@ -13,8 +13,10 @@ from torch import nn
 from torch.nn import functional as F
 
 HERE = Path(__file__).resolve().parent
-WORKSPACE = HERE.parents[1]
-PROJECT = WORKSPACE/'Out-Of-Distribution-Plant-Disease-Identification'
+PROJECT = HERE.parents[1]
+if not (PROJECT/'dpd').is_dir():
+    PROJECT = PROJECT/'Out-Of-Distribution-Plant-Disease-Identification'
+WORKSPACE = PROJECT.parent
 sys.path.insert(0,str(PROJECT))
 os.environ.setdefault('DPD_ROOT',str(WORKSPACE/'Plant_Disease'))
 
@@ -36,7 +38,7 @@ class AnchoredGenerator(Generator):
         return F.normalize(anchor+delta,dim=1)
 
 
-def train_generator(x,y,conditions,aux,options,anchor_pool=None):
+def train_generator(x,y,conditions,aux,options,anchor_pool=None, *, within_crop_mask=None):
     anchored = anchor_pool is not None
     width = x.shape[1]
     args = (conditions.shape[1],options['noise_dim'],options['hidden'],width)
@@ -67,7 +69,11 @@ def train_generator(x,y,conditions,aux,options,anchor_pool=None):
                 opt_d.step()
             _,labels,cond = draw()
             fake = generate(cond,labels)
-            loss_g = -disc(fake,cond).mean()+options['cls_weight']*F.cross_entropy(aux(fake),labels)
+            logits = aux(fake)
+            loss_g = -disc(fake,cond).mean()+options['cls_weight']*F.cross_entropy(logits,labels)
+            if within_crop_mask is not None:
+                same_crop_logits = logits.masked_fill(~within_crop_mask[labels],float('-inf'))
+                loss_g = loss_g + options['within_crop_weight']*F.cross_entropy(same_crop_logits,labels)
             opt_g.zero_grad(set_to_none=True)
             loss_g.backward()
             opt_g.step()

@@ -1,0 +1,205 @@
+{
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "epoch": 3,
+  "baseline": {
+    "seen": 773,
+    "held_out": 24,
+    "held_out_macro": 0.08222222222222222,
+    "per_pair": {
+      "apple_mosaic_virus": {
+        "correct": 0,
+        "images": 40
+      },
+      "apple_scab": {
+        "correct": 0,
+        "images": 40
+      },
+      "blackgram_anthracnose": {
+        "correct": 0,
+        "images": 14
+      },
+      "cassava_mosaic": {
+        "correct": 0,
+        "images": 40
+      },
+      "cauliflower_downy_mildew": {
+        "correct": 1,
+        "images": 8
+      },
+      "citrus_canker": {
+        "correct": 0,
+        "images": 23
+      },
+      "corn_spot": {
+        "correct": 0,
+        "images": 40
+      },
+      "corn_yellowing": {
+        "correct": 0,
+        "images": 14
+      },
+      "mango_powdery_mildew": {
+        "correct": 8,
+        "images": 18
+      },
+      "paddy_brown_spot": {
+        "correct": 0,
+        "images": 40
+      },
+      "papaya_bacterial_spot": {
+        "correct": 0,
+        "images": 14
+      },
+      "papaya_curl": {
+        "correct": 0,
+        "images": 14
+      },
+      "peach_monillia_laxa": {
+        "correct": 7,
+        "images": 8
+      },
+      "strawberry_scorch": {
+        "correct": 7,
+        "images": 40
+      },
+      "sugarcane_smut": {
+        "correct": 0,
+        "images": 9
+      },
+      "tomato_leaf_blight": {
+        "correct": 0,
+        "images": 37
+      },
+      "tomato_curl": {
+        "correct": 0,
+        "images": 14
+      },
+      "tomato_mosaic_virus": {
+        "correct": 1,
+        "images": 40
+      },
+      "tomato_septoria_leaf_spot": {
+        "correct": 0,
+        "images": 40
+      },
+      "tomato_spider_mites": {
+        "correct": 0,
+        "images": 40
+      }
+    }
+  },
+  "budgets": {
+    "48": {
+      "gan": {
+        "seen": [
+          776,
+          772,
+          771
+        ],
+        "held_out": [
+          29,
+          35,
+          31
+        ],
+        "held_out_macro": [
+          0.09,
+          0.10495169082125602,
+          0.09819703243616287
+        ]
+      },
+      "real_only": {
+        "seen": [
+          776,
+          775,
+          774
+        ],
+        "held_out": [
+          23,
+          22,
+          22
+        ],
+        "held_out_macro": [
+          0.07597222222222222,
+          0.07625,
+          0.07472222222222222
+        ]
+      }
+    },
+    "96": {
+      "gan": {
+        "seen": [
+          774,
+          774,
+          770
+        ],
+        "held_out": [
+          29,
+          39,
+          27
+        ],
+        "held_out_macro": [
+          0.09,
+          0.1108756038647343,
+          0.0908756038647343
+        ]
+      },
+      "real_only": {
+        "seen": [
+          775,
+          778,
+          772
+        ],
+        "held_out": [
+          23,
+          23,
+          23
+        ],
+        "held_out_macro": [
+          0.07749999999999999,
+          0.07749999999999999,
+          0.08097222222222221
+        ]
+      }
+    },
+    "192": {
+      "gan": {
+        "seen": [
+          772,
+          774,
+          770
+        ],
+        "held_out": [
+          33,
+          42,
+          32
+        ],
+        "held_out_macro": [
+          0.09592391304347826,
+          0.1146256038647343,
+          0.09944703243616287
+        ]
+      },
+      "real_only": {
+        "seen": [
+          774,
+          775,
+          775
+        ],
+        "held_out": [
+          22,
+          24,
+          22
+        ],
+        "held_out_macro": [
+          0.07472222222222222,
+          0.08222222222222222,
+          0.07472222222222222
+        ]
+      }
+    }
+  }
+}

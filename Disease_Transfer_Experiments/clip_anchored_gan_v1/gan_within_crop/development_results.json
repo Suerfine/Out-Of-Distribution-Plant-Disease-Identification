@@ -1,0 +1,62 @@
+{
+  "images": [
+    862,
+    533
+  ],
+  "within_crop_weight": 0.01,
+  "vectors_per_pair": 300,
+  "results": {
+    "current": {
+      "true_crop_correct": [
+        720,
+        155
+      ],
+      "ambiguous_true_crop_correct": [
+        702,
+        155
+      ],
+      "ambiguous_images": [
+        844,
+        533
+      ],
+      "disease_only_correct": [
+        703,
+        105
+      ],
+      "learned_gate_correct": [
+        682,
+        315
+      ],
+      "matched_seen_diagnostic": [
+        682,
+        315
+      ]
+    },
+    "within_crop": {
+      "true_crop_correct": [
+        722,
+        148
+      ],
+      "ambiguous_true_crop_correct": [
+        704,
+        148
+      ],
+      "ambiguous_images": [
+        844,
+        533
+      ],
+      "disease_only_correct": [
+        707,
+        92
+      ],
+      "learned_gate_correct": [
+        685,
+        305
+      ],
+      "matched_seen_diagnostic": [
+        682,
+        309
+      ]
+    }
+  }
+}

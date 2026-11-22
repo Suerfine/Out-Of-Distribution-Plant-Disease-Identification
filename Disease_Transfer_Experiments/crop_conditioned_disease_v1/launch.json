@@ -1,0 +1,10 @@
+{
+  "progress_interval_minutes": 15,
+  "started_utc": "2026-11-06T03:27:05.3010929Z",
+  "stderr": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\crop_conditioned_disease_v1\\logs\\study_20261106_112705.stderr.log",
+  "stdout": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\crop_conditioned_disease_v1\\logs\\study_20261106_112705.stdout.log",
+  "mode": "hidden resumable background process",
+  "pid": 32492,
+  "run": "runs/full_seed42",
+  "chat_notifications": false
+}

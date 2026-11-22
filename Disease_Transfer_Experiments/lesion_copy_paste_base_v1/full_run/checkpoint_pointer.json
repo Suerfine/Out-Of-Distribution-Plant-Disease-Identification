@@ -1,0 +1,19 @@
+{
+  "fingerprint": "5a6147b7ade76a07ffceb51e6f0794a1b3921fa316edc3786c010d4df14b3b5a",
+  "active": {
+    "file": "checkpoint_a.pt",
+    "sha256": "2bfe08499b373dcb63789fc55c46b0a3a244febd821d37c44219ceee49fc2c1d",
+    "stage": "finetune",
+    "epoch": 15,
+    "cursor": 0,
+    "saved_utc": "2026-11-14T08:25:02.030326+00:00"
+  },
+  "previous": {
+    "file": "checkpoint_b.pt",
+    "sha256": "6fa60635221fb1c38f33c9336ec44f7498e2a088142ed334a28cc0903baa99fe",
+    "stage": "finetune",
+    "epoch": 14,
+    "cursor": 0,
+    "saved_utc": "2026-11-14T08:16:24.223276+00:00"
+  }
+}

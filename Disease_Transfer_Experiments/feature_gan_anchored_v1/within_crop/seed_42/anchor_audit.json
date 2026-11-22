@@ -1,0 +1,25 @@
+{
+  "eligible_disease_examples": 4212,
+  "healthy_examples_by_target_pair": {
+    "apple_mosaic_virus": 197,
+    "apple_scab": 197,
+    "blackgram_anthracnose": 12,
+    "cassava_mosaic": 130,
+    "cauliflower_downy_mildew": 1,
+    "citrus_canker": 3,
+    "corn_spot": 190,
+    "corn_yellowing": 190,
+    "mango_powdery_mildew": 16,
+    "paddy_brown_spot": 64,
+    "papaya_bacterial_spot": 4,
+    "papaya_curl": 4,
+    "peach_monillia_laxa": 22,
+    "strawberry_scorch": 18,
+    "sugarcane_smut": 16,
+    "tomato_leaf_blight": 115,
+    "tomato_curl": 115,
+    "tomato_mosaic_virus": 115,
+    "tomato_septoria_leaf_spot": 115,
+    "tomato_spider_mites": 115
+  }
+}

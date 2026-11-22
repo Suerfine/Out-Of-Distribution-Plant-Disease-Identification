@@ -1,0 +1,230 @@
+{
+  "42": {
+    "single_training_split": 43,
+    "results": {
+      "single": {
+        "correct": [
+          731,
+          252
+        ],
+        "images": [
+          862,
+          533
+        ],
+        "seen": 0.8480278422273781,
+        "unseen": 0.4727954971857411,
+        "h": 0.6071118420293747
+      },
+      "pooled": {
+        "correct": [
+          728,
+          257
+        ],
+        "images": [
+          862,
+          533
+        ],
+        "seen": 0.8445475638051044,
+        "unseen": 0.4821763602251407,
+        "h": 0.6138743154876156
+      },
+      "matched_diagnostic": {
+        "correct": [
+          733,
+          252
+        ],
+        "images": [
+          862,
+          533
+        ],
+        "seen": 0.8503480278422274,
+        "unseen": 0.4727954971857411,
+        "h": 0.6077053788946772
+      }
+    },
+    "folds": [
+      {
+        "fold": 0,
+        "test_images": 257,
+        "pooled_fit": 2522,
+        "single_fit": 1336
+      },
+      {
+        "fold": 1,
+        "test_images": 214,
+        "pooled_fit": 2259,
+        "single_fit": 1190
+      },
+      {
+        "fold": 2,
+        "test_images": 297,
+        "pooled_fit": 2235,
+        "single_fit": 1149
+      },
+      {
+        "fold": 3,
+        "test_images": 314,
+        "pooled_fit": 2190,
+        "single_fit": 1109
+      },
+      {
+        "fold": 4,
+        "test_images": 313,
+        "pooled_fit": 2266,
+        "single_fit": 1168
+      }
+    ]
+  },
+  "43": {
+    "single_training_split": 42,
+    "results": {
+      "single": {
+        "correct": [
+          777,
+          256
+        ],
+        "images": [
+          945,
+          543
+        ],
+        "seen": 0.8222222222222222,
+        "unseen": 0.4714548802946593,
+        "h": 0.59928505899845
+      },
+      "pooled": {
+        "correct": [
+          778,
+          262
+        ],
+        "images": [
+          945,
+          543
+        ],
+        "seen": 0.8232804232804233,
+        "unseen": 0.48250460405156537,
+        "h": 0.6084257153261576
+      },
+      "matched_diagnostic": {
+        "correct": [
+          776,
+          256
+        ],
+        "images": [
+          945,
+          543
+        ],
+        "seen": 0.8211640211640212,
+        "unseen": 0.4714548802946593,
+        "h": 0.5990037510101193
+      }
+    },
+    "folds": [
+      {
+        "fold": 0,
+        "test_images": 152,
+        "pooled_fit": 2324,
+        "single_fit": 1138
+      },
+      {
+        "fold": 1,
+        "test_images": 298,
+        "pooled_fit": 2250,
+        "single_fit": 1181
+      },
+      {
+        "fold": 2,
+        "test_images": 339,
+        "pooled_fit": 2184,
+        "single_fit": 1098
+      },
+      {
+        "fold": 3,
+        "test_images": 379,
+        "pooled_fit": 2162,
+        "single_fit": 1081
+      },
+      {
+        "fold": 4,
+        "test_images": 320,
+        "pooled_fit": 2180,
+        "single_fit": 1082
+      }
+    ]
+  },
+  "44": {
+    "single_training_split": 42,
+    "results": {
+      "single": {
+        "correct": [
+          749,
+          252
+        ],
+        "images": [
+          894,
+          486
+        ],
+        "seen": 0.8378076062639821,
+        "unseen": 0.5185185185185185,
+        "h": 0.6405815693820825
+      },
+      "pooled": {
+        "correct": [
+          759,
+          250
+        ],
+        "images": [
+          894,
+          486
+        ],
+        "seen": 0.8489932885906041,
+        "unseen": 0.51440329218107,
+        "h": 0.640642567026912
+      },
+      "matched_diagnostic": {
+        "correct": [
+          761,
+          252
+        ],
+        "images": [
+          894,
+          486
+        ],
+        "seen": 0.8512304250559284,
+        "unseen": 0.5185185185185185,
+        "h": 0.6444666243232615
+      }
+    },
+    "folds": [
+      {
+        "fold": 0,
+        "test_images": 194,
+        "pooled_fit": 2474,
+        "single_fit": 1138
+      },
+      {
+        "fold": 1,
+        "test_images": 311,
+        "pooled_fit": 2371,
+        "single_fit": 1181
+      },
+      {
+        "fold": 2,
+        "test_images": 294,
+        "pooled_fit": 2247,
+        "single_fit": 1098
+      },
+      {
+        "fold": 3,
+        "test_images": 299,
+        "pooled_fit": 2190,
+        "single_fit": 1081
+      },
+      {
+        "fold": 4,
+        "test_images": 282,
+        "pooled_fit": 2250,
+        "single_fit": 1082
+      }
+    ]
+  }
+}

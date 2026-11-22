@@ -1,0 +1,26 @@
+{
+  "generated": [
+    "blackgram_anthracnose",
+    "corn_yellowing",
+    "mango_powdery_mildew",
+    "paddy_brown_spot",
+    "tomato_leaf_blight",
+    "tomato_curl"
+  ],
+  "untouched": [
+    "apple_mosaic_virus",
+    "apple_scab",
+    "cassava_mosaic",
+    "cauliflower_downy_mildew",
+    "citrus_canker",
+    "corn_spot",
+    "papaya_bacterial_spot",
+    "papaya_curl",
+    "peach_monillia_laxa",
+    "strawberry_scorch",
+    "sugarcane_smut",
+    "tomato_mosaic_virus",
+    "tomato_septoria_leaf_spot",
+    "tomato_spider_mites"
+  ]
+}

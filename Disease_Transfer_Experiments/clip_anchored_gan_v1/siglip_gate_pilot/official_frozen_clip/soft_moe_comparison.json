@@ -1,0 +1,189 @@
+{
+  "selection": {
+    "model": {
+      "center": [
+        2.048281669616699,
+        4.073358058929443,
+        2.695263385772705
+      ],
+      "scale": [
+        3.2436904907226562,
+        2.396402359008789,
+        3.0522634983062744
+      ],
+      "weight": [
+        0.6622862807066834,
+        0.801794109331691,
+        0.2279358672025262
+      ],
+      "bias": 0.6318579360617091
+    },
+    "seen_temperature": 2.0,
+    "unseen_temperature": 2.0
+  },
+  "development": {
+    "folds": [
+      {
+        "two_way": {
+          "seen_correct": 98,
+          "unseen_correct": 78,
+          "seen": 0.6853146853146853,
+          "unseen": 0.8041237113402062,
+          "h": 0.7399806389157794
+        },
+        "learned_hard": {
+          "seen_correct": 116,
+          "unseen_correct": 18,
+          "seen": 0.8111888111888111,
+          "unseen": 0.18556701030927836,
+          "h": 0.3020396354694055
+        },
+        "learned_soft": {
+          "seen_correct": 110,
+          "unseen_correct": 62,
+          "seen": 0.7692307692307693,
+          "unseen": 0.6391752577319587,
+          "h": 0.6981981981981982
+        }
+      },
+      {
+        "two_way": {
+          "seen_correct": 177,
+          "unseen_correct": 39,
+          "seen": 0.7972972972972973,
+          "unseen": 0.2826086956521739,
+          "h": 0.4173014145810663
+        },
+        "learned_hard": {
+          "seen_correct": 190,
+          "unseen_correct": 53,
+          "seen": 0.8558558558558559,
+          "unseen": 0.38405797101449274,
+          "h": 0.5301953351234665
+        },
+        "learned_soft": {
+          "seen_correct": 181,
+          "unseen_correct": 54,
+          "seen": 0.8153153153153153,
+          "unseen": 0.391304347826087,
+          "h": 0.5288102580749878
+        }
+      },
+      {
+        "two_way": {
+          "seen_correct": 176,
+          "unseen_correct": 36,
+          "seen": 0.8627450980392157,
+          "unseen": 0.43902439024390244,
+          "h": 0.5819250551065394
+        },
+        "learned_hard": {
+          "seen_correct": 189,
+          "unseen_correct": 40,
+          "seen": 0.9264705882352942,
+          "unseen": 0.4878048780487805,
+          "h": 0.6391072787217855
+        },
+        "learned_soft": {
+          "seen_correct": 178,
+          "unseen_correct": 40,
+          "seen": 0.8725490196078431,
+          "unseen": 0.4878048780487805,
+          "h": 0.6257690279486728
+        }
+      },
+      {
+        "two_way": {
+          "seen_correct": 135,
+          "unseen_correct": 29,
+          "seen": 0.8132530120481928,
+          "unseen": 0.28431372549019607,
+          "h": 0.4213301764959104
+        },
+        "learned_hard": {
+          "seen_correct": 134,
+          "unseen_correct": 27,
+          "seen": 0.8072289156626506,
+          "unseen": 0.2647058823529412,
+          "h": 0.39867768595041325
+        },
+        "learned_soft": {
+          "seen_correct": 125,
+          "unseen_correct": 36,
+          "seen": 0.7530120481927711,
+          "unseen": 0.35294117647058826,
+          "h": 0.48061518743992315
+        }
+      },
+      {
+        "two_way": {
+          "seen_correct": 88,
+          "unseen_correct": 51,
+          "seen": 0.6929133858267716,
+          "unseen": 0.4473684210526316,
+          "h": 0.5437034344902781
+        },
+        "learned_hard": {
+          "seen_correct": 93,
+          "unseen_correct": 55,
+          "seen": 0.7322834645669292,
+          "unseen": 0.4824561403508772,
+          "h": 0.5816796497412862
+        },
+        "learned_soft": {
+          "seen_correct": 88,
+          "unseen_correct": 55,
+          "seen": 0.6929133858267716,
+          "unseen": 0.4824561403508772,
+          "h": 0.5688429217840982
+        }
+      }
+    ],
+    "development_fit": {
+      "two_way": {
+        "seen_correct": 674,
+        "unseen_correct": 233,
+        "seen": 0.7819025522041764,
+        "unseen": 0.4371482176360225,
+        "h": 0.560776163745697
+      },
+      "learned_hard": {
+        "seen_correct": 721,
+        "unseen_correct": 238,
+        "seen": 0.8364269141531323,
+        "unseen": 0.44652908067542213,
+        "h": 0.5822318809600152
+      },
+      "learned_soft": {
+        "seen_correct": 689,
+        "unseen_correct": 253,
+        "seen": 0.7993039443155452,
+        "unseen": 0.474671669793621,
+        "h": 0.5956266881704632
+      }
+    }
+  },
+  "official": {
+    "two_way": {
+      "seen_correct": 1339,
+      "unseen_correct": 1095,
+      "seen": 0.6695,
+      "unseen": 0.7562154696132597,
+      "h": 0.7102206123125153
+    },
+    "learned_hard": {
+      "seen_correct": 1390,
+      "unseen_correct": 951,
+      "seen": 0.695,
+      "unseen": 0.6567679558011049,
+      "h": 0.6753433195733027
+    },
+    "learned_soft": {
+      "seen_correct": 1274,
+      "unseen_correct": 1203,
+      "seen": 0.637,
+      "unseen": 0.8308011049723757,
+      "h": 0.7211062889578127
+    }
+  }
+}

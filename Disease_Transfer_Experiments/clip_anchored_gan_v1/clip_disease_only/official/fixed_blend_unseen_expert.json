@@ -1,0 +1,47 @@
+{
+  "results": {
+    "default": {
+      "current": {
+        "seen_correct": 1407,
+        "unseen_correct": 1080,
+        "seen": 0.7035,
+        "unseen": 0.7458563535911602,
+        "h": 0.7240592604451966
+      },
+      "ensemble_unseen": {
+        "seen_correct": 1407,
+        "unseen_correct": 1087,
+        "seen": 0.7035,
+        "unseen": 0.7506906077348067,
+        "h": 0.7263296018175706
+      },
+      "true_unseen_routed": 1126,
+      "fixed": 12,
+      "broken": 5
+    },
+    "calibrated": {
+      "current": {
+        "seen_correct": 1347,
+        "unseen_correct": 1218,
+        "seen": 0.6735,
+        "unseen": 0.8411602209944752,
+        "h": 0.7480508182459825
+      },
+      "ensemble_unseen": {
+        "seen_correct": 1347,
+        "unseen_correct": 1227,
+        "seen": 0.6735,
+        "unseen": 0.8473756906077348,
+        "h": 0.7504985859774737
+      },
+      "true_unseen_routed": 1277,
+      "fixed": 17,
+      "broken": 8
+    }
+  },
+  "unseen_total": 1448,
+  "correct_if_perfect_routing": {
+    "current": 1374,
+    "fixed_blend": 1387
+  }
+}

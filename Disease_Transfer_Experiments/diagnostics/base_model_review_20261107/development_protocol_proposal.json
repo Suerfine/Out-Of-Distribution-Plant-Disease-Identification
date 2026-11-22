@@ -1,0 +1,41 @@
+{
+  "status": "PROPOSED ONLY; no data roles or training changed",
+  "requires_agreement_to_revisit_prior_no_pseudo_validation_preference": true,
+  "existing_base_partition_counts": {
+    "fit": 5798,
+    "validation_seen": 862,
+    "validation_unseen": 533,
+    "selection_excluded": 807,
+    "all_train": 8000
+  },
+  "pseudo_unseen_pair_count": 20,
+  "development_crop_checkpoint": "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\baseline\\independent_cnn_baseline_convnext_base_optuna_gamma0_seed42\\trials\\trial_000\\crop\\best_epoch_15.pt",
+  "development_baseline_logits": "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\baseline\\independent_cnn_baseline_convnext_base_optuna_gamma0_seed42\\trials\\trial_000\\validation_epoch_15.npz",
+  "primary_objective": "validation composition Top-1 H, gamma0; earliest exact tie",
+  "saved_development_baseline_metrics": {
+    "objective_name": "validation_composition_top1_harmonic_mean_gamma_zero",
+    "gamma": 0.0,
+    "harmonic_mean_top1": 0.0857505367497348,
+    "gamma0_harmonic_mean_top1": 0.0857505367497348,
+    "seen_top1": 0.8967517401392111,
+    "unseen_top1": 0.0450281425891182,
+    "seen_top5": 0.9860788863109049,
+    "unseen_top5": 0.275797373358349,
+    "harmonic_mean_top5": 0.4310374566202799,
+    "epoch": 15
+  },
+  "baseline_retraining_required": false,
+  "ssl_development_images": "fit5798 only; exclude all validation and capped held-out images",
+  "final_refit_images": 8000,
+  "official_seen_images": 2000,
+  "official_unseen_images": 1448,
+  "official_candidates": 333,
+  "official_test_policy": "Previously inspected; descriptive final reporting only, never tuning",
+  "source_manifest_hashes": {
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\diagnostics\\base_model_review_20261107\\reference_manifests\\fit.csv": "58de86e0709e5721a4fe8cb20d7da7ce001abc89a1003454f8b757aac09723c9",
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\diagnostics\\base_model_review_20261107\\reference_manifests\\validation_seen.csv": "630af25b9b66d033ac7e2210de937951735a5f94acc194b3ab3bd29f1a77dd2c",
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\diagnostics\\base_model_review_20261107\\reference_manifests\\validation_unseen.csv": "d274549c4d343b24d79a6c213fdab2bcd3a4f4c95e5e7ec20df6b80ab44554a2",
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\diagnostics\\base_model_review_20261107\\reference_manifests\\selection_excluded.csv": "ee18215beead015dd3b2b6099831092f42eb5182becae3bcb183ba8cfe7178ad",
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\diagnostics\\base_model_review_20261107\\reference_manifests\\all_train.csv": "79bde5e62fb70b57b513311f7d39b5e97b4dbf481d87d75e0da5187797d3a892"
+  }
+}

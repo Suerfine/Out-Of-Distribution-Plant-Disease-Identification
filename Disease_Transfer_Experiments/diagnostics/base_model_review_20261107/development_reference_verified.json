@@ -1,0 +1,42 @@
+{
+  "verified_at_utc": "2026-11-07T16:02:10.301852+00:00",
+  "status": "passed",
+  "device": "CPU",
+  "training_started": false,
+  "new_split_created": false,
+  "existing_split_applied_to_new_training": false,
+  "metrics_match_saved_recipe_tolerance": 1e-12,
+  "metrics": {
+    "objective_name": "validation_composition_top1_harmonic_mean_gamma_zero",
+    "gamma": 0.0,
+    "harmonic_mean_top1": 0.0857505367497348,
+    "gamma0_harmonic_mean_top1": 0.0857505367497348,
+    "seen_top1": 0.8967517401392111,
+    "unseen_top1": 0.0450281425891182,
+    "seen_top5": 0.9860788863109049,
+    "unseen_top5": 0.275797373358349,
+    "harmonic_mean_top5": 0.4310374566202799
+  },
+  "validation_order": "validation_seen.csv, then validation_unseen.csv; original saved row order",
+  "development_candidates": 323,
+  "official_unseen_candidates_masked": 10,
+  "partition_counts": {
+    "fit": 5798,
+    "validation_seen": 862,
+    "validation_unseen": 533,
+    "selection_excluded": 807,
+    "all_train": 8000
+  },
+  "original_manifests_copied_byte_identically": true,
+  "saved_development_checkpoints_exist": true,
+  "baseline_retraining_required": false,
+  "source_sha256": {
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\baseline\\independent_cnn_baseline_convnext_base_optuna_gamma0_seed42\\trials\\trial_000\\validation_epoch_15.npz": "e9fbd709e49689183c5fd58076f342825a19f727c9cc49af791d54e257be33e3",
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\baseline\\independent_cnn_baseline_convnext_base_optuna_gamma0_seed42\\selected_recipe.json": "9e1206f44fcc24be67ac2d4ceb95a2f337723e86db574feb3e109878a39cb025",
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\baseline\\independent_cnn_baseline_study_seed42\\pairs.json": "c25ccd2ccf0b1c79e2bb80d7061883529ac728cd0a3a5fbb569c467677163259",
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\baseline\\independent_cnn_baseline_convnext_base_optuna_gamma0_seed42\\trials\\trial_000\\identity.json": "9af21dcd893bc78cbaed2aa025ea9ef71dd0402991f8a8e7d9f64e9798b08e1b",
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\baseline\\independent_cnn_baseline_convnext_base_optuna_gamma0_seed42\\trials\\trial_000\\config.json": "134bd110fe8738ffbef614940b7b9334f613ffda932dc2a88479b3a0282fcefe",
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\baseline\\independent_cnn_baseline_convnext_base_optuna_gamma0_seed42\\trials\\trial_000\\crop\\best_epoch_15.pt": "e64a68692bfa94bec4daa88ff3eddb11f90231954716476637084f24049769f6",
+    "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\baseline\\independent_cnn_baseline_convnext_base_optuna_gamma0_seed42\\trials\\trial_000\\disease\\best_epoch_15.pt": "a324bf2c020d0ffe057e00af998155abd2beb3be8aa095ea7326ed3242cba441"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "selection": {
+    "cutoffs": {
+      "current": 0.0,
+      "reverse_override": 0.0
+    },
+    "override_rule": [
+      0.5,
+      0.5,
+      4.0
+    ],
+    "development": {
+      "overrides": 44,
+      "unseen_recovered": 30,
+      "seen_lost": 0
+    }
+  },
+  "official": {
+    "current": {
+      "seen": 0.729,
+      "unseen": 0.48342541436464087,
+      "h": 0.5813423620066621
+    },
+    "reverse_override": {
+      "seen": 0.726,
+      "unseen": 0.5366022099447514,
+      "h": 0.6170957113039369
+    }
+  },
+  "counts": {
+    "test_seen": {
+      "current": {
+        "correct": 1458,
+        "correct_route": 1965,
+        "images": 2000
+      },
+      "reverse_override": {
+        "correct": 1452,
+        "correct_route": 1954,
+        "images": 2000
+      }
+    },
+    "test_unseen": {
+      "current": {
+        "correct": 700,
+        "correct_route": 712,
+        "images": 1448
+      },
+      "reverse_override": {
+        "correct": 777,
+        "correct_route": 790,
+        "images": 1448
+      }
+    }
+  }
+}

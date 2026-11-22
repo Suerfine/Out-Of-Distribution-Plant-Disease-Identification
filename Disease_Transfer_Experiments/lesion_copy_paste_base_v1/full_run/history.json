@@ -1,0 +1,362 @@
+[
+  {
+    "epoch": 1,
+    "seen": {
+      "images": 862,
+      "correct": 781,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 14,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 7,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 7,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.05105278271283861
+  },
+  {
+    "epoch": 2,
+    "seen": {
+      "images": 862,
+      "correct": 774,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 18,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 6,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 12,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.0650939825911442
+  },
+  {
+    "epoch": 3,
+    "seen": {
+      "images": 862,
+      "correct": 770,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 19,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 3,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 16,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.06855862863998051
+  },
+  {
+    "epoch": 4,
+    "seen": {
+      "images": 862,
+      "correct": 766,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 19,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 6,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 13,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.06854489280735467
+  },
+  {
+    "epoch": 5,
+    "seen": {
+      "images": 862,
+      "correct": 775,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 11,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 3,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 8,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.040349585973016654
+  },
+  {
+    "epoch": 6,
+    "seen": {
+      "images": 862,
+      "correct": 771,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 13,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 2,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 11,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.047485603424383335
+  },
+  {
+    "epoch": 7,
+    "seen": {
+      "images": 862,
+      "correct": 781,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 19,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 5,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 14,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.06859570415877925
+  },
+  {
+    "epoch": 8,
+    "seen": {
+      "images": 862,
+      "correct": 772,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 25,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 8,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 17,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.0891401440098285
+  },
+  {
+    "epoch": 9,
+    "seen": {
+      "images": 862,
+      "correct": 774,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 15,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 5,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 10,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.054574684115523464
+  },
+  {
+    "epoch": 10,
+    "seen": {
+      "images": 862,
+      "correct": 773,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 17,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 5,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 12,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.0615989668661215
+  },
+  {
+    "epoch": 11,
+    "seen": {
+      "images": 862,
+      "correct": 771,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 15,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 5,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 10,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.05456823152217763
+  },
+  {
+    "epoch": 12,
+    "seen": {
+      "images": 862,
+      "correct": 776,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 19,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 8,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 11,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.06857897698994851
+  },
+  {
+    "epoch": 13,
+    "seen": {
+      "images": 862,
+      "correct": 775,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 17,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 7,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 10,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.06160442710220723
+  },
+  {
+    "epoch": 14,
+    "seen": {
+      "images": 862,
+      "correct": 777,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 11,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 5,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 6,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.04035191668063349
+  },
+  {
+    "epoch": 15,
+    "seen": {
+      "images": 862,
+      "correct": 781,
+      "baseline_correct": 773
+    },
+    "pseudo_unseen": {
+      "images": 533,
+      "correct": 19,
+      "baseline_correct": 24
+    },
+    "mango_powdery_mildew": {
+      "images": 18,
+      "correct": 8,
+      "baseline_correct": 8
+    },
+    "other_unseen": {
+      "images": 515,
+      "correct": 11,
+      "baseline_correct": 16
+    },
+    "harmonic_mean": 0.06859570415877925
+  }
+]

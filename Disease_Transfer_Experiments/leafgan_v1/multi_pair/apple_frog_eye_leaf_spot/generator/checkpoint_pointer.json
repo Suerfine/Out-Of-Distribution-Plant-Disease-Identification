@@ -1,0 +1,19 @@
+{
+  "fingerprint": "b3e62a7a616204b4a718c48888f3554e42d12df619ea51febab2de65d3643b82e80a4408f44e4794e71247283d0097ff5ae80ead3124515a33215dd217ce324a5efa28d46dfff5675ad0182f136ba76ddc2b75ffc578ee871202a3574917a4ae677675d2ffd01c72a096fdde086c0bfee9ee23f3789c5214cdb585ce71604eae",
+  "active": {
+    "file": "checkpoint_b.pt",
+    "sha256": "7ad412eaba4037ca7c061794957811962c90d327098fd521cf33c003457bded5",
+    "stage": "leafgan",
+    "epoch": 60,
+    "cursor": 0,
+    "saved_utc": "2026-11-14T23:09:04.545363+00:00"
+  },
+  "previous": {
+    "file": "checkpoint_a.pt",
+    "sha256": "eae097ee17efe22cd2fe0f043cee79700513786833789c5d59191295774b02de",
+    "stage": "leafgan",
+    "epoch": 59,
+    "cursor": 0,
+    "saved_utc": "2026-11-14T23:08:31.113502+00:00"
+  }
+}

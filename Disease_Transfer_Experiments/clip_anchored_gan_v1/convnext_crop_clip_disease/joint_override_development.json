@@ -1,0 +1,174 @@
+{
+  "plain": {
+    "selection": {
+      "offset": 3.0,
+      "to_seen": null,
+      "to_unseen": null,
+      "counts": [
+        593,
+        315
+      ]
+    },
+    "folds": [
+      {
+        "offset": 3.0,
+        "to_seen": null,
+        "to_unseen": null,
+        "counts": [
+          77,
+          91
+        ]
+      },
+      {
+        "offset": 3.0,
+        "to_seen": null,
+        "to_unseen": null,
+        "counts": [
+          152,
+          66
+        ]
+      },
+      {
+        "offset": 3.0,
+        "to_seen": null,
+        "to_unseen": null,
+        "counts": [
+          170,
+          47
+        ]
+      },
+      {
+        "offset": 3.0,
+        "to_seen": null,
+        "to_unseen": null,
+        "counts": [
+          122,
+          50
+        ]
+      },
+      {
+        "offset": 3.0,
+        "to_seen": null,
+        "to_unseen": null,
+        "counts": [
+          72,
+          61
+        ]
+      }
+    ],
+    "held_out": [
+      593,
+      315
+    ]
+  },
+  "joint": {
+    "selection": {
+      "offset": 3.25,
+      "to_seen": [
+        2.0,
+        6.0,
+        6.0
+      ],
+      "to_unseen": [
+        1.5,
+        0.5,
+        4.0
+      ],
+      "counts": [
+        596,
+        331
+      ]
+    },
+    "folds": [
+      {
+        "offset": 3.25,
+        "to_seen": [
+          2.0,
+          6.0,
+          6.0
+        ],
+        "to_unseen": [
+          1.0,
+          0.5,
+          4.0
+        ],
+        "counts": [
+          82,
+          92
+        ]
+      },
+      {
+        "offset": 3.25,
+        "to_seen": [
+          2.0,
+          6.0,
+          4.0
+        ],
+        "to_unseen": [
+          1.5,
+          0.5,
+          4.0
+        ],
+        "counts": [
+          139,
+          73
+        ]
+      },
+      {
+        "offset": 3.25,
+        "to_seen": [
+          2.0,
+          6.0,
+          6.0
+        ],
+        "to_unseen": [
+          1.5,
+          1.0,
+          4.0
+        ],
+        "counts": [
+          174,
+          46
+        ]
+      },
+      {
+        "offset": 3.25,
+        "to_seen": [
+          2.0,
+          6.0,
+          6.0
+        ],
+        "to_unseen": [
+          1.5,
+          0.5,
+          4.0
+        ],
+        "counts": [
+          121,
+          50
+        ]
+      },
+      {
+        "offset": 3.25,
+        "to_seen": [
+          2.0,
+          6.0,
+          6.0
+        ],
+        "to_unseen": [
+          0.75,
+          2.0,
+          6.0
+        ],
+        "counts": [
+          69,
+          63
+        ]
+      }
+    ],
+    "held_out": [
+      585,
+      324
+    ]
+  }
+}

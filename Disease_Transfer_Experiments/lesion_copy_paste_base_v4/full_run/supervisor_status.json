@@ -1,0 +1,14 @@
+{
+  "utc": "2026-11-14T10:35:54.775571+00:00",
+  "state": "complete",
+  "pid": 15024,
+  "attempts": 1,
+  "micro_batch": 4,
+  "worker_results": {
+    "updated_utc": "2026-11-14T10:35:51.432222+00:00",
+    "phase": "complete",
+    "pid": 35808,
+    "epochs": 15,
+    "composites": 1028
+  }
+}

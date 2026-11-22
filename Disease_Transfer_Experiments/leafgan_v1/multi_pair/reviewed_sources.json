@@ -1,0 +1,52 @@
+{
+  "tomato_bacterial_spot": [
+    "CDDM_tomato_healthy_90979.jpg",
+    "CDDM_tomato_healthy_90485.jpg",
+    "CDDM_tomato_healthy_93057.jpg",
+    "CDDM_tomato_healthy_90229.jpg",
+    "CDDM_tomato_healthy_89796.jpg",
+    "CDDM_tomato_healthy_92195.jpg",
+    "CDDM_tomato_healthy_89915.jpg",
+    "CDDM_tomato_healthy_91199.jpg"
+  ],
+  "tomato_late_blight": [
+    "CDDM_tomato_healthy_90979.jpg",
+    "CDDM_tomato_healthy_90485.jpg",
+    "CDDM_tomato_healthy_93057.jpg",
+    "CDDM_tomato_healthy_90229.jpg",
+    "CDDM_tomato_healthy_89796.jpg",
+    "CDDM_tomato_healthy_92195.jpg",
+    "CDDM_tomato_healthy_89915.jpg",
+    "CDDM_tomato_healthy_91199.jpg"
+  ],
+  "apple_brown_spot": [
+    "CDDM_apple_healthy_23100.jpg",
+    "CDDM_apple_healthy_24484.jpg",
+    "CDDM_apple_healthy_23699.jpg",
+    "CDDM_apple_healthy_24750.jpg",
+    "CDDM_apple_healthy_24226.jpg",
+    "CDDM_apple_healthy_24262.jpg",
+    "CDDM_apple_healthy_21703.jpg",
+    "CDDM_apple_healthy_24562.jpg"
+  ],
+  "apple_frog_eye_leaf_spot": [
+    "CDDM_apple_healthy_23100.jpg",
+    "CDDM_apple_healthy_24484.jpg",
+    "CDDM_apple_healthy_23699.jpg",
+    "CDDM_apple_healthy_24750.jpg",
+    "CDDM_apple_healthy_24226.jpg",
+    "CDDM_apple_healthy_24262.jpg",
+    "CDDM_apple_healthy_21703.jpg",
+    "CDDM_apple_healthy_24562.jpg"
+  ],
+  "cassava_bacterial_blight": [
+    "CPDD_cassava_healthy_5134.jpg",
+    "CPDD_cassava_healthy_5422.jpg",
+    "CPDD_cassava_healthy_5405.jpg",
+    "CPDD_cassava_healthy_5808.jpg",
+    "CPDD_cassava_healthy_5233.jpg",
+    "CPDD_cassava_healthy_5737.jpg",
+    "CPDD_cassava_healthy_5253.jpg",
+    "CPDD_cassava_healthy_5565.jpg"
+  ]
+}

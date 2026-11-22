@@ -1,0 +1,68 @@
+[
+  {
+    "composition": "pepper_bell_bacterial_spot",
+    "gamma": 0.0,
+    "filename": "CDDM_bell_pepper_bacterial_spot_41413.jpg",
+    "original_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Plant_Disease\\DPD_Small_dataset\\CDDM_bell_pepper_bacterial_spot_41413.jpg",
+    "cache_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\cache\\resized_256\\CDDM_bell_pepper_bacterial_spot_41413.jpg",
+    "baseline_prediction": "pepper_bell_bacterial_spot",
+    "ssl_prediction": "coffee_rust",
+    "baseline_true_disease_rank": 4,
+    "ssl_true_disease_rank": 47
+  },
+  {
+    "composition": "pepper_bell_bacterial_spot",
+    "gamma": 0.0,
+    "filename": "CDDM_bell_pepper_bacterial_spot_41416.jpg",
+    "original_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Plant_Disease\\DPD_Small_dataset\\CDDM_bell_pepper_bacterial_spot_41416.jpg",
+    "cache_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\cache\\resized_256\\CDDM_bell_pepper_bacterial_spot_41416.jpg",
+    "baseline_prediction": "pepper_bell_bacterial_spot",
+    "ssl_prediction": "citrus_greening",
+    "baseline_true_disease_rank": 1,
+    "ssl_true_disease_rank": 2
+  },
+  {
+    "composition": "pepper_bell_bacterial_spot",
+    "gamma": 0.0,
+    "filename": "CDDM_bell_pepper_bacterial_spot_41455.jpg",
+    "original_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Plant_Disease\\DPD_Small_dataset\\CDDM_bell_pepper_bacterial_spot_41455.jpg",
+    "cache_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\cache\\resized_256\\CDDM_bell_pepper_bacterial_spot_41455.jpg",
+    "baseline_prediction": "pepper_bell_bacterial_spot",
+    "ssl_prediction": "pepper_bell_powdery_mildew",
+    "baseline_true_disease_rank": 3,
+    "ssl_true_disease_rank": 43
+  },
+  {
+    "composition": "grape_black_rot",
+    "gamma": 6.2,
+    "filename": "CDDM_grape_black_rot_51281.jpg",
+    "original_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Plant_Disease\\DPD_Small_dataset\\CDDM_grape_black_rot_51281.jpg",
+    "cache_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\cache\\resized_256\\CDDM_grape_black_rot_51281.jpg",
+    "baseline_prediction": "grape_black_rot",
+    "ssl_prediction": "grape_esca",
+    "baseline_true_disease_rank": 16,
+    "ssl_true_disease_rank": 14
+  },
+  {
+    "composition": "grape_black_rot",
+    "gamma": 6.2,
+    "filename": "CDDM_grape_black_rot_51288.jpg",
+    "original_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Plant_Disease\\DPD_Small_dataset\\CDDM_grape_black_rot_51288.jpg",
+    "cache_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\cache\\resized_256\\CDDM_grape_black_rot_51288.jpg",
+    "baseline_prediction": "grape_black_rot",
+    "ssl_prediction": "grape_esca",
+    "baseline_true_disease_rank": 2,
+    "ssl_true_disease_rank": 3
+  },
+  {
+    "composition": "grape_black_rot",
+    "gamma": 6.2,
+    "filename": "CDDM_grape_black_rot_51292.jpg",
+    "original_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Plant_Disease\\DPD_Small_dataset\\CDDM_grape_black_rot_51292.jpg",
+    "cache_path": "C:\\Users\\Hein\\Documents\\AML_Project\\Out-Of-Distribution-Plant-Disease-Identification\\runs\\cache\\resized_256\\CDDM_grape_black_rot_51292.jpg",
+    "baseline_prediction": "grape_black_rot",
+    "ssl_prediction": "grape_esca",
+    "baseline_true_disease_rank": 3,
+    "ssl_true_disease_rank": 8
+  }
+]

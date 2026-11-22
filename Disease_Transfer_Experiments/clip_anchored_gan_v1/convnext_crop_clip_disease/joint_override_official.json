@@ -1,0 +1,85 @@
+{
+  "selection": {
+    "cutoffs": {
+      "gamma_3_current": 3.0,
+      "plain": 3.0,
+      "joint": 3.25
+    },
+    "overrides": {
+      "gamma_3_current": {
+        "to_seen": null,
+        "to_unseen": null
+      },
+      "plain": {
+        "to_seen": null,
+        "to_unseen": null
+      },
+      "joint": {
+        "to_seen": [
+          2.0,
+          6.0,
+          6.0
+        ],
+        "to_unseen": [
+          1.5,
+          0.5,
+          4.0
+        ]
+      }
+    },
+    "joint": true
+  },
+  "official": {
+    "gamma_3_current": {
+      "seen": 0.668,
+      "unseen": 0.8280386740331491,
+      "h": 0.7394592718154389
+    },
+    "plain": {
+      "seen": 0.668,
+      "unseen": 0.8280386740331491,
+      "h": 0.7394592718154389
+    },
+    "joint": {
+      "seen": 0.636,
+      "unseen": 0.9012430939226519,
+      "h": 0.7457384066330985
+    }
+  },
+  "counts": {
+    "test_seen": {
+      "gamma_3_current": {
+        "correct": 1336,
+        "correct_route": 1747,
+        "images": 2000
+      },
+      "plain": {
+        "correct": 1336,
+        "correct_route": 1747,
+        "images": 2000
+      },
+      "joint": {
+        "correct": 1272,
+        "correct_route": 1619,
+        "images": 2000
+      }
+    },
+    "test_unseen": {
+      "gamma_3_current": {
+        "correct": 1199,
+        "correct_route": 1240,
+        "images": 1448
+      },
+      "plain": {
+        "correct": 1199,
+        "correct_route": 1240,
+        "images": 1448
+      },
+      "joint": {
+        "correct": 1305,
+        "correct_route": 1358,
+        "images": 1448
+      }
+    }
+  }
+}

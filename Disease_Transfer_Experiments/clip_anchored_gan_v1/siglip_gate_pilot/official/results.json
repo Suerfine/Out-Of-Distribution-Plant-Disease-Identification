@@ -1,0 +1,100 @@
+{
+  "images": [
+    2000,
+    1448
+  ],
+  "disease_correct": [
+    1153,
+    534
+  ],
+  "results": {
+    "zero": {
+      "current": {
+        "gamma": 0.0,
+        "to_seen": null,
+        "to_unseen": null,
+        "counts": [
+          1432,
+          548
+        ],
+        "h": 0.49517405702285766
+      },
+      "to_unseen": {
+        "gamma": 0.0,
+        "to_seen": null,
+        "to_unseen": [
+          1.0,
+          4.0,
+          1.0
+        ],
+        "counts": [
+          1426,
+          617
+        ],
+        "h": 0.5334237891530619
+      },
+      "two_way": {
+        "gamma": 0.0,
+        "to_seen": [
+          1.5,
+          6.0,
+          4.0
+        ],
+        "to_unseen": [
+          2.0,
+          0.5,
+          2.0
+        ],
+        "counts": [
+          1408,
+          852
+        ],
+        "h": 0.6410287101793745
+      }
+    },
+    "tuned": {
+      "current": {
+        "gamma": 1.5,
+        "to_seen": null,
+        "to_unseen": null,
+        "counts": [
+          1354,
+          945
+        ],
+        "h": 0.6645887177867715
+      },
+      "to_unseen": {
+        "gamma": 1.5,
+        "to_seen": null,
+        "to_unseen": [
+          2.0,
+          0.5,
+          0.5
+        ],
+        "counts": [
+          1344,
+          1010
+        ],
+        "h": 0.6845192470611017
+      },
+      "two_way": {
+        "gamma": 1.5,
+        "to_seen": [
+          2.0,
+          4.0,
+          6.0
+        ],
+        "to_unseen": [
+          1.5,
+          0.5,
+          2.0
+        ],
+        "counts": [
+          1346,
+          1099
+        ],
+        "h": 0.7134078352392857
+      }
+    }
+  }
+}

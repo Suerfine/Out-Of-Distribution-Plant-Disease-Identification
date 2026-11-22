@@ -1,0 +1,656 @@
+{
+  "baseline": {
+    "seen": 773,
+    "held_out": 24,
+    "held_out_macro": 0.08222222222222222,
+    "per_pair": {
+      "apple_mosaic_virus": {
+        "correct": 0,
+        "images": 40
+      },
+      "apple_scab": {
+        "correct": 0,
+        "images": 40
+      },
+      "blackgram_anthracnose": {
+        "correct": 0,
+        "images": 14
+      },
+      "cassava_mosaic": {
+        "correct": 0,
+        "images": 40
+      },
+      "cauliflower_downy_mildew": {
+        "correct": 1,
+        "images": 8
+      },
+      "citrus_canker": {
+        "correct": 0,
+        "images": 23
+      },
+      "corn_spot": {
+        "correct": 0,
+        "images": 40
+      },
+      "corn_yellowing": {
+        "correct": 0,
+        "images": 14
+      },
+      "mango_powdery_mildew": {
+        "correct": 8,
+        "images": 18
+      },
+      "paddy_brown_spot": {
+        "correct": 0,
+        "images": 40
+      },
+      "papaya_bacterial_spot": {
+        "correct": 0,
+        "images": 14
+      },
+      "papaya_curl": {
+        "correct": 0,
+        "images": 14
+      },
+      "peach_monillia_laxa": {
+        "correct": 7,
+        "images": 8
+      },
+      "strawberry_scorch": {
+        "correct": 7,
+        "images": 40
+      },
+      "sugarcane_smut": {
+        "correct": 0,
+        "images": 9
+      },
+      "tomato_leaf_blight": {
+        "correct": 0,
+        "images": 37
+      },
+      "tomato_curl": {
+        "correct": 0,
+        "images": 14
+      },
+      "tomato_mosaic_virus": {
+        "correct": 1,
+        "images": 40
+      },
+      "tomato_septoria_leaf_spot": {
+        "correct": 0,
+        "images": 40
+      },
+      "tomato_spider_mites": {
+        "correct": 0,
+        "images": 40
+      }
+    }
+  },
+  "192_gan": [
+    {
+      "seen": 770,
+      "held_out": 38,
+      "held_out_macro": 0.11064268461007591,
+      "per_pair": {
+        "apple_mosaic_virus": {
+          "correct": 0,
+          "images": 40
+        },
+        "apple_scab": {
+          "correct": 1,
+          "images": 40
+        },
+        "blackgram_anthracnose": {
+          "correct": 0,
+          "images": 14
+        },
+        "cassava_mosaic": {
+          "correct": 0,
+          "images": 40
+        },
+        "cauliflower_downy_mildew": {
+          "correct": 1,
+          "images": 8
+        },
+        "citrus_canker": {
+          "correct": 6,
+          "images": 23
+        },
+        "corn_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "corn_yellowing": {
+          "correct": 1,
+          "images": 14
+        },
+        "mango_powdery_mildew": {
+          "correct": 10,
+          "images": 18
+        },
+        "paddy_brown_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "papaya_bacterial_spot": {
+          "correct": 0,
+          "images": 14
+        },
+        "papaya_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "peach_monillia_laxa": {
+          "correct": 7,
+          "images": 8
+        },
+        "strawberry_scorch": {
+          "correct": 11,
+          "images": 40
+        },
+        "sugarcane_smut": {
+          "correct": 0,
+          "images": 9
+        },
+        "tomato_leaf_blight": {
+          "correct": 0,
+          "images": 37
+        },
+        "tomato_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "tomato_mosaic_virus": {
+          "correct": 1,
+          "images": 40
+        },
+        "tomato_septoria_leaf_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "tomato_spider_mites": {
+          "correct": 0,
+          "images": 40
+        }
+      }
+    },
+    {
+      "seen": 772,
+      "held_out": 43,
+      "held_out_macro": 0.11874051069703244,
+      "per_pair": {
+        "apple_mosaic_virus": {
+          "correct": 1,
+          "images": 40
+        },
+        "apple_scab": {
+          "correct": 1,
+          "images": 40
+        },
+        "blackgram_anthracnose": {
+          "correct": 0,
+          "images": 14
+        },
+        "cassava_mosaic": {
+          "correct": 0,
+          "images": 40
+        },
+        "cauliflower_downy_mildew": {
+          "correct": 1,
+          "images": 8
+        },
+        "citrus_canker": {
+          "correct": 8,
+          "images": 23
+        },
+        "corn_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "corn_yellowing": {
+          "correct": 1,
+          "images": 14
+        },
+        "mango_powdery_mildew": {
+          "correct": 10,
+          "images": 18
+        },
+        "paddy_brown_spot": {
+          "correct": 1,
+          "images": 40
+        },
+        "papaya_bacterial_spot": {
+          "correct": 0,
+          "images": 14
+        },
+        "papaya_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "peach_monillia_laxa": {
+          "correct": 7,
+          "images": 8
+        },
+        "strawberry_scorch": {
+          "correct": 12,
+          "images": 40
+        },
+        "sugarcane_smut": {
+          "correct": 0,
+          "images": 9
+        },
+        "tomato_leaf_blight": {
+          "correct": 0,
+          "images": 37
+        },
+        "tomato_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "tomato_mosaic_virus": {
+          "correct": 1,
+          "images": 40
+        },
+        "tomato_septoria_leaf_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "tomato_spider_mites": {
+          "correct": 0,
+          "images": 40
+        }
+      }
+    },
+    {
+      "seen": 774,
+      "held_out": 43,
+      "held_out_macro": 0.11781659765355419,
+      "per_pair": {
+        "apple_mosaic_virus": {
+          "correct": 0,
+          "images": 40
+        },
+        "apple_scab": {
+          "correct": 1,
+          "images": 40
+        },
+        "blackgram_anthracnose": {
+          "correct": 0,
+          "images": 14
+        },
+        "cassava_mosaic": {
+          "correct": 0,
+          "images": 40
+        },
+        "cauliflower_downy_mildew": {
+          "correct": 1,
+          "images": 8
+        },
+        "citrus_canker": {
+          "correct": 7,
+          "images": 23
+        },
+        "corn_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "corn_yellowing": {
+          "correct": 1,
+          "images": 14
+        },
+        "mango_powdery_mildew": {
+          "correct": 10,
+          "images": 18
+        },
+        "paddy_brown_spot": {
+          "correct": 1,
+          "images": 40
+        },
+        "papaya_bacterial_spot": {
+          "correct": 0,
+          "images": 14
+        },
+        "papaya_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "peach_monillia_laxa": {
+          "correct": 7,
+          "images": 8
+        },
+        "strawberry_scorch": {
+          "correct": 14,
+          "images": 40
+        },
+        "sugarcane_smut": {
+          "correct": 0,
+          "images": 9
+        },
+        "tomato_leaf_blight": {
+          "correct": 0,
+          "images": 37
+        },
+        "tomato_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "tomato_mosaic_virus": {
+          "correct": 1,
+          "images": 40
+        },
+        "tomato_septoria_leaf_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "tomato_spider_mites": {
+          "correct": 0,
+          "images": 40
+        }
+      }
+    }
+  ],
+  "192_real_only": [
+    {
+      "seen": 772,
+      "held_out": 24,
+      "held_out_macro": 0.07875,
+      "per_pair": {
+        "apple_mosaic_virus": {
+          "correct": 0,
+          "images": 40
+        },
+        "apple_scab": {
+          "correct": 0,
+          "images": 40
+        },
+        "blackgram_anthracnose": {
+          "correct": 0,
+          "images": 14
+        },
+        "cassava_mosaic": {
+          "correct": 0,
+          "images": 40
+        },
+        "cauliflower_downy_mildew": {
+          "correct": 1,
+          "images": 8
+        },
+        "citrus_canker": {
+          "correct": 0,
+          "images": 23
+        },
+        "corn_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "corn_yellowing": {
+          "correct": 0,
+          "images": 14
+        },
+        "mango_powdery_mildew": {
+          "correct": 9,
+          "images": 18
+        },
+        "paddy_brown_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "papaya_bacterial_spot": {
+          "correct": 0,
+          "images": 14
+        },
+        "papaya_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "peach_monillia_laxa": {
+          "correct": 6,
+          "images": 8
+        },
+        "strawberry_scorch": {
+          "correct": 7,
+          "images": 40
+        },
+        "sugarcane_smut": {
+          "correct": 0,
+          "images": 9
+        },
+        "tomato_leaf_blight": {
+          "correct": 0,
+          "images": 37
+        },
+        "tomato_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "tomato_mosaic_virus": {
+          "correct": 1,
+          "images": 40
+        },
+        "tomato_septoria_leaf_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "tomato_spider_mites": {
+          "correct": 0,
+          "images": 40
+        }
+      }
+    },
+    {
+      "seen": 775,
+      "held_out": 22,
+      "held_out_macro": 0.07472222222222222,
+      "per_pair": {
+        "apple_mosaic_virus": {
+          "correct": 0,
+          "images": 40
+        },
+        "apple_scab": {
+          "correct": 0,
+          "images": 40
+        },
+        "blackgram_anthracnose": {
+          "correct": 0,
+          "images": 14
+        },
+        "cassava_mosaic": {
+          "correct": 0,
+          "images": 40
+        },
+        "cauliflower_downy_mildew": {
+          "correct": 1,
+          "images": 8
+        },
+        "citrus_canker": {
+          "correct": 0,
+          "images": 23
+        },
+        "corn_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "corn_yellowing": {
+          "correct": 0,
+          "images": 14
+        },
+        "mango_powdery_mildew": {
+          "correct": 8,
+          "images": 18
+        },
+        "paddy_brown_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "papaya_bacterial_spot": {
+          "correct": 0,
+          "images": 14
+        },
+        "papaya_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "peach_monillia_laxa": {
+          "correct": 6,
+          "images": 8
+        },
+        "strawberry_scorch": {
+          "correct": 6,
+          "images": 40
+        },
+        "sugarcane_smut": {
+          "correct": 0,
+          "images": 9
+        },
+        "tomato_leaf_blight": {
+          "correct": 0,
+          "images": 37
+        },
+        "tomato_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "tomato_mosaic_virus": {
+          "correct": 1,
+          "images": 40
+        },
+        "tomato_septoria_leaf_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "tomato_spider_mites": {
+          "correct": 0,
+          "images": 40
+        }
+      }
+    },
+    {
+      "seen": 774,
+      "held_out": 22,
+      "held_out_macro": 0.07472222222222222,
+      "per_pair": {
+        "apple_mosaic_virus": {
+          "correct": 0,
+          "images": 40
+        },
+        "apple_scab": {
+          "correct": 0,
+          "images": 40
+        },
+        "blackgram_anthracnose": {
+          "correct": 0,
+          "images": 14
+        },
+        "cassava_mosaic": {
+          "correct": 0,
+          "images": 40
+        },
+        "cauliflower_downy_mildew": {
+          "correct": 1,
+          "images": 8
+        },
+        "citrus_canker": {
+          "correct": 0,
+          "images": 23
+        },
+        "corn_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "corn_yellowing": {
+          "correct": 0,
+          "images": 14
+        },
+        "mango_powdery_mildew": {
+          "correct": 8,
+          "images": 18
+        },
+        "paddy_brown_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "papaya_bacterial_spot": {
+          "correct": 0,
+          "images": 14
+        },
+        "papaya_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "peach_monillia_laxa": {
+          "correct": 6,
+          "images": 8
+        },
+        "strawberry_scorch": {
+          "correct": 6,
+          "images": 40
+        },
+        "sugarcane_smut": {
+          "correct": 0,
+          "images": 9
+        },
+        "tomato_leaf_blight": {
+          "correct": 0,
+          "images": 37
+        },
+        "tomato_curl": {
+          "correct": 0,
+          "images": 14
+        },
+        "tomato_mosaic_virus": {
+          "correct": 1,
+          "images": 40
+        },
+        "tomato_septoria_leaf_spot": {
+          "correct": 0,
+          "images": 40
+        },
+        "tomato_spider_mites": {
+          "correct": 0,
+          "images": 40
+        }
+      }
+    }
+  ],
+  "within_crop": {
+    "true_crop": [
+      782,
+      78
+    ],
+    "disease_only": [
+      775,
+      26
+    ],
+    "zero_offset": [
+      774,
+      43
+    ],
+    "matched_seen_diagnostic": [
+      773,
+      56
+    ]
+  },
+  "original": {
+    "true_crop": [
+      781,
+      65
+    ],
+    "disease_only": [
+      776,
+      24
+    ],
+    "zero_offset": [
+      773,
+      33
+    ],
+    "matched_seen_diagnostic": [
+      773,
+      55
+    ]
+  },
+  "images": [
+    862,
+    533
+  ],
+  "within_crop_weight": 0.2
+}

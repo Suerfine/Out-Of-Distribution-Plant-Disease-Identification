@@ -1,0 +1,1360 @@
+{
+  "images": [
+    862,
+    533
+  ],
+  "results": {
+    "siglip": {
+      "standalone_disease": [
+        599,
+        155
+      ],
+      "unseen_expert_ceiling": 356,
+      "zero_offset": {
+        "current": {
+          "to_seen": null,
+          "to_unseen": null,
+          "development": [
+            721,
+            181
+          ],
+          "held_out": [
+            721,
+            181
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                97,
+                29
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 1,
+              "counts": [
+                194,
+                45
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 2,
+              "counts": [
+                194,
+                34
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 3,
+              "counts": [
+                141,
+                19
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 4,
+              "counts": [
+                95,
+                54
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            }
+          ]
+        },
+        "to_seen": {
+          "to_seen": [
+            1.5,
+            6.0,
+            4.0
+          ],
+          "to_unseen": null,
+          "development": [
+            736,
+            181
+          ],
+          "held_out": [
+            735,
+            181
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                103,
+                29
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                4.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 1,
+              "counts": [
+                199,
+                45
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                4.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 2,
+              "counts": [
+                194,
+                34
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                4.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 3,
+              "counts": [
+                144,
+                19
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                2.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 4,
+              "counts": [
+                95,
+                54
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                4.0
+              ],
+              "to_unseen": null
+            }
+          ]
+        },
+        "to_unseen": {
+          "to_seen": null,
+          "to_unseen": [
+            1.0,
+            4.0,
+            1.0
+          ],
+          "development": [
+            721,
+            195
+          ],
+          "held_out": [
+            717,
+            188
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                96,
+                36
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                1.0,
+                0.5,
+                0.5
+              ]
+            },
+            {
+              "fold": 1,
+              "counts": [
+                191,
+                45
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                2.0,
+                4.0,
+                1.0
+              ]
+            },
+            {
+              "fold": 2,
+              "counts": [
+                194,
+                34
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                1.0,
+                4.0,
+                1.0
+              ]
+            },
+            {
+              "fold": 3,
+              "counts": [
+                141,
+                19
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                1.0,
+                4.0,
+                1.0
+              ]
+            },
+            {
+              "fold": 4,
+              "counts": [
+                95,
+                54
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                1.0,
+                4.0,
+                1.0
+              ]
+            }
+          ]
+        },
+        "two_way": {
+          "to_seen": [
+            1.5,
+            6.0,
+            4.0
+          ],
+          "to_unseen": [
+            2.0,
+            0.5,
+            2.0
+          ],
+          "development": [
+            722,
+            246
+          ],
+          "held_out": [
+            718,
+            235
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                102,
+                54
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                4.0
+              ],
+              "to_unseen": [
+                1.0,
+                0.5,
+                3.0
+              ]
+            },
+            {
+              "fold": 1,
+              "counts": [
+                193,
+                58
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                4.0
+              ],
+              "to_unseen": [
+                2.0,
+                0.5,
+                2.0
+              ]
+            },
+            {
+              "fold": 2,
+              "counts": [
+                190,
+                41
+              ],
+              "to_seen": [
+                2.0,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                1.5,
+                0.5,
+                4.0
+              ]
+            },
+            {
+              "fold": 3,
+              "counts": [
+                142,
+                24
+              ],
+              "to_seen": [
+                2.0,
+                4.0,
+                2.0
+              ],
+              "to_unseen": [
+                1.5,
+                0.5,
+                3.0
+              ]
+            },
+            {
+              "fold": 4,
+              "counts": [
+                91,
+                58
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                4.0
+              ],
+              "to_unseen": [
+                1.5,
+                0.5,
+                3.0
+              ]
+            }
+          ]
+        }
+      },
+      "tuned_gamma": 1.5,
+      "tuned_offset": {
+        "current": {
+          "to_seen": null,
+          "to_unseen": null,
+          "development": [
+            547,
+            306
+          ],
+          "held_out": [
+            547,
+            306
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                66,
+                78
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 1,
+              "counts": [
+                154,
+                67
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 2,
+              "counts": [
+                151,
+                49
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 3,
+              "counts": [
+                113,
+                39
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 4,
+              "counts": [
+                63,
+                73
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            }
+          ]
+        },
+        "to_seen": {
+          "to_seen": [
+            0.5,
+            6.0,
+            6.0
+          ],
+          "to_unseen": null,
+          "development": [
+            577,
+            306
+          ],
+          "held_out": [
+            582,
+            304
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                73,
+                78
+              ],
+              "to_seen": [
+                0.5,
+                6.0,
+                6.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 1,
+              "counts": [
+                159,
+                67
+              ],
+              "to_seen": [
+                0.5,
+                6.0,
+                6.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 2,
+              "counts": [
+                158,
+                49
+              ],
+              "to_seen": [
+                0.5,
+                6.0,
+                4.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 3,
+              "counts": [
+                126,
+                37
+              ],
+              "to_seen": [
+                2.0,
+                6.0,
+                6.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 4,
+              "counts": [
+                66,
+                73
+              ],
+              "to_seen": [
+                0.5,
+                6.0,
+                6.0
+              ],
+              "to_unseen": null
+            }
+          ]
+        },
+        "to_unseen": {
+          "to_seen": null,
+          "to_unseen": [
+            2.0,
+            0.5,
+            0.5
+          ],
+          "development": [
+            547,
+            312
+          ],
+          "held_out": [
+            546,
+            311
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                66,
+                81
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                2.0,
+                0.5,
+                0.5
+              ]
+            },
+            {
+              "fold": 1,
+              "counts": [
+                154,
+                67
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                2.0,
+                1.0,
+                0.5
+              ]
+            },
+            {
+              "fold": 2,
+              "counts": [
+                150,
+                51
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                1.5,
+                0.5,
+                1.0
+              ]
+            },
+            {
+              "fold": 3,
+              "counts": [
+                113,
+                39
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                0.5,
+                0.5,
+                1.0
+              ]
+            },
+            {
+              "fold": 4,
+              "counts": [
+                63,
+                73
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                1.5,
+                4.0,
+                1.0
+              ]
+            }
+          ]
+        },
+        "two_way": {
+          "to_seen": [
+            2.0,
+            4.0,
+            6.0
+          ],
+          "to_unseen": [
+            1.5,
+            0.5,
+            2.0
+          ],
+          "development": [
+            642,
+            306
+          ],
+          "held_out": [
+            639,
+            306
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                84,
+                86
+              ],
+              "to_seen": [
+                1.5,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                2.0,
+                0.5,
+                3.0
+              ]
+            },
+            {
+              "fold": 1,
+              "counts": [
+                176,
+                68
+              ],
+              "to_seen": [
+                2.0,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                2.0,
+                0.5,
+                2.0
+              ]
+            },
+            {
+              "fold": 2,
+              "counts": [
+                164,
+                50
+              ],
+              "to_seen": [
+                2.0,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                2.0,
+                0.5,
+                2.0
+              ]
+            },
+            {
+              "fold": 3,
+              "counts": [
+                134,
+                33
+              ],
+              "to_seen": [
+                2.0,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                1.5,
+                0.5,
+                1.0
+              ]
+            },
+            {
+              "fold": 4,
+              "counts": [
+                81,
+                69
+              ],
+              "to_seen": [
+                2.0,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                2.0,
+                0.5,
+                1.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "clip": {
+      "standalone_disease": [
+        507,
+        137
+      ],
+      "unseen_expert_ceiling": 343,
+      "zero_offset": {
+        "current": {
+          "to_seen": null,
+          "to_unseen": null,
+          "development": [
+            674,
+            166
+          ],
+          "held_out": [
+            674,
+            166
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                92,
+                41
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 1,
+              "counts": [
+                177,
+                23
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 2,
+              "counts": [
+                175,
+                30
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 3,
+              "counts": [
+                139,
+                28
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 4,
+              "counts": [
+                91,
+                44
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            }
+          ]
+        },
+        "to_seen": {
+          "to_seen": [
+            0.25,
+            6.0,
+            6.0
+          ],
+          "to_unseen": null,
+          "development": [
+            685,
+            166
+          ],
+          "held_out": [
+            684,
+            165
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                92,
+                41
+              ],
+              "to_seen": [
+                0.25,
+                6.0,
+                6.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 1,
+              "counts": [
+                179,
+                23
+              ],
+              "to_seen": [
+                0.25,
+                6.0,
+                6.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 2,
+              "counts": [
+                181,
+                30
+              ],
+              "to_seen": [
+                0.25,
+                6.0,
+                6.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 3,
+              "counts": [
+                140,
+                27
+              ],
+              "to_seen": [
+                2.0,
+                6.0,
+                3.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 4,
+              "counts": [
+                92,
+                44
+              ],
+              "to_seen": [
+                0.25,
+                6.0,
+                6.0
+              ],
+              "to_unseen": null
+            }
+          ]
+        },
+        "to_unseen": {
+          "to_seen": null,
+          "to_unseen": [
+            0.75,
+            1.0,
+            0.5
+          ],
+          "development": [
+            674,
+            178
+          ],
+          "held_out": [
+            670,
+            176
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                92,
+                45
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                0.5,
+                0.5,
+                0.25
+              ]
+            },
+            {
+              "fold": 1,
+              "counts": [
+                175,
+                24
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                2.0,
+                1.0,
+                0.5
+              ]
+            },
+            {
+              "fold": 2,
+              "counts": [
+                175,
+                30
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                0.75,
+                1.0,
+                0.5
+              ]
+            },
+            {
+              "fold": 3,
+              "counts": [
+                139,
+                29
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                0.75,
+                1.0,
+                0.5
+              ]
+            },
+            {
+              "fold": 4,
+              "counts": [
+                89,
+                48
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                0.75,
+                0.5,
+                1.0
+              ]
+            }
+          ]
+        },
+        "two_way": {
+          "to_seen": [
+            2.0,
+            4.0,
+            6.0
+          ],
+          "to_unseen": [
+            2.0,
+            0.5,
+            4.0
+          ],
+          "development": [
+            674,
+            233
+          ],
+          "held_out": [
+            676,
+            219
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                98,
+                67
+              ],
+              "to_seen": [
+                2.0,
+                6.0,
+                6.0
+              ],
+              "to_unseen": [
+                2.0,
+                0.5,
+                2.0
+              ]
+            },
+            {
+              "fold": 1,
+              "counts": [
+                177,
+                38
+              ],
+              "to_seen": [
+                2.0,
+                6.0,
+                6.0
+              ],
+              "to_unseen": [
+                2.0,
+                0.5,
+                3.0
+              ]
+            },
+            {
+              "fold": 2,
+              "counts": [
+                178,
+                33
+              ],
+              "to_seen": [
+                2.0,
+                6.0,
+                6.0
+              ],
+              "to_unseen": [
+                1.5,
+                0.5,
+                3.0
+              ]
+            },
+            {
+              "fold": 3,
+              "counts": [
+                135,
+                30
+              ],
+              "to_seen": [
+                1.5,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                2.0,
+                0.5,
+                4.0
+              ]
+            },
+            {
+              "fold": 4,
+              "counts": [
+                88,
+                51
+              ],
+              "to_seen": [
+                1.5,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                2.0,
+                0.5,
+                4.0
+              ]
+            }
+          ]
+        }
+      },
+      "tuned_gamma": 1.2000000000000002,
+      "tuned_offset": {
+        "current": {
+          "to_seen": null,
+          "to_unseen": null,
+          "development": [
+            485,
+            265
+          ],
+          "held_out": [
+            485,
+            265
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                65,
+                76
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 1,
+              "counts": [
+                131,
+                43
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 2,
+              "counts": [
+                133,
+                44
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 3,
+              "counts": [
+                103,
+                42
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            },
+            {
+              "fold": 4,
+              "counts": [
+                53,
+                60
+              ],
+              "to_seen": null,
+              "to_unseen": null
+            }
+          ]
+        },
+        "to_seen": {
+          "to_seen": [
+            1.5,
+            6.0,
+            2.0
+          ],
+          "to_unseen": null,
+          "development": [
+            554,
+            265
+          ],
+          "held_out": [
+            562,
+            263
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                79,
+                76
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                2.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 1,
+              "counts": [
+                144,
+                43
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                2.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 2,
+              "counts": [
+                154,
+                44
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                2.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 3,
+              "counts": [
+                120,
+                40
+              ],
+              "to_seen": [
+                2.0,
+                6.0,
+                6.0
+              ],
+              "to_unseen": null
+            },
+            {
+              "fold": 4,
+              "counts": [
+                65,
+                60
+              ],
+              "to_seen": [
+                1.5,
+                6.0,
+                2.0
+              ],
+              "to_unseen": null
+            }
+          ]
+        },
+        "to_unseen": {
+          "to_seen": null,
+          "to_unseen": [
+            0.5,
+            0.5,
+            1.0
+          ],
+          "development": [
+            485,
+            271
+          ],
+          "held_out": [
+            481,
+            271
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                65,
+                79
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                0.5,
+                0.5,
+                1.0
+              ]
+            },
+            {
+              "fold": 1,
+              "counts": [
+                129,
+                46
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                1.0,
+                0.5,
+                1.0
+              ]
+            },
+            {
+              "fold": 2,
+              "counts": [
+                131,
+                44
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                0.5,
+                0.5,
+                2.0
+              ]
+            },
+            {
+              "fold": 3,
+              "counts": [
+                103,
+                42
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                0.5,
+                0.5,
+                1.0
+              ]
+            },
+            {
+              "fold": 4,
+              "counts": [
+                53,
+                60
+              ],
+              "to_seen": null,
+              "to_unseen": [
+                0.5,
+                0.5,
+                1.0
+              ]
+            }
+          ]
+        },
+        "two_way": {
+          "to_seen": [
+            2.0,
+            4.0,
+            6.0
+          ],
+          "to_unseen": [
+            1.0,
+            0.5,
+            4.0
+          ],
+          "development": [
+            613,
+            270
+          ],
+          "held_out": [
+            614,
+            263
+          ],
+          "folds": [
+            {
+              "fold": 0,
+              "counts": [
+                86,
+                82
+              ],
+              "to_seen": [
+                2.0,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                1.5,
+                0.5,
+                4.0
+              ]
+            },
+            {
+              "fold": 1,
+              "counts": [
+                161,
+                49
+              ],
+              "to_seen": [
+                2.0,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                1.5,
+                0.5,
+                4.0
+              ]
+            },
+            {
+              "fold": 2,
+              "counts": [
+                161,
+                43
+              ],
+              "to_seen": [
+                2.0,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                0.75,
+                0.5,
+                4.0
+              ]
+            },
+            {
+              "fold": 3,
+              "counts": [
+                130,
+                34
+              ],
+              "to_seen": [
+                2.0,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                0.5,
+                0.5,
+                4.0
+              ]
+            },
+            {
+              "fold": 4,
+              "counts": [
+                76,
+                55
+              ],
+              "to_seen": [
+                2.0,
+                4.0,
+                6.0
+              ],
+              "to_unseen": [
+                0.5,
+                0.5,
+                4.0
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

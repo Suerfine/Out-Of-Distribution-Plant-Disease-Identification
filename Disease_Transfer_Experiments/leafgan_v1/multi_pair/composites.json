@@ -1,0 +1,282 @@
+[
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_bacterial_spot\\synthetic\\CDDM_tomato_healthy_90979.png",
+    "recipient": "CDDM_tomato_healthy_90979.jpg",
+    "crop_id": 51,
+    "disease_id": 33,
+    "pair": "tomato_bacterial_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_bacterial_spot\\synthetic\\CDDM_tomato_healthy_90485.png",
+    "recipient": "CDDM_tomato_healthy_90485.jpg",
+    "crop_id": 51,
+    "disease_id": 33,
+    "pair": "tomato_bacterial_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_bacterial_spot\\synthetic\\CDDM_tomato_healthy_93057.png",
+    "recipient": "CDDM_tomato_healthy_93057.jpg",
+    "crop_id": 51,
+    "disease_id": 33,
+    "pair": "tomato_bacterial_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_bacterial_spot\\synthetic\\CDDM_tomato_healthy_90229.png",
+    "recipient": "CDDM_tomato_healthy_90229.jpg",
+    "crop_id": 51,
+    "disease_id": 33,
+    "pair": "tomato_bacterial_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_bacterial_spot\\synthetic\\CDDM_tomato_healthy_89796.png",
+    "recipient": "CDDM_tomato_healthy_89796.jpg",
+    "crop_id": 51,
+    "disease_id": 33,
+    "pair": "tomato_bacterial_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_bacterial_spot\\synthetic\\CDDM_tomato_healthy_92195.png",
+    "recipient": "CDDM_tomato_healthy_92195.jpg",
+    "crop_id": 51,
+    "disease_id": 33,
+    "pair": "tomato_bacterial_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_bacterial_spot\\synthetic\\CDDM_tomato_healthy_89915.png",
+    "recipient": "CDDM_tomato_healthy_89915.jpg",
+    "crop_id": 51,
+    "disease_id": 33,
+    "pair": "tomato_bacterial_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_bacterial_spot\\synthetic\\CDDM_tomato_healthy_91199.png",
+    "recipient": "CDDM_tomato_healthy_91199.jpg",
+    "crop_id": 51,
+    "disease_id": 33,
+    "pair": "tomato_bacterial_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_late_blight\\synthetic\\CDDM_tomato_healthy_90979.png",
+    "recipient": "CDDM_tomato_healthy_90979.jpg",
+    "crop_id": 51,
+    "disease_id": 139,
+    "pair": "tomato_late_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_late_blight\\synthetic\\CDDM_tomato_healthy_90485.png",
+    "recipient": "CDDM_tomato_healthy_90485.jpg",
+    "crop_id": 51,
+    "disease_id": 139,
+    "pair": "tomato_late_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_late_blight\\synthetic\\CDDM_tomato_healthy_93057.png",
+    "recipient": "CDDM_tomato_healthy_93057.jpg",
+    "crop_id": 51,
+    "disease_id": 139,
+    "pair": "tomato_late_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_late_blight\\synthetic\\CDDM_tomato_healthy_90229.png",
+    "recipient": "CDDM_tomato_healthy_90229.jpg",
+    "crop_id": 51,
+    "disease_id": 139,
+    "pair": "tomato_late_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_late_blight\\synthetic\\CDDM_tomato_healthy_89796.png",
+    "recipient": "CDDM_tomato_healthy_89796.jpg",
+    "crop_id": 51,
+    "disease_id": 139,
+    "pair": "tomato_late_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_late_blight\\synthetic\\CDDM_tomato_healthy_92195.png",
+    "recipient": "CDDM_tomato_healthy_92195.jpg",
+    "crop_id": 51,
+    "disease_id": 139,
+    "pair": "tomato_late_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_late_blight\\synthetic\\CDDM_tomato_healthy_89915.png",
+    "recipient": "CDDM_tomato_healthy_89915.jpg",
+    "crop_id": 51,
+    "disease_id": 139,
+    "pair": "tomato_late_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\tomato_late_blight\\synthetic\\CDDM_tomato_healthy_91199.png",
+    "recipient": "CDDM_tomato_healthy_91199.jpg",
+    "crop_id": 51,
+    "disease_id": 139,
+    "pair": "tomato_late_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_brown_spot\\synthetic\\CDDM_apple_healthy_23100.png",
+    "recipient": "CDDM_apple_healthy_23100.jpg",
+    "crop_id": 0,
+    "disease_id": 4,
+    "pair": "apple_brown_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_brown_spot\\synthetic\\CDDM_apple_healthy_24484.png",
+    "recipient": "CDDM_apple_healthy_24484.jpg",
+    "crop_id": 0,
+    "disease_id": 4,
+    "pair": "apple_brown_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_brown_spot\\synthetic\\CDDM_apple_healthy_23699.png",
+    "recipient": "CDDM_apple_healthy_23699.jpg",
+    "crop_id": 0,
+    "disease_id": 4,
+    "pair": "apple_brown_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_brown_spot\\synthetic\\CDDM_apple_healthy_24750.png",
+    "recipient": "CDDM_apple_healthy_24750.jpg",
+    "crop_id": 0,
+    "disease_id": 4,
+    "pair": "apple_brown_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_brown_spot\\synthetic\\CDDM_apple_healthy_24226.png",
+    "recipient": "CDDM_apple_healthy_24226.jpg",
+    "crop_id": 0,
+    "disease_id": 4,
+    "pair": "apple_brown_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_brown_spot\\synthetic\\CDDM_apple_healthy_24262.png",
+    "recipient": "CDDM_apple_healthy_24262.jpg",
+    "crop_id": 0,
+    "disease_id": 4,
+    "pair": "apple_brown_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_brown_spot\\synthetic\\CDDM_apple_healthy_21703.png",
+    "recipient": "CDDM_apple_healthy_21703.jpg",
+    "crop_id": 0,
+    "disease_id": 4,
+    "pair": "apple_brown_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_brown_spot\\synthetic\\CDDM_apple_healthy_24562.png",
+    "recipient": "CDDM_apple_healthy_24562.jpg",
+    "crop_id": 0,
+    "disease_id": 4,
+    "pair": "apple_brown_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_frog_eye_leaf_spot\\synthetic\\CDDM_apple_healthy_23100.png",
+    "recipient": "CDDM_apple_healthy_23100.jpg",
+    "crop_id": 0,
+    "disease_id": 7,
+    "pair": "apple_frog_eye_leaf_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_frog_eye_leaf_spot\\synthetic\\CDDM_apple_healthy_24484.png",
+    "recipient": "CDDM_apple_healthy_24484.jpg",
+    "crop_id": 0,
+    "disease_id": 7,
+    "pair": "apple_frog_eye_leaf_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_frog_eye_leaf_spot\\synthetic\\CDDM_apple_healthy_23699.png",
+    "recipient": "CDDM_apple_healthy_23699.jpg",
+    "crop_id": 0,
+    "disease_id": 7,
+    "pair": "apple_frog_eye_leaf_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_frog_eye_leaf_spot\\synthetic\\CDDM_apple_healthy_24750.png",
+    "recipient": "CDDM_apple_healthy_24750.jpg",
+    "crop_id": 0,
+    "disease_id": 7,
+    "pair": "apple_frog_eye_leaf_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_frog_eye_leaf_spot\\synthetic\\CDDM_apple_healthy_24226.png",
+    "recipient": "CDDM_apple_healthy_24226.jpg",
+    "crop_id": 0,
+    "disease_id": 7,
+    "pair": "apple_frog_eye_leaf_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_frog_eye_leaf_spot\\synthetic\\CDDM_apple_healthy_24262.png",
+    "recipient": "CDDM_apple_healthy_24262.jpg",
+    "crop_id": 0,
+    "disease_id": 7,
+    "pair": "apple_frog_eye_leaf_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_frog_eye_leaf_spot\\synthetic\\CDDM_apple_healthy_21703.png",
+    "recipient": "CDDM_apple_healthy_21703.jpg",
+    "crop_id": 0,
+    "disease_id": 7,
+    "pair": "apple_frog_eye_leaf_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\apple_frog_eye_leaf_spot\\synthetic\\CDDM_apple_healthy_24562.png",
+    "recipient": "CDDM_apple_healthy_24562.jpg",
+    "crop_id": 0,
+    "disease_id": 7,
+    "pair": "apple_frog_eye_leaf_spot"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\cassava_bacterial_blight\\synthetic\\CPDD_cassava_healthy_5134.png",
+    "recipient": "CPDD_cassava_healthy_5134.jpg",
+    "crop_id": 13,
+    "disease_id": 46,
+    "pair": "cassava_bacterial_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\cassava_bacterial_blight\\synthetic\\CPDD_cassava_healthy_5422.png",
+    "recipient": "CPDD_cassava_healthy_5422.jpg",
+    "crop_id": 13,
+    "disease_id": 46,
+    "pair": "cassava_bacterial_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\cassava_bacterial_blight\\synthetic\\CPDD_cassava_healthy_5405.png",
+    "recipient": "CPDD_cassava_healthy_5405.jpg",
+    "crop_id": 13,
+    "disease_id": 46,
+    "pair": "cassava_bacterial_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\cassava_bacterial_blight\\synthetic\\CPDD_cassava_healthy_5808.png",
+    "recipient": "CPDD_cassava_healthy_5808.jpg",
+    "crop_id": 13,
+    "disease_id": 46,
+    "pair": "cassava_bacterial_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\cassava_bacterial_blight\\synthetic\\CPDD_cassava_healthy_5233.png",
+    "recipient": "CPDD_cassava_healthy_5233.jpg",
+    "crop_id": 13,
+    "disease_id": 46,
+    "pair": "cassava_bacterial_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\cassava_bacterial_blight\\synthetic\\CPDD_cassava_healthy_5737.png",
+    "recipient": "CPDD_cassava_healthy_5737.jpg",
+    "crop_id": 13,
+    "disease_id": 46,
+    "pair": "cassava_bacterial_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\cassava_bacterial_blight\\synthetic\\CPDD_cassava_healthy_5253.png",
+    "recipient": "CPDD_cassava_healthy_5253.jpg",
+    "crop_id": 13,
+    "disease_id": 46,
+    "pair": "cassava_bacterial_blight"
+  },
+  {
+    "path": "C:\\Users\\Hein\\Documents\\AML_Project\\Disease_Transfer_Experiments\\leafgan_v1\\multi_pair\\cassava_bacterial_blight\\synthetic\\CPDD_cassava_healthy_5565.png",
+    "recipient": "CPDD_cassava_healthy_5565.jpg",
+    "crop_id": 13,
+    "disease_id": 46,
+    "pair": "cassava_bacterial_blight"
+  }
+]

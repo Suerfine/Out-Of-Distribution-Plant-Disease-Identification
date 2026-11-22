@@ -1,0 +1,16 @@
+{
+  "generator": {
+    "file": "checkpoint_b.pt",
+    "sha256": "16f7fa3dae34cbe37e828bff735c4308dbbebe400a7625ea2b660220aba653f7",
+    "stage": "leafgan",
+    "epoch": 60,
+    "cursor": 0,
+    "saved_utc": "2026-11-14T21:31:21.836526+00:00"
+  },
+  "recipients": [
+    "BDPL_papaya_healthy_1459.jpg",
+    "BDPL_papaya_healthy_1430.jpg",
+    "BDPL_papaya_healthy_1524.jpg",
+    "BDPL_papaya_healthy_1497.jpg"
+  ]
+}
