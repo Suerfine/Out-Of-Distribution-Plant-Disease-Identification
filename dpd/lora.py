@@ -20,6 +20,23 @@ TARGETS = {
     "mlp_out": ("mlp.c_proj", "weight"),
 }
 
+# Weight names inside a timm VisionTransformer block (used by SigLIP / SigLIP 2 in open_clip).
+TIMM_TARGETS = {
+    "attn_qkv": ("attn.qkv", "weight"),
+    "attn_out": ("attn.proj", "weight"),
+    "mlp_in": ("mlp.fc1", "weight"),
+    "mlp_out": ("mlp.fc2", "weight"),
+}
+
+
+def _blocks_and_targets(visual):
+    """Return (transformer blocks sequence, target weight map) for OpenAI CLIP or timm-backed SigLIP encoders."""
+    if hasattr(visual, "transformer"):
+        return visual.transformer.resblocks, TARGETS
+    if hasattr(visual, "trunk") and hasattr(visual.trunk, "blocks"):
+        return visual.trunk.blocks, TIMM_TARGETS
+    raise AttributeError(f"Unsupported visual encoder for LoRA: {type(visual).__name__}")
+
 
 class LoRADelta(nn.Module):
     def __init__(self, out_features: int, in_features: int, rank: int, alpha: float):
@@ -39,10 +56,13 @@ def apply_lora(visual, last_n_blocks: int, rank: int, alpha: float, targets: lis
     Returns the new trainable parameters. Earlier blocks get no gradient, so autograd stores nothing for them."""
     for p in visual.parameters():
         p.requires_grad_(False)
+    if last_n_blocks <= 0:
+        return []
+    blocks, target_map = _blocks_and_targets(visual)
     params = []
-    for block in visual.transformer.resblocks[-last_n_blocks:]:
+    for block in blocks[-last_n_blocks:]:
         for t in targets:
-            module_path, name = TARGETS[t]
+            module_path, name = target_map[t]
             module = block.get_submodule(module_path)
             out_f, in_f = getattr(module, name).shape
             delta = LoRADelta(out_f, in_f, rank, alpha).to(getattr(module, name).device)
