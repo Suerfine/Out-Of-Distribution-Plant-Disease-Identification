@@ -1,4 +1,0 @@
-{"updated_utc": "2026-11-14T20:41:26.001594+00:00", "phase": "preparing_masks", "pid": 432, "healthy": 107, "diseased": 79, "models": {}}
-{"updated_utc": "2026-11-14T20:42:40.893825+00:00", "phase": "preparing_masks", "pid": 24252, "healthy": 107, "diseased": 79, "models": {}}
-{"updated_utc": "2026-11-14T20:57:42.547387+00:00", "phase": "training", "pid": 24252, "epoch": 56, "step": 25, "total_steps": 49, "losses": {"D_A": 0.2550624907016754, "G_A": 0.17873528599739075, "cycle_A": 1.0799717903137207, "idt_A": 0.34769830107688904, "D_B": 0.1305805891752243, "G_B": 0.35407954454421997, "cycle_B": 0.7417680025100708, "idt_B": 0.5436769723892212}, "models": {}}
-{"updated_utc": "2026-11-14T20:58:50.362012+00:00", "phase": "complete", "pid": 24252, "epochs": 60, "models": {}}

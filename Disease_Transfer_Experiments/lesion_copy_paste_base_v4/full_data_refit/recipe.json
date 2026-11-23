@@ -1,8 +1,0 @@
-{
-  "epochs": 5,
-  "originals": 8000,
-  "composites": 1028,
-  "baseline_sha256": "02624fc45679320511e1def9d8c3184ba68c8877d4cac52df18a26e969220428",
-  "manifest_sha256": "79bde5e62fb70b57b513311f7d39b5e97b4dbf481d87d75e0da5187797d3a892",
-  "composites_sha256": "d662ffd13df4025c7bf5172aee742259dc1628cb5968d366bf8c0d7b48b0ae75"
-}
