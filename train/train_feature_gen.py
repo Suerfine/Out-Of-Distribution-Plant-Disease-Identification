@@ -26,7 +26,7 @@ import torch.nn.functional as F
 from dpd.clip_utils import build_prompts, display_name, encode_images, encode_prompts, load_clip, load_descriptions
 from dpd.config import load_config, output_dir
 from dpd.data import PROJECT_ROOT, pair_table, read_metadata
-from dpd.evaluate import evaluate, format_summary, gamma0_index
+from dpd.evaluate import evaluate, format_summary, gamma0_index, gamma_free_metrics
 from dpd.feature_gen import fit_classifier, synthesise, train_gan
 from dpd.report import save_test_outputs
 from dpd.splits import make_validation_split
@@ -175,6 +175,9 @@ def main():
     hidden = real_unseen if vcfg["exclude_real_unseen_from_label_space"] else np.zeros(len(pairs), bool)
     n_splits = vcfg.get("n_splits", 1)
     hm_grid = np.zeros((n_splits, ccfg["max_epochs"], len(gammas)))
+    gf_keys = ("ausuc", "closed_seen_top1", "closed_unseen_top1")
+    gf_grid = {key: np.zeros(hm_grid.shape[:-1]) for key in gf_keys}  # gamma-free validation metrics per split and epoch
+    save_scores = vcfg.get("save_scores", False)
     history, holdouts = [], []
     for k in range(n_splits):
         split_seed = cfg["seed"] + k
@@ -191,14 +194,26 @@ def main():
         x_train = x_final if fcfg["source"] == "frozen" else torch.as_tensor(lora_features(fcfg, df, pairs, fit_df, split_seed)["train"], device=device)
         x_vs, x_vu = x_train[val_seen["row"].to_numpy()], x_train[val_unseen["row"].to_numpy()]
 
-        def validate(epoch, clf, k=k, val_pairs=val_pairs, y_vs=y_vs, y_vu=y_vu, x_vs=x_vs, x_vu=x_vu):
+        saved = []  # validation.save_scores: unmasked validation scores per epoch, as train_lora.py writes them
+
+        def validate(epoch, clf, k=k, val_pairs=val_pairs, y_vs=y_vs, y_vu=y_vu, x_vs=x_vs, x_vu=x_vu, saved=saved,
+                     val_files=np.concatenate([val_seen["file"].to_numpy(), val_unseen["file"].to_numpy()]).astype(str),
+                     trained_ids=trained_ids):
             s_seen, s_unseen = pair_scores(clf, x_vs), pair_scores(clf, x_vu)
+            if save_scores:
+                saved.append(np.concatenate([s_seen, s_unseen]).astype(np.float32))
+                np.savez_compressed(out / f"val_scores_split{k + 1}.npz", pair=np.stack(saved), labels=np.concatenate([y_vs, y_vu]),
+                                    files=val_files, n_val_seen=len(y_vs), trained_pairs=np.asarray(trained_ids))
             s_seen[:, hidden] = s_unseen[:, hidden] = -1e9
+            gf = gamma_free_metrics(s_seen, y_vs, s_unseen, y_vu, val_pairs, hidden)
+            for key in gf_keys:
+                gf_grid[key][k, epoch - 1] = gf[key]
             results = [evaluate(s_seen, y_vs, s_unseen, y_vu, val_pairs, g, (1,)) for g in gammas]
             hm_grid[k, epoch - 1] = [r["harmonic_mean_top1"] for r in results]
             best = results[int(hm_grid[k, epoch - 1].argmax())]
             record = {"split": k + 1, "val_hm_g0": round(results[g0]["harmonic_mean_top1"], 4), "val_hm": round(best["harmonic_mean_top1"], 4),
-                      "gamma": best["gamma"], "val_seen": round(best["test_seen"]["top1"], 4), "val_unseen": round(best["test_unseen"]["top1"], 4)}
+                      "gamma": best["gamma"], "val_seen": round(best["test_seen"]["top1"], 4), "val_unseen": round(best["test_unseen"]["top1"], 4),
+                      "val_ausuc": round(gf["ausuc"], 4)}
             history.append({"epoch": epoch, **record})
             return record
 
@@ -218,6 +233,9 @@ def main():
         "val_hm_g0_mean": round(float(mean_grid[e, g0]), 4),
         "best_gamma_per_split": [float(gammas[hm_grid[s, e].argmax()]) for s in range(n_splits)],
     }
+    val_gamma_free = {key: {"mean": round(float(gf_grid[key][:, e].mean()), 4),
+                            "per_split": [round(float(x), 4) for x in gf_grid[key][:, e]]} for key in gf_keys}
+    np.savez(out / "val_gamma_free_grid.npz", **gf_grid)
     print(f"selected epoch {best_epoch}, gamma {gamma}: mean val HM {best['val_hm_mean']:.2%} "
           f"(per split {best['val_hm_per_split']}; each split's own best gamma {best['best_gamma_per_split']})", flush=True)
 
@@ -235,7 +253,10 @@ def main():
     top_k = tuple(cfg["evaluation"]["top_k"])
     result = evaluate(scores["test_seen"], labels["test_seen"], scores["test_unseen"], labels["test_unseen"], pairs, gamma, top_k)
     no_cal = evaluate(scores["test_seen"], labels["test_seen"], scores["test_unseen"], labels["test_unseen"], pairs, 0.0, top_k)
-    result.update(version=cfg["version"], selected_epoch=best_epoch, val=best, harmonic_mean_top1_gamma0=no_cal["harmonic_mean_top1"])
+    result.update(version=cfg["version"], selected_epoch=best_epoch, val=best, harmonic_mean_top1_gamma0=no_cal["harmonic_mean_top1"],
+                  val_gamma_free=val_gamma_free,
+                  test_gamma_free=gamma_free_metrics(scores["test_seen"], labels["test_seen"], scores["test_unseen"],
+                                                     labels["test_unseen"], pairs))
     print("\nTest, uncalibrated:\n" + format_summary(no_cal))
     print("\nTest, gamma from validation:\n" + format_summary(result))
 

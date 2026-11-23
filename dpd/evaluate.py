@@ -178,6 +178,26 @@ def ausuc(curve: pd.DataFrame) -> float:
     return float(np.trapezoid(c["unseen"], c["seen"]))
 
 
+def closed_set_top1(scores: np.ndarray, labels: np.ndarray, candidates: np.ndarray) -> float:
+    """Top-1 when each image is ranked only among the `candidates` columns (boolean mask over pairs). Independent of
+    gamma: with candidates = the seen pairs it measures seen recognition, with candidates = the unseen pairs unseen
+    recognition, without the seen/unseen bias that calibration corrects."""
+    ids = np.flatnonzero(candidates)
+    return float((ids[ranked_indices(scores[:, ids], 1)[:, 0]] == labels).mean())
+
+
+def gamma_free_metrics(scores_seen, labels_seen, scores_unseen, labels_unseen, pairs: pd.DataFrame, hidden=None) -> dict:
+    """AUSUC plus closed-set seen / unseen Top-1 for one score matrix pair; `hidden` (bool mask) marks pairs that are
+    in neither label space (e.g. the real unseen pairs during validation) and is excluded from both candidate sets."""
+    unseen = pairs["is_unseen"].to_numpy()
+    hidden = np.zeros(len(pairs), bool) if hidden is None else hidden
+    return {
+        "ausuc": ausuc(seen_unseen_curve(scores_seen, labels_seen, scores_unseen, labels_unseen, pairs)),
+        "closed_seen_top1": closed_set_top1(scores_seen, labels_seen, ~unseen & ~hidden),
+        "closed_unseen_top1": closed_set_top1(scores_unseen, labels_unseen, unseen & ~hidden),
+    }
+
+
 def seen_confusion_matrix(scores_seen: np.ndarray, labels_seen: np.ndarray, pairs: pd.DataFrame, gamma: float = 0.0) -> pd.DataFrame:
     """Counts with rows = true seen pair, columns = predicted pair (all 333), labelled by pair name."""
     pred = ranked_indices(calibrate(scores_seen, pairs["is_unseen"].to_numpy(), gamma), 1)[:, 0]

@@ -51,6 +51,15 @@ Options (all in the config, each off by default so older configs behave exactly 
   model.primitive_branches    {"lr": lr}: Troika-style crop and disease visual branches (dpd/primitive_branches.py): the
                               crop / disease losses use their own residual linear map of the CLS embedding, and primitive
                               fusion (evaluation.posthoc crop / disease weights) scores with those branch features
+  validation.select_by        "hm" (default: epoch, knobs and gamma with the best mean validation HM) or "ausuc": epoch and
+                              knobs with the best mean validation AUSUC (gamma-free), then gamma for that choice by HM, so
+                              the protocol HM is still reported. Validation AUSUC and closed-set seen / unseen Top-1 (real
+                              unseen pairs excluded) are recorded per split and epoch either way (val_gamma_free in metrics)
+  validation.train_seed_offset  int (default 0): added to the training seeds (stage 1: split seed + offset; stage 2:
+                              seed + offset) but not to the split seeds, so a replicate sees the same validation splits
+                              with a different initialisation and batch order (measures run-to-run noise)
+  validation.only             true: stop after stage 1 (no refit, no test); the selection is written to val_metrics.json
+                              (not metrics.json, so the app and list_runs ignore the run). For screening runs
 
 Stage 1: train on train minus the validation split(s); after every epoch score the validation images and sweep
 gamma; pick the (epoch, gamma) with the best mean validation HM. Stage 2: refit a fresh model on all training
@@ -73,7 +82,7 @@ from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 from dpd.clip_utils import TTA_VIEWS, TwoViews, clip_transforms, image_norm_stats, load_clip, ssl_local_transform
 from dpd.config import load_config, output_dir
 from dpd.data import pair_table, read_metadata
-from dpd.evaluate import calibrate, evaluate, format_summary, hm_top1_over_gammas
+from dpd.evaluate import calibrate, evaluate, format_summary, gamma_free_metrics, hm_top1_over_gammas
 from dpd.fusion import bootstrap_hm_diff, fuse
 from dpd.lora import apply_lora, lora_state, set_lora_scale
 from dpd.patch_disease import combine, image_features
@@ -428,6 +437,11 @@ def main():
     s_grid, a_grid, b_grid = posthoc_grids(ev)
     fusing = len(a_grid) + len(b_grid) > 2
     hm_grid = np.zeros((n_splits, tcfg["max_epochs"], len(s_grid), len(a_grid), len(b_grid), len(gammas)))
+    gf_keys = ("ausuc", "closed_seen_top1", "closed_unseen_top1")
+    gf_grid = {k: np.zeros(hm_grid.shape[:-1]) for k in gf_keys}  # gamma-free validation metrics, same knobs as hm_grid
+    select_by = vcfg.get("select_by", "hm")
+    assert select_by in ("hm", "ausuc"), f"unknown validation.select_by {select_by!r}"
+    seed_offset = int(vcfg.get("train_seed_offset", 0))
     val_raw, split_info = {}, {}  # (split, epoch, scale index) -> validation cosines; split -> labels, for the bootstrap
     for k in range(n_splits):
         split_seed = cfg["seed"] + k
@@ -444,7 +458,7 @@ def main():
         split_info[k] = (val_pairs, y_vs, y_vu, n_vs)
         saved = {"pair": [], "crop": [], "disease": []}  # validation.save_scores: one array per epoch
 
-        seed_everything(split_seed)
+        seed_everything(split_seed + seed_offset)
         model, lora_params = build(cfg, pairs, device)
         pc, pdis = model.pair_crop.cpu().numpy(), model.pair_disease.cpu().numpy()
 
@@ -470,11 +484,15 @@ def main():
                         f = fuse(*raw, pc, pdis, a, b).copy()
                         f[:, hidden] = -1e9
                         hm_grid[k, epoch - 1, si, ai, bi] = hm_top1_over_gammas(f[:n_vs], y_vs, f[n_vs:], y_vu, val_pairs, gammas)
+                        gf = gamma_free_metrics(f[:n_vs], y_vs, f[n_vs:], y_vu, val_pairs, hidden)
+                        for key in gf_keys:
+                            gf_grid[key][k, epoch - 1, si, ai, bi] = gf[key]
             # Plain scoring (scale 1, weights 0), reported exactly as before evaluation.posthoc existed.
             best = res[int(np.argmax([r["harmonic_mean_top1"] for r in res]))]
             rec = {"val_hm_g0": round(res[0]["harmonic_mean_top1"], 4), "val_hm": round(best["harmonic_mean_top1"], 4),
                    "gamma": best["gamma"], "val_seen": round(best["test_seen"]["top1"], 4),
-                   "val_unseen": round(best["test_unseen"]["top1"], 4)}
+                   "val_unseen": round(best["test_unseen"]["top1"], 4),
+                   "val_ausuc": round(float(gf_grid["ausuc"][k, epoch - 1, 0, 0, 0]), 4)}
             if posthoc:
                 g5 = hm_grid[k, epoch - 1]
                 i = np.unravel_index(g5.argmax(), g5.shape)
@@ -488,12 +506,18 @@ def main():
         free_memory()
 
     mean_grid = hm_grid.mean(axis=0)
-    e, si, ai, bi, g = np.unravel_index(mean_grid.argmax(), mean_grid.shape)
+    if select_by == "ausuc":  # epoch and knobs by mean validation AUSUC; gamma for them by HM (for the protocol HM)
+        e, si, ai, bi = np.unravel_index(gf_grid["ausuc"].mean(axis=0).argmax(), mean_grid.shape[:-1])
+        g = int(mean_grid[e, si, ai, bi].argmax())
+    else:
+        e, si, ai, bi, g = np.unravel_index(mean_grid.argmax(), mean_grid.shape)
     best_epoch, gamma = int(e) + 1, float(gammas[g])
     knobs = {"lora_scale": s_grid[si], "crop_weight": a_grid[ai], "disease_weight": b_grid[bi]} if posthoc else {}
     best = {"epoch": best_epoch, "gamma": gamma, "val_hm_mean": round(float(mean_grid[e, si, ai, bi, g]), 4),
             "val_hm_per_split": [round(float(x), 4) for x in hm_grid[:, e, si, ai, bi, g]],
-            "val_hm_g0_mean": round(float(mean_grid[e, si, ai, bi, 0]), 4)}
+            "val_hm_g0_mean": round(float(mean_grid[e, si, ai, bi, 0]), 4), "select_by": select_by}
+    val_gamma_free = {key: {"mean": round(float(gf_grid[key][:, e, si, ai, bi].mean()), 4),
+                            "per_split": [round(float(x), 4) for x in gf_grid[key][:, e, si, ai, bi]]} for key in gf_keys}
     if posthoc:
         base = mean_grid[:, 0, 0, 0]
         eb, gb = np.unravel_index(base.argmax(), base.shape)
@@ -520,11 +544,21 @@ def main():
               f"fusion only {best['val_hm_fusion_only_mean']:.2%}, scale only {best['val_hm_scale_only_mean']:.2%}; "
               f"paired bootstrap gain {diff[0]:+.2%} [{diff[1]:+.2%}, {diff[2]:+.2%}]", flush=True)
         del val_raw
-    print(f"selected epoch {best_epoch}, gamma {gamma}: mean val HM {best['val_hm_mean']:.2%}", flush=True)
+    print(f"selected epoch {best_epoch} (by {select_by}), gamma {gamma}: mean val HM {best['val_hm_mean']:.2%}, "
+          f"AUSUC {val_gamma_free['ausuc']['mean']:.2%}, closed seen {val_gamma_free['closed_seen_top1']['mean']:.2%}, "
+          f"closed unseen {val_gamma_free['closed_unseen_top1']['mean']:.2%}", flush=True)
+    np.savez(out / "val_gamma_free_grid.npz", **gf_grid)  # splits x epochs x [scale x crop w x disease w]
+    if vcfg.get("only", False):
+        sel = {"version": cfg["version"], "validation_only": True, "selected_epoch": best_epoch, "gamma": gamma, "val": best,
+               "val_gamma_free": val_gamma_free, **({"knobs": knobs} if posthoc else {})}
+        (out / "val_metrics.json").write_text(json.dumps(sel, indent=2))
+        np.save(out / "val_hm_grid.npy", hm_grid if posthoc else hm_grid[:, :, 0, 0, 0])
+        print(f"validation.only: stopping before the refit; saved to {out}", flush=True)
+        return
 
     # ---- Stage 2: refit on all training images, evaluate once on test ----
     free_memory()
-    seed_everything(cfg["seed"])
+    seed_everything(cfg["seed"] + seed_offset)
     model, lora_params = build(cfg, pairs, device)
     fit(model, lora_params, train, sorted(set(train["pair_id"])), best_epoch, cfg, image_dir, tfs, log=logger("final"))
 
@@ -538,7 +572,10 @@ def main():
     top_k = tuple(ev["top_k"])
     result = evaluate(scores["test_seen"], labels["test_seen"], scores["test_unseen"], labels["test_unseen"], pairs, gamma, top_k)
     no_cal = evaluate(scores["test_seen"], labels["test_seen"], scores["test_unseen"], labels["test_unseen"], pairs, 0.0, top_k)
-    result.update(version=cfg["version"], selected_epoch=best_epoch, val=best, harmonic_mean_top1_gamma0=no_cal["harmonic_mean_top1"])
+    result.update(version=cfg["version"], selected_epoch=best_epoch, val=best, harmonic_mean_top1_gamma0=no_cal["harmonic_mean_top1"],
+                  val_gamma_free=val_gamma_free,
+                  test_gamma_free=gamma_free_metrics(scores["test_seen"], labels["test_seen"], scores["test_unseen"],
+                                                     labels["test_unseen"], pairs))
     if posthoc:  # read back by knobs_from_metrics (dpd/inference.py, train/ensemble.py)
         result.update(lora_scale=knobs["lora_scale"], fusion_crop_weight=knobs["crop_weight"], fusion_disease_weight=knobs["disease_weight"])
     print("\nTest, uncalibrated:\n" + format_summary(no_cal))
