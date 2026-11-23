@@ -1,0 +1,182 @@
+{
+  "_note": "v11.5: v11.3 on v5.13's LoRA image features instead of v10.3's. Single change from v11.3 (features.run). v5.13 is the CoOp + CSP recipe (learned context vectors + learned crop/disease vectors, LoRA last 8 blocks rank 16; 3-split val HM 62.59%, test 66.3%); v10.3 is v5.5 + text anchor with fixed 'a photo of' context (val 61.15%). The GAN / classifier still use frozen CLIP text embeddings of v3's prompts, so CoOp enters only through the image encoder it shaped. Question: does a CoOp-trained encoder give the generator better features than v10.3's? Compare with v11.3 (val 60.24%) and with v5.13 itself (val 62.59%).",
+  "_result": "Not kept: no gain over v11.3 and below v5.13 itself. Mean validation HM 59.43% (classifier epoch 2, gamma 0.0325; per split 56.17 / 58.60 / 63.53) vs v11.3 60.24% (58.27 / 59.10 / 63.36) and v5.13 62.59% (59.35 / 64.91 / 63.50). The classifier again peaks at epoch 1-2 and overfits after (train acc ~99%). Test (reported, not used to decide): HM 66.7% (seen 61.9, unseen 72.4) vs v11.3 64.9 and v5.13 66.3; uncalibrated HM 37.7% (v11.3 44.0, v5.13 37.1). Gamma-free test: AUSUC 54.9 (v11.3 52.7, v5.13 55.4), closed-set seen 68.4, closed-set unseen 83.9 (v5.13 86.3). CoOp features do not change the v11 picture: on LoRA features the GAN classifier is no better than the learned prompts. val_hm_g0_mean corrected to 0.2671 (the run started before the gamma-0 index fix).",
+  "version": "v11.5",
+  "title": "lora_features_coop_csp",
+  "method": "clip_feature_gen",
+  "seed": 42,
+  "data": {
+    "_note": "Unchanged from v4.2.",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "Frozen OpenAI CLIP ViT-B/16 (QuickGELU), as v3/v4.2; image embeddings come from the runs/cache embedding cache.",
+    "library": "open_clip",
+    "arch": "ViT-B-16-quickgelu",
+    "pretrained": "openai"
+  },
+  "features": {
+    "_note": "Image features from v5.13's LoRA-adapted CLIP encoder (CoOp + CSP recipe) instead of v10.3's. Test features: v5.13's saved adapters (its final model, trained on all train). Validation: v5.13 is retrained on each split's fit images (same seed per split, its selected 6 epochs) so the pseudo-unseen pairs are unseen by the encoder too; features cached in runs/cache/lora_features/ (the seed-42 file was already in the cache, written 2026-11-23). Caveat as v11.3: training images were seen by the encoder.",
+    "source": "lora_run",
+    "run": "runs/vlm/v5.13"
+  },
+  "names": {
+    "_note": "Unchanged from v4.2.",
+    "underscore_to_space": true,
+    "crop_overrides": {
+      "pepper_bell": "bell pepper",
+      "paddy": "rice",
+      "blackgram": "black gram"
+    },
+    "disease_overrides": {
+      "xamthomonas": "xanthomonas bacterial blight",
+      "verticulium_wilt": "verticillium wilt",
+      "crinckle": "crinkle",
+      "monillia_laxa": "monilinia brown rot",
+      "leafblast": "leaf blast",
+      "die_back": "dieback",
+      "gray_light": "gray blight",
+      "curl": "leaf curl",
+      "viral": "viral disease",
+      "miner": "leaf miner damage",
+      "slug": "slug feeding damage",
+      "caterpillar": "caterpillar feeding damage",
+      "insects_damages": "insect damage",
+      "nutrition_deficiency": "nutrient deficiency",
+      "scorch": "leaf scorch",
+      "pox_virus": "plum pox virus",
+      "pocket_disease": "plum pocket disease",
+      "cercospora": "cercospora leaf spot",
+      "tungro": "tungro virus",
+      "hispa": "rice hispa beetle damage",
+      "aphis_spp": "aphids",
+      "eriosoma_lanigerum": "woolly apple aphids",
+      "icerya_seychellarum": "fluted scale insects",
+      "parthenolecanium_corni": "lecanium scale insects",
+      "ceroplastes_rubens": "red wax scale insects",
+      "aulacaspis_tubercularis": "white mango scale insects",
+      "ischnaspis_longirostris": "black thread scale insects",
+      "procontarinia_matteiana": "mango leaf gall midge galls",
+      "procontarinia_rubus": "gall midge galls",
+      "erosomyia_sp": "gall midge damage",
+      "venturia_inaequalis": "apple scab",
+      "gnomonia_leptostyla": "walnut anthracnose",
+      "erwinia_amylovora": "erwinia fire blight",
+      "aculus_olearius": "olive bud mites",
+      "cisaberoptus_kenyae": "leaf coating mites",
+      "dialeuropora_decempuncta": "whiteflies",
+      "neomelicharia_sparsa": "planthoppers",
+      "valanga_nigricornis": "grasshopper feeding damage",
+      "mictis_longicornis": "leaf-footed bug damage",
+      "apoderus_javanicus": "leaf-rolling weevil damage",
+      "orthaga_euadrusalis": "leaf webber caterpillars",
+      "dappula_tertia": "bagworms",
+      "diabrotica_speciosa": "cucumber beetle feeding damage"
+    }
+  },
+  "prompts": {
+    "_note": "v3's knowledge-base templates for the pair text (the frozen text encoder's embedding of these is the generator condition and the classifier's initial weights). crop_templates / disease_templates are only used when condition.parts includes 'crop' / 'disease'.",
+    "descriptions_file": "knowledge/disease_descriptions_v1.json",
+    "templates": [
+      "a photo of {crop} leaves with {disease}: {description}.",
+      "a close-up photo of a {crop} leaf showing {disease}: {description}.",
+      "a {crop} plant affected by {disease}: {description}.",
+      "{disease} on a {crop} leaf: {description}.",
+      "a field photo of {crop} leaves with {disease}: {description}."
+    ],
+    "healthy_templates": [
+      "a photo of healthy {crop} leaves: {description}.",
+      "a close-up photo of a healthy {crop} leaf: {description}.",
+      "a healthy {crop} plant: {description}.",
+      "a healthy green {crop} leaf: {description}.",
+      "a field photo of healthy {crop} leaves: {description}."
+    ],
+    "crop_templates": [
+      "a photo of {crop} leaves.",
+      "a close-up photo of a {crop} leaf.",
+      "a {crop} plant."
+    ],
+    "disease_templates": [
+      "a photo of leaves with {disease}: {description}.",
+      "a close-up photo of a leaf showing {disease}: {description}.",
+      "{disease} on a leaf: {description}."
+    ]
+  },
+  "condition": {
+    "_note": "Generator condition per pair: concatenation of these text embeddings ('pair', 'crop', 'disease'). v11: the pair prompt only (the classic setup).",
+    "parts": [
+      "pair"
+    ]
+  },
+  "aux_classifier": {
+    "_note": "Cosine classifier on the real features of the trained pairs; frozen, it gives the GAN's classification loss (keeps generated features recognisable).",
+    "logit_scale": 50.0,
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "batch_size": 128,
+    "epochs": 20
+  },
+  "gan": {
+    "_note": "f-CLSWGAN defaults (one 4096-unit hidden layer each, LeakyReLU 0.2, Adam 1e-4 / beta1 0.5, 5 critic steps per generator step, GP 10, cls weight 0.01). Output L2-normalised like the real CLIP embeddings.",
+    "noise_dim": 512,
+    "hidden": 4096,
+    "normalize_output": true,
+    "lr": 0.0001,
+    "betas": [
+      0.5,
+      0.999
+    ],
+    "batch_size": 64,
+    "n_critic": 5,
+    "lambda_gp": 10.0,
+    "cls_weight": 0.01,
+    "epochs": 30
+  },
+  "synthesis": {
+    "_note": "Synthetic features per untrained target pair (300 as in f-CLSWGAN). seen_min_per_pair > 0 would also top up rare seen pairs to that many features.",
+    "n_per_unseen": 300,
+    "seen_min_per_pair": 0
+  },
+  "classifier": {
+    "_note": "Final cosine classifier over all pairs, initialised from the pair text embeddings; epoch chosen on validation. Saved scores are logits / 100 (CLIP's cosine scale).",
+    "logit_scale": 50.0,
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "batch_size": 128,
+    "max_epochs": 25
+  },
+  "validation": {
+    "_note": "Same three splits as v5.8/v10.3 (seeds 42-44; 20 pseudo-unseen pairs each). In validation the GAN is trained on the fit images only and generates the 20 pseudo-unseen pairs; the 10 real unseen pairs are hidden (not generated, not scored). gamma_grid includes negative values because, unlike the prompt models, a classifier trained on many synthetic unseen features can over-predict unseen pairs.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      -0.1,
+      0.1,
+      0.0025
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "evaluation": {
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "amp": true,
+    "batch_size": 64,
+    "num_workers": 4
+  },
+  "output_dir": "runs/vlm/v11.5"
+}

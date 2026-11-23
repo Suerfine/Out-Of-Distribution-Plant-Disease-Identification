@@ -89,8 +89,8 @@ def fig01_pipeline():
     lora = d.box("<b>LoRA adapters</b> in blocks 5-12<br>1.57M numbers", "train", 240, 170, 230, 46)
     enc = d.box("<b>CLIP image encoder</b> ViT-B/16<br>12 blocks, 86M weights", "frozen", 240, 80, 230, 60)
     v = d.box("<b>Image embedding v</b><br>512 numbers, length 1", "plain", 520, 80, 170, 60)
-    prompts = d.box("<b>333 pair prompts</b><br>a photo of [CROP] leaves with [DISEASE]: symptoms.", "data", 40, 330, 150, 80)
-    vecs = d.box("<b>Learned word vectors</b><br>55 crops + 175 diseases, 118k numbers", "train", 240, 250, 230, 46)
+    prompts = d.box("<b>333 pair prompts</b><br>[CTX] [CTX] [CTX] [CROP] leaves with [DISEASE]: symptoms.", "data", 40, 330, 150, 80)
+    vecs = d.box("<b>Learned word vectors</b><br>55 crops + 175 diseases<br>+ 3 context vectors (CoOp)", "train", 240, 240, 230, 60)
     tenc = d.box("<b>CLIP text encoder</b><br>12 blocks", "frozen", 240, 340, 230, 60)
     t = d.box("<b>333 text embeddings t</b><br>512 numbers each, length 1", "plain", 520, 340, 170, 60)
     loss = d.box("<b>Training only:</b> cross-entropy on 100 x scores (pair + crop + disease)", "loss", 750, 80, 190, 60)
@@ -101,7 +101,7 @@ def fig01_pipeline():
     d.edge(lora, enc, "t", "b", label="adds to weights")
     d.edge(enc, v, "r", "l")
     d.edge(prompts, tenc, "r", "l")
-    d.edge(vecs, tenc, "b", "t", label="fill [CROP], [DISEASE]")
+    d.edge(vecs, tenc, "b", "t", label="fill [CTX], [CROP], [DISEASE]")
     d.edge(tenc, t, "r", "l")
     d.edge(v, cos, "b", (0, 0.3))
     d.edge(t, cos, "t", (0, 0.7))
@@ -138,24 +138,28 @@ def fig02_prompts():
 
 
 def fig03_text_encoder():
-    d = Diagram("fig03_text_encoder", "Figure 3. Inside the text encoder: where the learned crop and disease vectors enter")
-    toks = ["[start]", "a", "photo", "of", "[CROP]", "leaves", "with", "[DISEASE]", ":", "brown", "target", "spots", "...", "[end]"]
+    d = Diagram("fig03_text_encoder", "Figure 3. Inside the text encoder: where the learned context, crop and disease vectors enter")
+    toks = ["[start]", "[ctx 1]", "[ctx 2]", "[ctx 3]", "[CROP]", "leaves", "with", "[DISEASE]", ":", "brown", "target", "spots", "...", "[end]"]
     ids = []
     for i, tk in enumerate(toks):
-        kind = "train" if tk in ("[CROP]", "[DISEASE]") else "data"
+        kind = "train" if tk.startswith("[ctx") or tk in ("[CROP]", "[DISEASE]") else "data"
         ids.append(d.box(tk, kind, 40 + i * 64, 56, 60, 34, "fontSize=11;"))
-    table = d.box("Fixed words: looked up in CLIP's<br>word-embedding table", "frozen", 40, 136, 188, 50)
+    ctx = d.box("<b>Context vectors</b> (CoOp, v5.13)<br>3 x 512, shared by every pair", "train", 40, 136, 188, 50)
     cv = d.box("<b>Crop vector</b> (tomato)<br>512 numbers", "train", 241, 136, 170, 50)
     dv = d.box("<b>Disease vector</b> (early blight)<br>512 numbers", "train", 433, 136, 170, 50)
-    d.text("One crop vector is shared by every pair with that crop; one disease vector by every pair with that disease. "
-           "Both start from CLIP's own embedding of the name.", 625, 126, 315, 70, size=11, align="left", color="#495057")
+    table = d.box("Fixed words: looked up in CLIP's<br>word-embedding table", "frozen", 625, 136, 188, 50)
+    d.text("Before v5.13 the three context slots hold the fixed words <i>a photo of</i>. One crop vector is shared by every "
+           "pair with that crop, one disease vector by every pair with that disease; all start from CLIP's embedding of the words.",
+           40, 300, 176, 150, size=11, align="left", color="#495057")
     seq = d.box("Sequence of word vectors (one 512-number vector per token) + position embeddings", "frozen", 40, 232, 896, 36)
-    d.edge(ids[1], table, "b", "t")
+    d.edge(ids[2], ctx, "b", "t")
     d.edge(ids[4], cv, "b", "t")
     d.edge(ids[7], dv, "b", "t")
-    d.edge(table, seq, "b", (0.105, 0))
+    d.edge(ids[9], table, "b", (0.4, 0))
+    d.edge(ctx, seq, "b", (0.105, 0))
     d.edge(cv, seq, "b", (0.3192, 0))
     d.edge(dv, seq, "b", (0.5335, 0))
+    d.edge(table, seq, "b", (0.7578, 0))
     blocks = d.box("<b>12 Transformer blocks</b><br>causal self-attention: each token only looks at the tokens to its left", "frozen", 228, 304, 520, 50)
     eot = d.box("Keep the output at <b>[end]</b>: the only position that has read the whole sentence", "plain", 228, 386, 520, 40)
     proj = d.box("Layer norm + linear projection to 512 numbers", "frozen", 228, 458, 520, 36)
@@ -325,26 +329,32 @@ def fig09_feature_gen():
 
 
 def fig10_ensemble():
-    d = Diagram("fig10_ensemble", "Figure 10. Ensemble (v6.3): two different models are put on one scale, then averaged")
-    a1 = d.box("<b>CLIP + LoRA (v10.3)</b><br>333 cosine scores", "train", 40, 70, 200, 56)
-    a2 = d.box("x 100, then log-softmax over the 333 pairs", "plain", 290, 70, 220, 56)
-    b1 = d.box("<b>ConvNeXt crop network</b><br>log P(crop)", "train", 40, 190, 200, 44)
-    b2 = d.box("<b>ConvNeXt disease network</b><br>log P(disease)", "train", 40, 248, 200, 44)
-    b3 = d.box("Pair score = log P(crop) + log P(disease), then log-softmax over the 333 pairs", "plain", 290, 196, 220, 90)
-    mix = d.box("<b>Weighted average</b><br>0.3 x CLIP + 0.7 x CNN", "score", 570, 140, 170, 60)
-    cal = d.box("<b>Calibration</b><br>minus gamma (6.7) on seen pairs", "score", 770, 140, 170, 60)
-    pred = d.box("<b>Prediction</b>", "plain", 770, 250, 170, 40)
+    d = Diagram("fig10_ensemble", "Figure 10. Ensemble (v6.7): three different models are put on one scale, then averaged")
+    a1 = d.box("<b>CLIP + LoRA, CoOp + CSP (v5.13)</b><br>333 cosine scores", "train", 40, 60, 200, 56)
+    a2 = d.box("x 100, then log-softmax over the 333 pairs", "plain", 290, 60, 220, 56)
+    b1 = d.box("<b>ConvNeXt 224 px: crop</b><br>log P(crop)", "train", 40, 146, 200, 42)
+    b2 = d.box("<b>ConvNeXt 224 px: disease</b><br>log P(disease)", "train", 40, 194, 200, 42)
+    b3 = d.box("log P(crop) + log P(disease), then log-softmax over the 333 pairs", "plain", 290, 150, 220, 82)
+    c1 = d.box("<b>ConvNeXt 336 px: crop</b><br>log P(crop)", "train", 40, 262, 200, 42)
+    c2 = d.box("<b>ConvNeXt 336 px: disease</b><br>log P(disease)", "train", 40, 310, 200, 42)
+    c3 = d.box("log P(crop) + log P(disease), then log-softmax over the 333 pairs", "plain", 290, 266, 220, 82)
+    mix = d.box("<b>Weighted sum</b><br>0.2 x CLIP<br>+ 0.3 x CNN 224<br>+ 0.5 x CNN 336", "score", 570, 148, 170, 86)
+    cal = d.box("<b>Calibration</b><br>minus gamma (6.4) on seen pairs", "score", 770, 161, 170, 60)
+    pred = d.box("<b>Prediction</b>", "plain", 770, 290, 170, 40)
     d.edge(a1, a2, "r", "l")
     d.edge(b1, b3, "r", (0, 0.25))
     d.edge(b2, b3, "r", (0, 0.75))
+    d.edge(c1, c3, "r", (0, 0.25))
+    d.edge(c2, c3, "r", (0, 0.75))
     d.edge(a2, mix, "r", "t")
-    d.edge(b3, mix, "r", "b")
+    d.edge(b3, mix, "r", "l")
+    d.edge(c3, mix, "r", "b")
     d.edge(mix, cal, "r", "l")
     d.edge(cal, pred, "b", "t")
-    d.text("Both members end as log-probabilities over the same 333 pairs, so adding them is meaningful. The weight 0.3 and gamma "
-           "are chosen on validation. The two models make different mistakes, so the average is right more often than either.",
-           40, 310, 900, 40, size=11, align="left", color="#495057")
-    d.legend(366, ["train", "score"])
+    d.text("All members end as log-probabilities over the same 333 pairs, so adding them is meaningful. The weights and gamma "
+           "are chosen on validation. A sentence-based model and CNNs make different mistakes, so the sum is right more often than any member.",
+           40, 370, 900, 40, size=11, align="left", color="#495057")
+    d.legend(426, ["train", "score"])
     return d
 
 
@@ -352,8 +362,8 @@ def fig11_progress():
     d = Diagram("fig11_progress", "Figure 11. Test harmonic mean (Top-1) at each step, and the mechanism behind the step")
     steps = [("v1", "5.4%", "CLIP as downloaded", "frozen"), ("v3", "10.2%", "symptom text in the prompt", "frozen"),
              ("v4", "43.6%", "learned crop and disease vectors", "train"), ("v4.1", "52.9%", "validation that mirrors the test", "train"),
-             ("v5", "65.1%", "LoRA in the image encoder", "train"), ("v10.3", "66.3%", "more LoRA + text anchor", "train"),
-             ("v6.3", "75.0%", "ensemble with ConvNeXt", "score")]
+             ("v5", "65.1%", "LoRA in the image encoder", "train"), ("v5.13", "66.3%", "more LoRA + learned context (CoOp)", "train"),
+             ("v6.7", "77.1%", "ensemble with two ConvNeXt CNNs", "score")]
     prev = None
     for i, (ver, hm, why, kind) in enumerate(steps):
         x = 40 + i * 130
@@ -365,7 +375,7 @@ def fig11_progress():
     d.text("<b>For comparison (same test protocol):</b>", 40, 186, 300, 24, align="left", size=11)
     d.box("Independent CNN baseline, ResNet-50: <b>59.7%</b>", "plain", 40, 214, 330, 34, "fontSize=11;")
     d.box("Independent CNN, ConvNeXt-Base: <b>68.6%</b>", "plain", 390, 214, 330, 34, "fontSize=11;")
-    d.text("Grey = nothing trained. Blue = one trained CLIP model. Amber = two models combined.",
+    d.text("Grey = nothing trained. Blue = one trained CLIP model. Amber = models combined. v5.13 is chosen on validation; its test HM equals v10.3's.",
            40, 262, 900, 22, size=11, align="left", color="#495057")
     return d
 
@@ -405,6 +415,20 @@ FIGURES = [fig01_pipeline, fig02_prompts, fig03_text_encoder, fig04_composition,
 EDGE = [r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe", r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"]
 
 
+def wait_for_png(png: Path, timeout: float = 120.0):
+    """Edge 158+ returns from the launcher before its child process writes the screenshot: wait until the file
+    exists and its size has stopped changing."""
+    import time
+
+    end, last = time.monotonic() + timeout, -1
+    while time.monotonic() < end:
+        size = png.stat().st_size if png.exists() else -1
+        if size > 0 and size == last:
+            return
+        last = size
+        time.sleep(0.5)
+
+
 def render_png(d: Diagram, png: Path):
     """Render with draw.io's viewer in headless Edge, then trim the white margin."""
     from PIL import Image, ImageChops
@@ -415,12 +439,16 @@ def render_png(d: Diagram, png: Path):
             f'<div class="mxgraph" data-mxgraph="{html.escape(json.dumps(cfg), quote=True)}"></div>'
             '<script charset="utf-8" src="https://viewer.diagrams.net/js/viewer-static.min.js"></script></body></html>')
     edge = next(p for p in EDGE if Path(p).exists())
-    with tempfile.TemporaryDirectory() as tmp:
+    png.unlink(missing_ok=True)
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         src = Path(tmp) / "d.html"
         src.write_text(page, encoding="utf-8")
-        subprocess.run([edge, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=2",
+        subprocess.run([edge, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run", "--force-device-scale-factor=2",
                         "--window-size=1100,760", "--virtual-time-budget=20000", f"--user-data-dir={Path(tmp) / 'profile'}",
                         f"--screenshot={png}", src.as_uri()], check=True, capture_output=True, timeout=180)
+        wait_for_png(png)
+    if not png.exists():
+        raise RuntimeError(f"{png.name}: Edge wrote no screenshot")
     img = Image.open(png).convert("RGB")
     box = ImageChops.difference(img, Image.new("RGB", img.size, "white")).getbbox()
     if box is None:

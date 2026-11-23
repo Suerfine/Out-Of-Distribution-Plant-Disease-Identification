@@ -24,6 +24,20 @@ from dpd.evaluate import ausuc, seen_unseen_curve, top1_over_gammas  # noqa: E40
 OUT = ROOT / "docs" / "vlm" / "diagrams" / "gamma"
 SEEN, UNSEEN, HM, INK, RULE = "#495057", "#2F6FD0", "#E08A00", "#1B1F24", "#CED4DA"
 EDGE = [r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe", r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"]
+
+
+def wait_for_png(png: Path, timeout: float = 120.0):
+    """Edge 158+ returns from the launcher before its child process writes the screenshot: wait until the file
+    exists and its size has stopped changing."""
+    import time
+
+    end, last = time.monotonic() + timeout, -1
+    while time.monotonic() < end:
+        size = png.stat().st_size if png.exists() else -1
+        if size > 0 and size == last:
+            return
+        last = size
+        time.sleep(0.5)
 W, H, L, R, T, B = 900, 430, 70, 30, 56, 62  # canvas and plot margins
 
 
@@ -99,11 +113,15 @@ def to_png(svg: Path, png: Path):
     from PIL import Image, ImageChops
 
     edge = next(p for p in EDGE if Path(p).exists())
-    with tempfile.TemporaryDirectory() as tmp:
+    png.unlink(missing_ok=True)
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         page = Path(tmp) / "p.html"
         page.write_text(f'<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:20px;background:#fff">{svg.read_text(encoding="utf-8")}</body></html>', encoding="utf-8")
-        subprocess.run([edge, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=2", f"--window-size={W + 60},{H + 60}",
+        subprocess.run([edge, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run", "--force-device-scale-factor=2", f"--window-size={W + 60},{H + 60}",
                         f"--user-data-dir={Path(tmp) / 'profile'}", f"--screenshot={png}", page.as_uri()], check=True, capture_output=True, timeout=120)
+        wait_for_png(png)
+    if not png.exists():
+        raise RuntimeError(f"{png.name}: Edge wrote no screenshot")
     img = Image.open(png).convert("RGB")
     box = ImageChops.difference(img, Image.new("RGB", img.size, "white")).getbbox()
     img.crop((max(box[0] - 12, 0), max(box[1] - 12, 0), min(box[2] + 12, img.width), min(box[3] + 12, img.height))).save(png)

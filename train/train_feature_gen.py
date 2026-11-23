@@ -26,7 +26,7 @@ import torch.nn.functional as F
 from dpd.clip_utils import build_prompts, display_name, encode_images, encode_prompts, load_clip, load_descriptions
 from dpd.config import load_config, output_dir
 from dpd.data import PROJECT_ROOT, pair_table, read_metadata
-from dpd.evaluate import evaluate, format_summary
+from dpd.evaluate import evaluate, format_summary, gamma0_index
 from dpd.feature_gen import fit_classifier, synthesise, train_gan
 from dpd.report import save_test_outputs
 from dpd.splits import make_validation_split
@@ -170,6 +170,7 @@ def main():
 
     # ---- Stage 1: choose the classifier's epoch count and gamma on validation split(s) ----
     gammas = np.round(np.arange(*vcfg["gamma_grid"]), 6)
+    g0 = gamma0_index(gammas)  # the grid can start below 0, so gamma 0 is not necessarily index 0
     real_unseen = pairs["is_unseen"].to_numpy()
     hidden = real_unseen if vcfg["exclude_real_unseen_from_label_space"] else np.zeros(len(pairs), bool)
     n_splits = vcfg.get("n_splits", 1)
@@ -196,7 +197,7 @@ def main():
             results = [evaluate(s_seen, y_vs, s_unseen, y_vu, val_pairs, g, (1,)) for g in gammas]
             hm_grid[k, epoch - 1] = [r["harmonic_mean_top1"] for r in results]
             best = results[int(hm_grid[k, epoch - 1].argmax())]
-            record = {"split": k + 1, "val_hm_g0": round(results[0]["harmonic_mean_top1"], 4), "val_hm": round(best["harmonic_mean_top1"], 4),
+            record = {"split": k + 1, "val_hm_g0": round(results[g0]["harmonic_mean_top1"], 4), "val_hm": round(best["harmonic_mean_top1"], 4),
                       "gamma": best["gamma"], "val_seen": round(best["test_seen"]["top1"], 4), "val_unseen": round(best["test_unseen"]["top1"], 4)}
             history.append({"epoch": epoch, **record})
             return record
@@ -214,7 +215,7 @@ def main():
         "gamma": gamma,
         "val_hm_mean": round(float(mean_grid[e, g]), 4),
         "val_hm_per_split": [round(float(x), 4) for x in hm_grid[:, e, g]],
-        "val_hm_g0_mean": round(float(mean_grid[e, 0]), 4),
+        "val_hm_g0_mean": round(float(mean_grid[e, g0]), 4),
         "best_gamma_per_split": [float(gammas[hm_grid[s, e].argmax()]) for s in range(n_splits)],
     }
     print(f"selected epoch {best_epoch}, gamma {gamma}: mean val HM {best['val_hm_mean']:.2%} "

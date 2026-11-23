@@ -44,10 +44,37 @@ def compose_cnn_member(logp: dict, pairs, metrics: dict, fit_df) -> np.ndarray:
     return compose_pair_scores(logp["crop"], logp["disease"], pairs, w, tau, prior)
 
 
-def member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs, same_split=False):
+def member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs, same_split=False, holdout=None, split_seed=None):
     """Retrain one member on the split's fit part for `epochs` and score the validation images (all 333 pairs),
     scored exactly the way the member's saved test scores were."""
     method = mcfg["method"]
+    if method == "clip_feature_gen":
+        # v11+: GAN + cosine classifier on CLIP image features, refit on the split exactly as train_feature_gen.py's
+        # stage 1 does (pseudo-unseen pairs generated, real unseen hidden) for its selected classifier epoch.
+        from dpd.clip_utils import encode_images, load_clip
+        from dpd.data import read_metadata
+        from train import train_feature_gen as fg
+
+        device = mcfg["runtime"]["device"]
+        df = read_metadata()
+        train = df[df["split"] == "train"]
+        clip_model, preprocess, tokenizer = load_clip(mcfg["model"], device)
+        pair_emb_np, cond_np = fg.text_conditions(mcfg, clip_model, tokenizer, pairs, device)
+        pair_emb, cond = torch.as_tensor(pair_emb_np, device=device), torch.as_tensor(cond_np, device=device)
+        fcfg = mcfg.get("features", {"source": "frozen"})
+        if fcfg["source"] == "frozen":
+            x_train = encode_images(clip_model, preprocess, train["file"], mcfg["model"], mcfg["runtime"], cache_name="train")
+        else:
+            del clip_model
+            torch.cuda.empty_cache()
+            x_train = fg.lora_features(fcfg, df, pairs, fit_df, split_seed)["train"]
+        x_train = torch.as_tensor(x_train, device=device)
+        hidden = pairs["is_unseen"].to_numpy() if mcfg["validation"]["exclude_real_unseen_from_label_space"] else np.zeros(len(pairs), bool)
+        fit_rows, val_rows = train.index.get_indexer(fit_df.index), train.index.get_indexer(val_df.index)
+        fg.seed_everything(split_seed)
+        clf = fg.fit_pipeline(x_train[fit_rows], torch.as_tensor(fit_df["pair_id"].to_numpy(), device=device),
+                              sorted(set(fit_df["pair_id"])), holdout, hidden, pair_emb, cond, mcfg, epochs)
+        return fg.pair_scores(clf, x_train[val_rows])
     if method == "clip_prompt_lora":
         from dpd.clip_utils import clip_transforms
         from train import train_lora as tl
@@ -116,7 +143,7 @@ def main():
     df = read_metadata()
     pairs = pair_table(df)
     train = df[df["split"] == "train"]
-    fit_df, val_seen, val_unseen, _ = make_validation_split(
+    fit_df, val_seen, val_unseen, holdout = make_validation_split(
         train, vcfg["n_holdout_pairs"], vcfg["min_holdout_images"], vcfg["val_fraction"], cfg["seed"],
         tuple(vcfg["exclude_holdout_diseases"]), vcfg["max_images_per_holdout_pair"],
     )
@@ -138,7 +165,7 @@ def main():
             print(f"validation scores for {run_dir.name}: retraining {epochs} epochs on the validation split", flush=True)
             split_keys = ("n_holdout_pairs", "min_holdout_images", "val_fraction", "exclude_holdout_diseases", "max_images_per_holdout_pair")
             same_split = mcfg["seed"] == cfg["seed"] and all(mcfg["validation"].get(k) == vcfg[k] for k in split_keys)
-            val = member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs, same_split)
+            val = member_val_scores(run_dir, mcfg, metrics, fit_df, val_df, epochs, pairs, same_split, holdout, cfg["seed"])
             np.save(cache, val)
         test = np.load(run_dir / "scores.npz")
         members.append({"name": run_dir.name, "method": mcfg["method"], "val": to_logprob(val, mcfg["method"]),

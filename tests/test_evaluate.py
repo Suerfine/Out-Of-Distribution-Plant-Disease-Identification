@@ -8,7 +8,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 
-from dpd.evaluate import (calibrate, evaluate, evaluate_split, predictions_table,
+from dpd.evaluate import (calibrate, evaluate, evaluate_split, gamma0_index, predictions_table,
                           ranked_indices, seen_confusion_matrix, topk_hits)
 
 
@@ -98,6 +98,18 @@ class RankingTests(unittest.TestCase):
             np.testing.assert_array_equal(view.pred_id, [6, 6])
             np.testing.assert_array_equal(view.crop_ok & view.disease_ok, [True, False])
             np.testing.assert_array_equal(view.topk.iloc[0], [6, 7, 0, 1, 2])
+
+
+
+class GammaGridTests(unittest.TestCase):
+    def test_gamma0_index_finds_zero_in_grids_that_start_below_zero(self):
+        self.assertEqual(gamma0_index(np.round(np.arange(-0.1, 0.1, 0.0025), 6)), 40)
+        self.assertEqual(gamma0_index(np.round(np.arange(-5.0, 15.0, 0.1), 4)), 50)
+        self.assertEqual(gamma0_index(np.round(np.arange(0.0, 0.1, 0.0025), 6)), 0)
+
+    def test_gamma0_index_rejects_grids_without_zero(self):
+        with self.assertRaises(ValueError):
+            gamma0_index(np.arange(0.01, 0.1, 0.01))
 
 
 if __name__ == "__main__":

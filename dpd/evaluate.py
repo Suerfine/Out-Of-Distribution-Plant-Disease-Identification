@@ -43,6 +43,17 @@ def parse_gamma_grid(grid_cfg) -> np.ndarray:
     return np.array([0.0], dtype=np.float64)
 
 
+def gamma0_index(gammas) -> int:
+    """Position of gamma = 0 in a gamma grid, for reporting the uncalibrated result from a sweep.
+
+    Grids may start below 0 (e.g. the feature-generation runs sweep -0.1..0.1), so index 0 is not gamma 0 in general.
+    """
+    hits = np.flatnonzero(np.isclose(np.asarray(gammas, dtype=np.float64), 0.0, rtol=0.0, atol=1e-9))
+    if len(hits) == 0:
+        raise ValueError("gamma grid does not contain 0; add it so the uncalibrated (gamma=0) result can be reported")
+    return int(hits[0])
+
+
 def calibrate(scores: np.ndarray, unseen_mask: np.ndarray, gamma: float) -> np.ndarray:
     """Subtract `gamma` from the seen-pair columns (counteracts the bias towards seen classes)."""
     return scores - gamma * (~unseen_mask)[None, :]

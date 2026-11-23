@@ -1,0 +1,68 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="CLIP architecture" id="clip-arch">
+    <mxGraphModel dx="1200" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="420" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Shared embedding space (dashed container) -->
+        <mxCell id="space" value="Shared embedding space" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;dashed=1;verticalAlign=top;fontStyle=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="470" y="40" width="200" height="320" as="geometry" />
+        </mxCell>
+
+        <!-- Image branch -->
+        <mxCell id="img" value="&lt;b&gt;Leaf image&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="imgenc" value="&lt;b&gt;Image encoder&lt;/b&gt;&lt;br&gt;ViT-B/16" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="260" y="80" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="imgemb" value="&lt;b&gt;Image embedding&lt;/b&gt;&lt;br&gt;1 vector" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="490" y="80" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Text branch -->
+        <mxCell id="txt" value="&lt;b&gt;Class prompts&lt;/b&gt;&lt;br&gt;&lt;i&gt;&quot;a photo of tomato leaves with early blight&quot;&lt;/i&gt;&lt;br&gt;... one per class" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="250" width="160" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="txtenc" value="&lt;b&gt;Text encoder&lt;/b&gt;&lt;br&gt;Transformer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="260" y="260" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="txtemb" value="&lt;b&gt;Text embeddings&lt;/b&gt;&lt;br&gt;1 vector per class" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="490" y="260" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Scoring -->
+        <mxCell id="sim" value="&lt;b&gt;Cosine similarity&lt;/b&gt;&lt;br&gt;image vs. every class" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="730" y="170" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="pred" value="&lt;b&gt;Top-1 prediction&lt;/b&gt;&lt;br&gt;highest-scoring class" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="950" y="170" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;" edge="1" parent="1" source="img" target="imgenc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;" edge="1" parent="1" source="imgenc" target="imgemb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;" edge="1" parent="1" source="txt" target="txtenc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;" edge="1" parent="1" source="txtenc" target="txtemb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.25;" edge="1" parent="1" source="imgemb" target="sim">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.75;" edge="1" parent="1" source="txtemb" target="sim">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;" edge="1" parent="1" source="sim" target="pred">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
