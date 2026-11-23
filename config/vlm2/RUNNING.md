@@ -44,7 +44,7 @@ bash config/vlm2/run_queue.sh
 
 ### Option B: Colab A100 (about 8–12 h for all stages)
 
-1. **Push the vlm2 code to GitHub first.** It is currently uncommitted on this laptop, and Colab clones from GitHub.
+1. **Make sure GitHub has the latest code.** Colab clones `main` from GitHub, so push any local changes first.
 2. **Put the dataset on Drive.** Zip the `DPD_Small` folder (`DPD_Small/DPD_Small_dataset/` plus the three CSVs) and upload it to `MyDrive/dpd/DPD_Small.zip`.
 3. Open a new notebook, choose **Runtime → Change runtime type → A100 GPU**, and run these cells in order:
 
@@ -59,7 +59,7 @@ drive.mount('/content/drive')
 # 2. Code: a private repo needs a GitHub token (store it in Colab secrets, never in the notebook)
 cd /content
 git clone https://github.com/Suerfine/Out-Of-Distribution-Plant-Disease-Identification.git repo
-cd repo && git checkout <branch-with-vlm2>   # the branch you pushed in step 1
+cd repo && git checkout main
 pip install -q open_clip_torch timm          # Colab already has CUDA torch/torchvision/pandas/pillow
 ```
 
