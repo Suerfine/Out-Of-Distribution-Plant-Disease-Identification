@@ -1,7 +1,7 @@
-"""Gated routing between two finished runs (v14+): a seen/unseen gate sends each image to a seen expert or an unseen
+"""Gated routing between two finished runs (v15+): a seen/unseen gate sends each image to a seen expert or an unseen
 expert, each picked for its own branch.
 
-Usage:  python -m train.route --config config/vlm/v14_gated_router_config.json [--validation-only]
+Usage:  python -m train.route --config config/vlm/v15_gated_router_config.json [--validation-only]
 
 The ensemble (train/ensemble.py) mixes two members with one weight over all 333 pairs and lets gamma decide between
 seen and unseen classes. Here the three jobs are separated, after COSMO (Atzmon & Chechik, CVPR 2019):
@@ -218,6 +218,9 @@ def main():
     print(f"selected: {mode} routing, bias {bias}: val HM {hm:.2%} (seen {acc_seen:.2%}, unseen {acc_unseen:.2%})", flush=True)
 
     gate = new_gate(rcfg["gate"]["C"]).fit(x, is_unseen_img)  # the gate used on test: fit on all validation images
+    import joblib
+
+    joblib.dump(gate, out / "gate.joblib")  # scaler + logistic regression, for RouterRunModel (dpd/inference.py)
     coef = dict(zip(feature_names, np.round(gate[-1].coef_[0], 3).tolist()))
     print("gate coefficients (standardised features; + = looks unseen): " + ", ".join(f"{k} {v:+.2f}" for k, v in coef.items()))
     val = {"val_hm": round(hm, 4), "val_seen": round(float(acc_seen), 4), "val_unseen": round(float(acc_unseen), 4), "mode": mode, "bias": bias,

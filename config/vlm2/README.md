@@ -2,7 +2,7 @@
 
 **How to run each stage, and the rules for choosing the final model: [RUNNING.md](RUNNING.md).**
 
-Status (2026-11-23): stage 0–2 configs are written. The queue scripts are `runs/queue_vlm2.ps1` (this laptop) and `config/vlm2/run_queue.sh` (Git Bash, Linux or Colab). Stage 3 (interactions) and stage 4 (final) configs are written once stage 2 results are in, because they depend on which improvements pass.
+Status (2026-11-23): **shelved, not run.** The report uses the baseline ladder built from existing runs instead (`docs/vlm/vlm_baseline_ladder.md`). Stage 0–2 configs are written. The queue scripts are `runs/queue_vlm2.ps1` (this laptop) and `config/vlm2/run_queue.sh` (Git Bash, Linux or Colab). Stage 3 (interactions) and stage 4 (final) configs are written once stage 2 results are in, because they depend on which improvements pass.
 
 ## Why a second round
 

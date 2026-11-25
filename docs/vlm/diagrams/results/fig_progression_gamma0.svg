@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="820" viewBox="0 0 1500 820" font-family="Arial, Helvetica, sans-serif" fill="#000000">
+<defs><pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="#000000" stroke-width="1"/></pattern></defs>
+<rect width="1500" height="820" fill="white"/>
+<rect x="0.0" y="0.0" width="1500.0" height="820.0" rx="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="0"/>
+<text x="30.0" y="36.0" text-anchor="start" font-size="18" fill="#1B1F24" font-weight="bold">VLM progression: from zero-shot CLIP to the final CLIP + GAN + ConvNeXt pipeline, then calibrated stacking</text>
+<text x="30.0" y="60.0" text-anchor="start" font-size="13" fill="#1B1F24" font-weight="normal">Harmonic mean of seen and unseen Top-1 on the official test set (2,000 seen / 1,448 unseen images), one run per step. Every step at γ = 0 except the last, which adds calibrated stacking.</text>
+<polyline points="80.0,112.0 80.0,104.0 338.0,104.0 338.0,112.0" fill="none" stroke="#000000" stroke-width="1.2"/>
+<text x="209.0" y="96.0" text-anchor="middle" font-size="13" fill="#1B1F24" font-weight="bold">Zero-shot CLIP (no training)</text>
+<polyline points="358.0,112.0 358.0,104.0 755.0,104.0 755.0,112.0" fill="none" stroke="#000000" stroke-width="1.2"/>
+<text x="556.5" y="96.0" text-anchor="middle" font-size="13" fill="#1B1F24" font-weight="bold">Trained CLIP (this project)</text>
+<polyline points="775.0,112.0 775.0,104.0 1311.0,104.0 1311.0,112.0" fill="none" stroke="#000000" stroke-width="1.2"/>
+<text x="1043.0" y="96.0" text-anchor="middle" font-size="13" fill="#1B1F24" font-weight="bold">CLIP + GAN + ConvNeXt pipeline (Hein)</text>
+<polyline points="1331.0,112.0 1331.0,104.0 1450.0,104.0 1450.0,112.0" fill="none" stroke="#000000" stroke-width="1.2"/>
+<text x="1390.5" y="96.0" text-anchor="middle" font-size="13" fill="#1B1F24" font-weight="bold">Calibration</text>
+<polyline points="64.0,520.0 70.0,520.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="60.0" y="524.0" text-anchor="end" font-size="11" fill="#1B1F24" font-weight="normal">0</text>
+<polyline points="70.0,475.0 1460.0,475.0" fill="none" stroke="#E6E6E6" stroke-width="1.0"/>
+<polyline points="64.0,475.0 70.0,475.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="60.0" y="479.0" text-anchor="end" font-size="11" fill="#1B1F24" font-weight="normal">10</text>
+<polyline points="70.0,430.0 1460.0,430.0" fill="none" stroke="#E6E6E6" stroke-width="1.0"/>
+<polyline points="64.0,430.0 70.0,430.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="60.0" y="434.0" text-anchor="end" font-size="11" fill="#1B1F24" font-weight="normal">20</text>
+<polyline points="70.0,385.0 1460.0,385.0" fill="none" stroke="#E6E6E6" stroke-width="1.0"/>
+<polyline points="64.0,385.0 70.0,385.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="60.0" y="389.0" text-anchor="end" font-size="11" fill="#1B1F24" font-weight="normal">30</text>
+<polyline points="70.0,340.0 1460.0,340.0" fill="none" stroke="#E6E6E6" stroke-width="1.0"/>
+<polyline points="64.0,340.0 70.0,340.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="60.0" y="344.0" text-anchor="end" font-size="11" fill="#1B1F24" font-weight="normal">40</text>
+<polyline points="70.0,295.0 1460.0,295.0" fill="none" stroke="#E6E6E6" stroke-width="1.0"/>
+<polyline points="64.0,295.0 70.0,295.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="60.0" y="299.0" text-anchor="end" font-size="11" fill="#1B1F24" font-weight="normal">50</text>
+<polyline points="70.0,250.0 1460.0,250.0" fill="none" stroke="#E6E6E6" stroke-width="1.0"/>
+<polyline points="64.0,250.0 70.0,250.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="60.0" y="254.0" text-anchor="end" font-size="11" fill="#1B1F24" font-weight="normal">60</text>
+<polyline points="70.0,205.0 1460.0,205.0" fill="none" stroke="#E6E6E6" stroke-width="1.0"/>
+<polyline points="64.0,205.0 70.0,205.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="60.0" y="209.0" text-anchor="end" font-size="11" fill="#1B1F24" font-weight="normal">70</text>
+<polyline points="70.0,160.0 1460.0,160.0" fill="none" stroke="#E6E6E6" stroke-width="1.0"/>
+<polyline points="64.0,160.0 70.0,160.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="60.0" y="164.0" text-anchor="end" font-size="11" fill="#1B1F24" font-weight="normal">80</text>
+<polyline points="70.0,520.0 70.0,160.0" fill="none" stroke="#000000" stroke-width="1.2"/>
+<text x="24.0" y="340.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="normal" transform="rotate(-90 24.0 340.0)">HM Top-1 (%)</text>
+<polyline points="70.0,520.0 1460.0,520.0" fill="none" stroke="#000000" stroke-width="1.2"/>
+<rect x="100.6" y="495.8" width="77.8" height="24.2" rx="0" fill="#E7E6E6" stroke="#000000" stroke-width="1.2"/>
+<text x="139.5" y="471.8" text-anchor="middle" font-size="14" fill="#1B1F24" font-weight="bold">5.4</text>
+<text x="139.5" y="540.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">CLIP</text>
+<text x="139.5" y="555.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">zero-shot</text>
+<text x="139.5" y="571.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">v1</text>
+<text x="139.5" y="591.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">seen 6.4</text>
+<text x="139.5" y="606.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">unseen 4.6</text>
+<text x="139.5" y="626.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">calibrated = γ 0</text>
+<rect x="239.6" y="474.2" width="77.8" height="45.8" rx="0" fill="#E7E6E6" stroke="#000000" stroke-width="1.2"/>
+<text x="278.5" y="450.2" text-anchor="middle" font-size="14" fill="#1B1F24" font-weight="bold">10.2</text>
+<text x="278.5" y="465.2" text-anchor="middle" font-size="11" fill="#2E7D32" font-weight="bold">+4.8</text>
+<text x="278.5" y="540.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">Clean names +</text>
+<text x="278.5" y="555.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">disease descriptions</text>
+<text x="278.5" y="571.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">v2 + v3</text>
+<text x="278.5" y="591.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">seen 7.8</text>
+<text x="278.5" y="606.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">unseen 14.6</text>
+<text x="278.5" y="626.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">calibrated = γ 0</text>
+<rect x="378.6" y="402.9" width="77.8" height="117.1" rx="0" fill="#BDD7EE" stroke="#000000" stroke-width="1.2"/>
+<text x="417.5" y="378.9" text-anchor="middle" font-size="14" fill="#1B1F24" font-weight="bold">26.0</text>
+<text x="417.5" y="393.9" text-anchor="middle" font-size="11" fill="#2E7D32" font-weight="bold">+15.8</text>
+<text x="417.5" y="540.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">CSP prompt</text>
+<text x="417.5" y="555.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">learning</text>
+<text x="417.5" y="571.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">v4.2</text>
+<text x="417.5" y="591.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">seen 55.5</text>
+<text x="417.5" y="606.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">unseen 17.0</text>
+<text x="417.5" y="626.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">calibrated 51.8</text>
+<text x="417.5" y="640.0" text-anchor="middle" font-size="10" fill="#1B1F24" font-weight="normal">(γ 0.0375)</text>
+<rect x="517.6" y="338.6" width="77.8" height="181.4" rx="0" fill="#BDD7EE" stroke="#000000" stroke-width="1.2"/>
+<text x="556.5" y="314.6" text-anchor="middle" font-size="14" fill="#1B1F24" font-weight="bold">40.3</text>
+<text x="556.5" y="329.6" text-anchor="middle" font-size="11" fill="#2E7D32" font-weight="bold">+14.3</text>
+<text x="556.5" y="540.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">LoRA image</text>
+<text x="556.5" y="555.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">encoder</text>
+<text x="556.5" y="571.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">v5.5 (rank 16, 8 blocks)</text>
+<text x="556.5" y="591.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">seen 67.6</text>
+<text x="556.5" y="606.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">unseen 28.7</text>
+<text x="556.5" y="626.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">calibrated 64.5</text>
+<text x="556.5" y="640.0" text-anchor="middle" font-size="10" fill="#1B1F24" font-weight="normal">(γ 0.075)</text>
+<rect x="656.6" y="321.9" width="77.8" height="198.1" rx="0" fill="#BDD7EE" stroke="#000000" stroke-width="1.2"/>
+<text x="695.5" y="297.9" text-anchor="middle" font-size="14" fill="#1B1F24" font-weight="bold">44.0</text>
+<text x="695.5" y="312.9" text-anchor="middle" font-size="11" fill="#2E7D32" font-weight="bold">+3.7</text>
+<text x="695.5" y="540.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">f-CLSWGAN</text>
+<text x="695.5" y="571.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">v11.3</text>
+<text x="695.5" y="591.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">seen 66.6</text>
+<text x="695.5" y="606.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">unseen 32.9</text>
+<text x="695.5" y="626.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">calibrated 64.9</text>
+<text x="695.5" y="640.0" text-anchor="middle" font-size="10" fill="#1B1F24" font-weight="normal">(γ 0.03)</text>
+<rect x="795.6" y="311.8" width="77.8" height="208.2" rx="0" fill="url(#hatch)" stroke="#000000" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text x="834.5" y="287.8" text-anchor="middle" font-size="14" fill="#1B1F24" font-weight="bold">46.3</text>
+<text x="834.5" y="540.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">Un-anchored</text>
+<text x="834.5" y="555.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">GAN, re-run</text>
+<text x="834.5" y="571.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">reference</text>
+<text x="834.5" y="591.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">seen 66.0</text>
+<text x="834.5" y="606.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">unseen 35.6</text>
+<text x="834.5" y="626.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">calibrated 65.7</text>
+<text x="834.5" y="640.0" text-anchor="middle" font-size="10" fill="#1B1F24" font-weight="normal">(shared γ 0.03)</text>
+<rect x="934.6" y="299.4" width="77.8" height="220.6" rx="0" fill="#F8CBAD" stroke="#000000" stroke-width="1.2"/>
+<text x="973.5" y="275.4" text-anchor="middle" font-size="14" fill="#1B1F24" font-weight="bold">49.0</text>
+<text x="973.5" y="540.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">+ crop-anchored</text>
+<text x="973.5" y="555.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">GAN</text>
+<text x="973.5" y="571.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">Hein</text>
+<text x="973.5" y="591.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">seen 66.1</text>
+<text x="973.5" y="606.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">unseen 39.0</text>
+<text x="973.5" y="626.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">calibrated 67.6</text>
+<text x="973.5" y="640.0" text-anchor="middle" font-size="10" fill="#1B1F24" font-weight="normal">(shared γ 0.03)</text>
+<rect x="1073.6" y="266.2" width="77.8" height="253.8" rx="0" fill="#F8CBAD" stroke="#000000" stroke-width="1.2"/>
+<text x="1112.5" y="242.2" text-anchor="middle" font-size="14" fill="#1B1F24" font-weight="bold">56.4</text>
+<text x="1112.5" y="257.2" text-anchor="middle" font-size="11" fill="#2E7D32" font-weight="bold">+7.4</text>
+<text x="1112.5" y="540.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">+ disease-only</text>
+<text x="1112.5" y="555.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">head</text>
+<text x="1112.5" y="571.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">Hein</text>
+<text x="1112.5" y="591.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">seen 67.7</text>
+<text x="1112.5" y="606.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">unseen 48.3</text>
+<text x="1112.5" y="626.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">calibrated 71.4</text>
+<text x="1112.5" y="640.0" text-anchor="middle" font-size="10" fill="#1B1F24" font-weight="normal">(offset 3.0)</text>
+<rect x="1212.6" y="258.4" width="77.8" height="261.6" rx="0" fill="#F8CBAD" stroke="#000000" stroke-width="1.2"/>
+<text x="1251.5" y="234.4" text-anchor="middle" font-size="14" fill="#1B1F24" font-weight="bold">58.1</text>
+<text x="1251.5" y="249.4" text-anchor="middle" font-size="11" fill="#2E7D32" font-weight="bold">+1.7</text>
+<text x="1251.5" y="540.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">+ ConvNeXt</text>
+<text x="1251.5" y="555.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">seen handoff</text>
+<text x="1251.5" y="571.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">Hein, final</text>
+<text x="1251.5" y="591.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">seen 72.9</text>
+<text x="1251.5" y="606.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">unseen 48.3</text>
+<text x="1251.5" y="626.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">calibrated 73.9</text>
+<text x="1251.5" y="640.0" text-anchor="middle" font-size="10" fill="#1B1F24" font-weight="normal">(offset 3.0)</text>
+<rect x="1351.6" y="187.2" width="77.8" height="332.8" rx="0" fill="#C5E0B4" stroke="#000000" stroke-width="1.2"/>
+<text x="1390.5" y="163.2" text-anchor="middle" font-size="14" fill="#1B1F24" font-weight="bold">73.9</text>
+<text x="1390.5" y="178.2" text-anchor="middle" font-size="11" fill="#2E7D32" font-weight="bold">+15.8</text>
+<text x="1390.5" y="540.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">+ calibrated</text>
+<text x="1390.5" y="555.0" text-anchor="middle" font-size="12" fill="#1B1F24" font-weight="bold">stacking (γ)</text>
+<text x="1390.5" y="571.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">offset 3.0</text>
+<text x="1390.5" y="591.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">seen 66.8</text>
+<text x="1390.5" y="606.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">unseen 82.8</text>
+<text x="1390.5" y="626.0" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="normal">calibrated</text>
+<text x="1390.5" y="640.0" text-anchor="middle" font-size="10" fill="#1B1F24" font-weight="normal">(this bar)</text>
+<polyline points="834.5,263.4 834.5,253.4 973.5,253.4 973.5,263.4" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="904.0" y="247.4" text-anchor="middle" font-size="11" fill="#1B1F24" font-weight="bold">matched gain +2.7</text>
+<rect x="30.0" y="657.0" width="28.0" height="14.0" rx="0" fill="#E7E6E6" stroke="#000000" stroke-width="1.0"/>
+<text x="66.0" y="668.0" text-anchor="start" font-size="12" fill="#1B1F24" font-weight="normal">zero-shot CLIP</text>
+<rect x="198.0" y="657.0" width="28.0" height="14.0" rx="0" fill="#BDD7EE" stroke="#000000" stroke-width="1.0"/>
+<text x="234.0" y="668.0" text-anchor="start" font-size="12" fill="#1B1F24" font-weight="normal">trained CLIP</text>
+<rect x="352.0" y="657.0" width="28.0" height="14.0" rx="0" fill="#F8CBAD" stroke="#000000" stroke-width="1.0"/>
+<text x="388.0" y="668.0" text-anchor="start" font-size="12" fill="#1B1F24" font-weight="normal">CLIP + GAN + ConvNeXt pipeline</text>
+<rect x="632.0" y="657.0" width="28.0" height="14.0" rx="0" fill="#C5E0B4" stroke="#000000" stroke-width="1.0"/>
+<text x="668.0" y="668.0" text-anchor="start" font-size="12" fill="#1B1F24" font-weight="normal">calibrated stacking (γ)</text>
+<rect x="863.0" y="657.0" width="28.0" height="14.0" rx="0" fill="url(#hatch)" stroke="#000000" stroke-width="1.0" stroke-dasharray="5 3"/>
+<text x="899.0" y="668.0" text-anchor="start" font-size="12" fill="#1B1F24" font-weight="normal">matched baseline (re-run)</text>
+<text x="1108.0" y="668.0" text-anchor="start" font-size="12" fill="#1B1F24" font-weight="normal">+x / −x: change from the previous step</text>
+<text x="30.0" y="704.0" text-anchor="start" font-size="12" fill="#1B1F24" font-weight="normal">Last bar: the final pipeline with calibrated stacking (routing offset γ = 3.0, chosen on validation), which subtracts γ from every seen score: seen 72.9 → 66.8, unseen 48.3 → 82.8.</text>
+<text x="30.0" y="724.0" text-anchor="start" font-size="12" fill="#1B1F24" font-weight="normal">Hatched bar: Hein&#x27;s re-run of the same un-anchored GAN (v11.3 settings) in his pipeline, the matched baseline for crop anchoring. v11.3 → re-run (44.0 → 46.3) is run-to-run difference, not a method change.</text>
+<text x="30.0" y="744.0" text-anchor="start" font-size="12" fill="#1B1F24" font-weight="normal">“+ disease-only head” also brings in the ConvNeXt crop scores (measured alone: 49.0 → 50.9) and two-expert routing; the final step hands seen predictions to the ConvNeXt (+104 net correct seen images).</text>
+<text x="30.0" y="764.0" text-anchor="start" font-size="12" fill="#1B1F24" font-weight="normal">Read with care: at γ = 0, HM mostly tracks how seen-biased a model is (r = 1.00 with the share of unseen images routed to unseen pairs, 25 LoRA runs), not how well it recognises.</text>
+<text x="30.0" y="784.0" text-anchor="start" font-size="12" fill="#1B1F24" font-weight="normal">Example: training CSP longer (v4, 3 epochs → v4.2, 13 epochs) lowers HM at γ = 0 from 34.9 to 26.0 with AUSUC unchanged (38.4); LoRA then adds +17.5 AUSUC. Calibrated HM is the protocol&#x27;s headline number.</text>
+</svg>

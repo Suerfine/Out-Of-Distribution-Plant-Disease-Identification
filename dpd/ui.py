@@ -34,6 +34,7 @@ KIND = {
     "ensemble": "ensemble",
     "cnn_supcon": "contrastive-family CNN (crop + disease heads)",
     "supcon_mix": "mix: ConvNeXt ensemble + CLIP",
+    "router": "gated router (seen/unseen gate + 2 experts)",
 }
 
 
@@ -101,7 +102,7 @@ def test_predictions(run_dir: str, method: str, gamma: float, k: int = 5) -> pd.
 
 
 def backbone(run: dict) -> str:
-    if run["method"] == "ensemble":
+    if run["method"] in ("ensemble", "router"):
         from dpd.inference import member_run
 
         return " + ".join(f"{m['version']} ({backbone(m)})" for m in map(member_run, (x["run"] for x in run["cfg"]["members"])))

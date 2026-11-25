@@ -14,7 +14,7 @@ from dpd.data import PROJECT_ROOT, pair_table
 from dpd.evaluate import ranked_indices
 
 RUNS_DIR = PROJECT_ROOT / "runs"
-SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen", "cnn_independent", "cnn_multitask", "multi_task_cnn", "pretext_multitask_cnn", "ssl_multitask_cnn", "cnn_crop_norm", "ensemble", "cnn_supcon", "supcon_mix")
+SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen", "cnn_independent", "cnn_multitask", "multi_task_cnn", "pretext_multitask_cnn", "ssl_multitask_cnn", "cnn_crop_norm", "ensemble", "cnn_supcon", "supcon_mix", "router")
 
 
 def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
@@ -571,6 +571,68 @@ class EnsembleRunModel:
         return {"supported": False, "reason": self.gradcam_reason, "cams": {}}
 
 
+class RouterRunModel:
+    """A gated-router run (train/route.py, v15): both members score the image, the saved gate (gate.joblib: scaler +
+    logistic regression on the members' seen/unseen margins) plus the validation bias decides seen vs unseen, and the
+    chosen branch's expert (its own mix of the members) ranks the pairs. Scores are the routed expert's
+    log-probabilities with the other branch pushed down by 1e6 (hard routing), so they are ranked with gamma 0.
+    Retrieval uses the first member's image features."""
+
+    logit_scale = 1.0  # scores are log-probabilities
+    score_help = "Log-probability from the expert the seen/unseen gate routed the image to"
+    supports_gradcam = False
+    gradcam_reason = "Grad-CAM is not supported for the gated router."
+
+    def __init__(self, run: dict, pairs):
+        import joblib
+
+        gate_file = run["dir"] / "gate.joblib"
+        if not gate_file.exists():
+            raise FileNotFoundError(f"{gate_file} is missing: re-run train/route.py to save the fitted gate")
+        self.run, self.pairs, self.gamma = run, pairs, 0.0
+        self.gate = joblib.load(gate_file)
+        self.val = run["metrics"]["val"]
+        self.members = [member_run(m["run"]) for m in run["cfg"]["members"]]
+        assert len(self.members) == 2, "the router routes between exactly two members"
+        self.models = [build_run_model(m, pairs) for m in self.members]
+        self.unseen = pairs["is_unseen"].to_numpy()
+        self._gate_logits = {}  # image bytes -> gate logit (bias added), for route_info()
+
+    def _route(self, data: bytes):
+        from dpd.ensemble import to_logprob
+        from train.route import branch_logp, gate_features, log_softmax, routed_scores
+
+        outs = [m.predict(io.BytesIO(data)) for m in self.models]
+        a, b = (to_logprob(s, m["method"])[None] for (_, s), m in zip(outs, self.members))
+        mix = lambda w: w * a + (1 - w) * b
+        v, seen, unseen = self.val, ~self.unseen, self.unseen
+        x = gate_features((a, b, log_softmax(mix(v["ensemble_weight"]))), seen, unseen, v["gate_features"])[0]
+        z = self.gate.decision_function(x) + v["bias"]
+        scores = routed_scores(z, branch_logp(mix(v["seen_expert_weight"]), seen),
+                               branch_logp(mix(v["unseen_expert_weight"]), unseen), seen, v["mode"])[0]
+        return outs[0][0], scores, float(z[0])
+
+    def predict(self, src):
+        data = Path(src).read_bytes() if isinstance(src, (str, Path)) else src.read()
+        emb, scores, z = self._route(data)
+        self._gate_logits[hash(data)] = z
+        return emb, scores
+
+    def route_info(self, data: bytes) -> dict:
+        """The gate's decision for an image: logit (bias added), P(unseen) and the branch it was sent to."""
+        z = self._gate_logits.get(hash(data))
+        if z is None:
+            z = self._route(data)[2]
+            self._gate_logits[hash(data)] = z
+        return {"logit": z, "p_unseen": float(1 / (1 + np.exp(-z))), "branch": "unseen" if z > 0 else "seen"}
+
+    def train_bank(self, train) -> np.ndarray:
+        return self.models[0].train_bank(train)
+
+    def explain(self, src, pred_crop_id: int, pred_disease_id: int):
+        return {"supported": False, "reason": self.gradcam_reason, "cams": {}}
+
+
 def model_class(method: str):
     """ClipRunModel or CnnRunModel; class attributes (logit_scale, score_help) are usable without loading weights."""
     if method in ("clip_zeroshot", "clip_prompt_learning", "clip_feature_gen"):
@@ -587,6 +649,8 @@ def model_class(method: str):
         return SupconRunModel
     if method == "supcon_mix":
         return SupconMixRunModel
+    if method == "router":
+        return RouterRunModel
     raise ValueError(f"unsupported method {method!r}")
 
 

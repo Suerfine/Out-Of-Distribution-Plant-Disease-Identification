@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="530" viewBox="0 0 1320 530" font-family="Arial, Helvetica, sans-serif" fill="#000000">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#000000"/></marker></defs>
+<rect width="1320" height="530" fill="white"/>
+<text x="30.0" y="34.0" text-anchor="start" font-size="18" fill="#000000" font-weight="bold">How disease descriptions change the embedding space (zero-shot CLIP, v1 → v3)</text>
+<text x="30.0" y="56.0" text-anchor="start" font-size="12" fill="#595959" font-weight="normal">Panels (a) and (b) are schematic; all numbers are measured on the 3,448 test images. Both encoders are frozen.</text>
+<rect x="30.0" y="80.0" width="400.0" height="380.0" fill="#FFFFFF" stroke="#000000" stroke-width="1.0"/>
+<text x="42.0" y="104.0" text-anchor="start" font-size="13" fill="#000000" font-weight="bold">(a) v1: name-only prompts</text>
+<text x="42.0" y="124.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal" font-style="italic">“a photo of tomato leaves with {disease}.”</text>
+<ellipse cx="230.0" cy="290.0" rx="52.0" ry="52.0" fill="#FFFFFF" stroke="#000000" stroke-width="1.0" stroke-dasharray="5 3"/>
+<ellipse cx="212.0" cy="274.0" rx="5.0" ry="5.0" fill="#000000" stroke="#000000" stroke-width="1.0"/>
+<text x="0.0" y="0.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal"></text>
+<ellipse cx="246.0" cy="270.0" rx="5.0" ry="5.0" fill="#000000" stroke="#000000" stroke-width="1.0"/>
+<text x="0.0" y="0.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal"></text>
+<ellipse cx="216.0" cy="308.0" rx="5.0" ry="5.0" fill="#000000" stroke="#000000" stroke-width="1.0"/>
+<text x="0.0" y="0.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal"></text>
+<ellipse cx="248.0" cy="304.0" rx="5.0" ry="5.0" fill="#000000" stroke="#000000" stroke-width="1.0"/>
+<text x="0.0" y="0.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal"></text>
+<text x="230.0" y="362.0" text-anchor="middle" font-size="11" fill="#000000" font-weight="normal">18 tomato prompts: early / late / leaf blight,</text>
+<text x="230.0" y="377.0" text-anchor="middle" font-size="11" fill="#000000" font-weight="normal">leaf mold … differ by one or two words</text>
+<text x="42.0" y="146.0" text-anchor="start" font-size="11" fill="#000000" font-weight="bold">Same-crop prompts nearly identical: cos 0.875</text>
+<rect x="104.0" y="214.0" width="12.0" height="12.0" fill="#BDD7EE" stroke="#000000" stroke-width="1.2"/>
+<text x="110.0" y="206.0" text-anchor="middle" font-size="11" fill="#000000" font-weight="normal">image: tomato early blight</text>
+<polyline points="116.0,224.0 208.0,271.0" fill="none" stroke="#595959" stroke-width="0.8" stroke-dasharray="5 3"/>
+<polyline points="116.0,224.0 242.0,267.0" fill="none" stroke="#595959" stroke-width="0.8" stroke-dasharray="5 3"/>
+<polyline points="116.0,224.0 212.0,305.0" fill="none" stroke="#595959" stroke-width="0.8" stroke-dasharray="5 3"/>
+<polyline points="116.0,224.0 244.0,301.0" fill="none" stroke="#595959" stroke-width="0.8" stroke-dasharray="5 3"/>
+<text x="42.0" y="420.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal">The image is close to the crop, but every disease prompt</text>
+<text x="42.0" y="436.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal">is almost equally close: the disease is decided by noise.</text>
+<rect x="460.0" y="80.0" width="400.0" height="380.0" fill="#FFFFFF" stroke="#000000" stroke-width="1.0"/>
+<text x="472.0" y="104.0" text-anchor="start" font-size="13" fill="#000000" font-weight="bold">(b) v3: name + symptom description</text>
+<text x="472.0" y="124.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal" font-style="italic">“… with {disease}: {visual symptoms}.”</text>
+<ellipse cx="565.0" cy="295.0" rx="6.0" ry="6.0" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/>
+<text x="555.0" y="317.0" text-anchor="end" font-size="11" fill="#000000" font-weight="normal">crop component</text>
+<text x="555.0" y="331.0" text-anchor="end" font-size="11" fill="#000000" font-weight="normal">(“tomato”)</text>
+<polyline points="570.0,295.0 654.0,203.0" fill="none" stroke="#000000" stroke-width="1.0" marker-end="url(#a)"/>
+<ellipse cx="660.0" cy="200.0" rx="5.0" ry="5.0" fill="#000000" stroke="#000000" stroke-width="1.0"/>
+<text x="670.0" y="204.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal">early blight</text>
+<text x="670.0" y="218.0" text-anchor="start" font-size="10" fill="#595959" font-weight="normal" font-style="italic">concentric rings, yellow halo</text>
+<polyline points="570.0,295.0 694.0,293.0" fill="none" stroke="#000000" stroke-width="1.0" marker-end="url(#a)"/>
+<ellipse cx="700.0" cy="290.0" rx="5.0" ry="5.0" fill="#000000" stroke="#000000" stroke-width="1.0"/>
+<text x="710.0" y="294.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal">late blight</text>
+<text x="710.0" y="308.0" text-anchor="start" font-size="10" fill="#595959" font-weight="normal" font-style="italic">dark water-soaked patches</text>
+<polyline points="570.0,295.0 634.0,372.0" fill="none" stroke="#000000" stroke-width="1.0" marker-end="url(#a)"/>
+<ellipse cx="640.0" cy="375.0" rx="5.0" ry="5.0" fill="#000000" stroke="#000000" stroke-width="1.0"/>
+<text x="650.0" y="379.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal">leaf mold</text>
+<text x="650.0" y="393.0" text-anchor="start" font-size="10" fill="#595959" font-weight="normal" font-style="italic">olive-green velvety mould</text>
+<text x="635.0" y="237.0" text-anchor="start" font-size="10" fill="#595959" font-weight="normal">symptom</text>
+<text x="635.0" y="249.0" text-anchor="start" font-size="10" fill="#595959" font-weight="normal">component</text>
+<rect x="671.0" y="165.0" width="12.0" height="12.0" fill="#BDD7EE" stroke="#000000" stroke-width="1.2"/>
+<text x="689.0" y="175.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal">image: tomato early blight</text>
+<polyline points="676.0,178.0 661.0,193.0" fill="none" stroke="#000000" stroke-width="1.2" marker-end="url(#a)"/>
+<text x="472.0" y="146.0" text-anchor="start" font-size="11" fill="#000000" font-weight="bold">Same-crop prompts spread apart: cos 0.842</text>
+<text x="472.0" y="420.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal">Symptom words point where leaf images actually lie, so the</text>
+<text x="472.0" y="436.0" text-anchor="start" font-size="11" fill="#000000" font-weight="normal">right disease prompt is now measurably closer to the image.</text>
+<rect x="890.0" y="80.0" width="400.0" height="380.0" fill="#FFFFFF" stroke="#000000" stroke-width="1.0"/>
+<text x="902.0" y="104.0" text-anchor="start" font-size="13" fill="#000000" font-weight="bold">(c) Measured on the test images</text>
+<rect x="918.0" y="198.4" width="27.3" height="191.6" fill="#FFFFFF" stroke="#000000" stroke-width="1.0"/>
+<text x="931.6" y="193.4" text-anchor="middle" font-size="9" fill="#000000" font-weight="normal">41.6</text>
+<rect x="948.3" y="198.1" width="27.3" height="191.9" fill="#E7E6E6" stroke="#000000" stroke-width="1.0"/>
+<text x="961.9" y="193.1" text-anchor="middle" font-size="9" fill="#000000" font-weight="normal">41.7</text>
+<rect x="978.5" y="192.9" width="27.3" height="197.1" fill="#BDD7EE" stroke="#000000" stroke-width="1.0"/>
+<text x="992.2" y="187.9" text-anchor="middle" font-size="9" fill="#000000" font-weight="normal">42.8</text>
+<polyline points="912.0,390.0 1024.0,390.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="968.0" y="406.0" text-anchor="middle" font-size="10" fill="#000000" font-weight="bold">Crop signal</text>
+<text x="968.0" y="419.0" text-anchor="middle" font-size="10" fill="#000000" font-weight="bold">(×10⁻³)</text>
+<rect x="1038.0" y="264.1" width="27.3" height="125.9" fill="#FFFFFF" stroke="#000000" stroke-width="1.0"/>
+<text x="1051.6" y="259.1" text-anchor="middle" font-size="9" fill="#000000" font-weight="normal">6.6</text>
+<rect x="1068.3" y="265.6" width="27.3" height="124.4" fill="#E7E6E6" stroke="#000000" stroke-width="1.0"/>
+<text x="1081.9" y="260.6" text-anchor="middle" font-size="9" fill="#000000" font-weight="normal">6.5</text>
+<rect x="1098.5" y="194.2" width="27.3" height="195.8" fill="#BDD7EE" stroke="#000000" stroke-width="1.0"/>
+<text x="1112.2" y="189.2" text-anchor="middle" font-size="9" fill="#000000" font-weight="normal">10.2</text>
+<polyline points="1032.0,390.0 1144.0,390.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="1088.0" y="406.0" text-anchor="middle" font-size="10" fill="#000000" font-weight="bold">Disease signal</text>
+<text x="1088.0" y="419.0" text-anchor="middle" font-size="10" fill="#000000" font-weight="bold">(×10⁻³)</text>
+<rect x="1158.0" y="261.2" width="27.3" height="128.8" fill="#FFFFFF" stroke="#000000" stroke-width="1.0"/>
+<text x="1171.6" y="256.2" text-anchor="middle" font-size="9" fill="#000000" font-weight="normal">16.8</text>
+<rect x="1188.3" y="267.1" width="27.3" height="122.9" fill="#E7E6E6" stroke="#000000" stroke-width="1.0"/>
+<text x="1201.9" y="262.1" text-anchor="middle" font-size="9" fill="#000000" font-weight="normal">16.0</text>
+<rect x="1218.5" y="211.4" width="27.3" height="178.6" fill="#BDD7EE" stroke="#000000" stroke-width="1.0"/>
+<text x="1232.2" y="206.4" text-anchor="middle" font-size="9" fill="#000000" font-weight="normal">23.3</text>
+<polyline points="1152.0,390.0 1264.0,390.0" fill="none" stroke="#000000" stroke-width="1.0"/>
+<text x="1208.0" y="406.0" text-anchor="middle" font-size="10" fill="#000000" font-weight="bold">Within-crop wins</text>
+<text x="1208.0" y="419.0" text-anchor="middle" font-size="10" fill="#000000" font-weight="bold">(%)</text>
+<rect x="904.0" y="124.0" width="12.0" height="12.0" fill="#FFFFFF" stroke="#000000" stroke-width="1.0"/>
+<text x="921.0" y="134.0" text-anchor="start" font-size="10" fill="#000000" font-weight="normal">v1 raw prompt</text>
+<rect x="1005.8" y="124.0" width="12.0" height="12.0" fill="#E7E6E6" stroke="#000000" stroke-width="1.0"/>
+<text x="1022.8" y="134.0" text-anchor="start" font-size="10" fill="#000000" font-weight="normal">v2 clean names</text>
+<rect x="1113.2" y="124.0" width="12.0" height="12.0" fill="#BDD7EE" stroke="#000000" stroke-width="1.0"/>
+<text x="1130.2" y="134.0" text-anchor="start" font-size="10" fill="#000000" font-weight="normal">v3 + descriptions</text>
+<text x="30.0" y="490.0" text-anchor="start" font-size="11" fill="#595959" font-weight="normal">Crop signal: score of the image&#x27;s own-crop prompts minus the other crops&#x27; prompts.   Disease signal: score of the right-disease prompt minus the wrong-disease prompts of the same crop.</text>
+<text x="30.0" y="509.0" text-anchor="start" font-size="11" fill="#595959" font-weight="normal">Within-crop wins: share of images whose correct prompt beats every other prompt of its crop.   Disease signal v1 → v3: +56%; crop signal: +3%.</text>
+</svg>

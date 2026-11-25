@@ -35,7 +35,7 @@ PARENT = {
     "v13": "v5.5", "v13.1": "v13",
     "v11.1": "v11", "v11.2": "v11", "v11.3": "v11", "v11.4": "v11.1", "v11.5": "v11.3",
     "v6": "v5", "v6.1": "v6", "v6.2": "v6.1", "v6.3": "v6.1", "v6.4": "v6.3", "v6.5": "v6.3", "v6.6": "v6.4",
-    "v6.7": "v6.6", "v6.8": "v6.3", "v14": "v6.3",
+    "v6.7": "v6.6", "v6.8": "v6.3", "v15": "v6.3",
     "aniq_cropnorm_v1": "aniq_cropnorm_v0", "aniq_cropnorm_v2": "aniq_cropnorm_v1", "aniq_cropnorm_v3": "aniq_cropnorm_v2",
     "aniq_cropnorm_v4": "aniq_cropnorm_v3",
     "aniq_baseline_independent_convnext_base": "aniq_baseline_independent_cnn",

@@ -45,6 +45,8 @@ def check_gradcam_support(run_cfg: dict) -> tuple[bool, str]:
         return False, "ViT backbones do not use 2D convolutional feature maps"
     if method in ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen"):
         return False, "VLM / CLIP zero-shot models compute multimodal embeddings without convolutional classification heads"
+    if method == "router":
+        return False, "The gated router combines two models through a seen/unseen gate, with no single backbone to explain"
     if method == "ensemble":
         return False, "Multi-model ensembles do not support direct single-backbone Grad-CAM"
     if "cnn" in method:
@@ -106,16 +108,28 @@ grid = gamma_grid(run)
 gamma_key = f"infer_gamma_{run['version']}"  # one slider state per model, so switching models restores its own value
 if gamma_key not in st.session_state:
     st.session_state[gamma_key] = reported_gamma
+# The gated router (v15) has no gamma: its gate makes the seen/unseen decision, and the branch it rejects is pushed
+# down by 1e6, so a gamma shift would change nothing.
+is_router = run["method"] == "router"
 with st.container(border=True):
-    with st.container(horizontal=True, vertical_alignment="bottom"):
-        gamma = st.slider(
-            "Calibration γ", min_value=float(grid[0]), max_value=float(max(grid[1], reported_gamma)), step=float(grid[2]),
-            key=gamma_key, format="%.4f" if grid[2] < 0.01 else "%.2f",
-            help="Subtracted from every seen pair's score before ranking. Higher γ favours the 10 unseen pairs. "
-                 "Changing it needs no retraining: it is applied after the model scores the image.",
+    if is_router:
+        gamma = 0.0
+        st.caption(
+            ":material/alt_route: **No calibration γ.** A learned gate decides seen vs unseen for each image "
+            f"(logistic regression on the members' margins, bias {run['metrics']['val']['bias']:g}, chosen on validation); "
+            "the chosen branch's expert then ranks only its own pairs (323 seen or 10 unseen). "
+            "The gate plays γ's role, so these numbers compare with the other models' calibrated results."
         )
-        st.button("Reset to validation γ", icon=":material/restart_alt:",
-                  on_click=lambda: st.session_state.update({gamma_key: reported_gamma}))
+    else:
+        with st.container(horizontal=True, vertical_alignment="bottom"):
+            gamma = st.slider(
+                "Calibration γ", min_value=float(grid[0]), max_value=float(max(grid[1], reported_gamma)), step=float(grid[2]),
+                key=gamma_key, format="%.4f" if grid[2] < 0.01 else "%.2f",
+                help="Subtracted from every seen pair's score before ranking. Higher γ favours the 10 unseen pairs. "
+                     "Changing it needs no retraining: it is applied after the model scores the image.",
+            )
+            st.button("Reset to validation γ", icon=":material/restart_alt:",
+                      on_click=lambda: st.session_state.update({gamma_key: reported_gamma}))
     live, ref = gamma_metrics(run_dir, gamma), gamma_metrics(run_dir, reported_gamma)
     delta = lambda k: None if gamma == reported_gamma else f"{(live[k] - ref[k]) * 100:+.1f} pts"
     with st.container(horizontal=True):
@@ -130,23 +144,24 @@ with st.container(border=True):
             f"Exploration only. Reported results use γ = {reported_gamma:g}, chosen on validation; picking γ by "
             "looking at these test numbers would be tuning on the test set.", icon=":material/science:",
         )
-    with st.expander("Seen / unseen trade-off across γ", icon=":material/show_chart:"):
-        curve = gamma_curve(run_dir, grid)
-        lines = alt.Chart(curve).mark_line().encode(
-            x=alt.X("gamma:Q", title="Calibration γ"),
-            y=alt.Y("value:Q", title="Test accuracy", axis=alt.Axis(format="%")),
-            color=alt.Color("metric:N", title=None),
-            tooltip=["metric", alt.Tooltip("gamma:Q", format=".4f"), alt.Tooltip("value:Q", format=".1%")],
-        )
-        marks = pd.DataFrame({"gamma": [reported_gamma, gamma], "which": ["validation γ", "current γ"]})
-        rules = alt.Chart(marks).mark_rule(strokeDash=[4, 4]).encode(
-            x="gamma:Q", color=alt.Color("which:N", title=None, scale=alt.Scale(range=["#888888", "#e45756"])),
-            tooltip=["which", alt.Tooltip("gamma:Q", format=".4f")],
-        )
-        st.altair_chart(alt.layer(lines, rules).resolve_scale(color="independent").properties(height=280),
-                        alt="Seen, unseen and harmonic-mean accuracy as calibration gamma increases")
-        st.caption("Raising γ moves images from seen to unseen pairs: unseen accuracy rises, seen accuracy falls, "
-                   "and the harmonic mean peaks in between.")
+    if not is_router:
+        with st.expander("Seen / unseen trade-off across γ", icon=":material/show_chart:"):
+            curve = gamma_curve(run_dir, grid)
+            lines = alt.Chart(curve).mark_line().encode(
+                x=alt.X("gamma:Q", title="Calibration γ"),
+                y=alt.Y("value:Q", title="Test accuracy", axis=alt.Axis(format="%")),
+                color=alt.Color("metric:N", title=None),
+                tooltip=["metric", alt.Tooltip("gamma:Q", format=".4f"), alt.Tooltip("value:Q", format=".1%")],
+            )
+            marks = pd.DataFrame({"gamma": [reported_gamma, gamma], "which": ["validation γ", "current γ"]})
+            rules = alt.Chart(marks).mark_rule(strokeDash=[4, 4]).encode(
+                x="gamma:Q", color=alt.Color("which:N", title=None, scale=alt.Scale(range=["#888888", "#e45756"])),
+                tooltip=["which", alt.Tooltip("gamma:Q", format=".4f")],
+            )
+            st.altair_chart(alt.layer(lines, rules).resolve_scale(color="independent").properties(height=280),
+                            alt="Seen, unseen and harmonic-mean accuracy as calibration gamma increases")
+            st.caption("Raising γ moves images from seen to unseen pairs: unseen accuracy rises, seen accuracy falls, "
+                       "and the harmonic mean peaks in between.")
 
 # Every image becomes one row: file name, image bytes loader key, true pair id (or -1), predicted top-5 pair ids,
 # top-1 confidence and outcome. Test-set rows come from the run's saved scores (instant, identical to metrics.json);
@@ -254,7 +269,13 @@ def show_details(name: str, uploaded: bool) -> None:
     with right:
         with st.container(horizontal=True):
             st.metric("Prediction", top["pair"].replace("_", " "), border=True)
-            st.metric("Confidence", f"{probs[order[0]]:.0%}", border=True)
+            st.metric("Confidence", f"{probs[order[0]]:.0%}", border=True,
+                      help="Within the branch the gate chose" if is_router else None)
+            if is_router:
+                route = m.route_info(data)
+                st.metric("Gate", f"{route['branch']} branch", border=True,
+                          help=f"P(unseen) = {route['p_unseen']:.0%} (gate logit {route['logit']:+.2f}, bias included). "
+                               "Above 50% the image is ranked among the 10 unseen pairs only, otherwise among the 323 seen pairs.")
         if top["is_unseen"]:
             st.info(
                 "This pair never appeared in training. It was recognised by combining what the model learned "
@@ -383,6 +404,8 @@ for start in range(0, len(page), n_cols):
             if st.button("Details", key=f"det_{r.name}", icon=":material/open_in_full:", type="tertiary"):
                 show_details(r.name, r.uploaded)
 
-st.caption(f"{run['version']}: calibration γ = {gamma:g} subtracted from seen-pair scores"
-           + ("" if gamma == reported_gamma else f" (validation choice: {reported_gamma:g})") + ". "
+st.caption(f"{run['version']}: "
+           + ("a learned seen/unseen gate routes each image (no γ)" if is_router else
+              f"calibration γ = {gamma:g} subtracted from seen-pair scores"
+              + ("" if gamma == reported_gamma else f" (validation choice: {reported_gamma:g})")) + ". "
            "Test-set predictions are read from the run's saved scores; *Details* re-runs the model on the image.")

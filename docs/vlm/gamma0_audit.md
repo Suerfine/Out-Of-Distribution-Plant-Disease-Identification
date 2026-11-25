@@ -1,6 +1,6 @@
 # Gamma-0 audit: what each iteration changed with calibration off
 
-Audit date 2026-11-23. Every finished run with saved scores (66 runs: VLM v1–v14, ensembles, CNN baselines, crop-norm) was re-scored from its saved raw score matrices with no retraining. Script: `scratch/gamma0_audit.py`. Full numbers: `docs/vlm/gamma0_audit.csv` (one row per run), `docs/vlm/gamma0_audit_deltas.csv` (one row per iteration step), `docs/vlm/gamma0_audit_val_members.csv` (gamma-free validation metrics).
+Audit date 2026-11-23. Every finished run with saved scores (66 runs: VLM v1–v13.1 and v15, ensembles, CNN baselines, crop-norm) was re-scored from its saved raw score matrices with no retraining. Script: `scratch/gamma0_audit.py`. Full numbers: `docs/vlm/gamma0_audit.csv` (one row per run), `docs/vlm/gamma0_audit_deltas.csv` (one row per iteration step), `docs/vlm/gamma0_audit_val_members.csv` (gamma-free validation metrics).
 
 ## Bottom line
 
@@ -27,7 +27,7 @@ Examples of a change in HM at γ=0 that is only a change in offset:
 
 - **v5 → v5.3/v5.5 (bigger LoRA)**: test HM at γ=0 went up 14.2 pts, from 26.1 to 40.3. Closed-set seen +0.4, closed-set unseen −0.6, AUSUC +0.6, so test recognition was unchanged. The bias gap shrank from 0.027 to 0.019. On **validation**, the opposite holds. HM at γ=0 was identical (10.88 vs 10.87), while the gamma-free numbers show a real gain: closed-set unseen 48.0 → 57.0, AUSUC 34.6 → 42.6. Here γ=0 hid the improvement that calibrated validation HM (+5.7) correctly reported.
 - **v13 → v13.1 (SSL weight 5 → 20)**: −12.3 HM at γ=0. AUSUC −1.6, so part of this is a real regression and most of it is offset.
-- **v14 (gated router)**: HM at γ=0 is 75.0, the same as v6.3's calibrated HM, and its AUSUC is 1.5 lower. The gate has learned to do γ's job. It adds no recognition.
+- **v15 (gated router)**: HM at γ=0 is 75.0, the same as v6.3's calibrated HM, and its AUSUC is 1.5 lower. The gate has learned to do γ's job. It adds no recognition.
 - **v11.3 vs v10.3 (same LoRA features, GAN classifier vs learned prompts)**: v11.3 has the highest HM at γ=0 of any single model (44.0 vs 33.5), because its bias gap is 2.5× smaller. Its test AUSUC is 3.5 lower (52.7 vs 56.2). On validation they are about level (AUSUC 45.2 vs 44.2).
 
 ## Cases where a single HM misleads (mechanism notes)
@@ -123,7 +123,7 @@ Then describe the bias gap separately, as the reason calibration is needed. This
 | v6.4 → v6.6 | convnext336_v5.13_ensemble | +0.6 | +0.9 | +0.5 | +0.3 | +0.1 | +0.6 |
 | v6.6 → v6.7 | three_member_ensemble | +0.4 | +1.6 | +3.3 | +0.8 | +1.2 | +1.5 |
 | v6.3 → v6.8 | convnext_v11.3_ensemble | +2.8 | -0.8 | +2.5 | +0.2 | +0.5 | +0.1 |
-| v6.3 → v14 | gated_router | – | -0.0 | +48.0 | +0.0 | +0.0 | -1.5 |
+| v6.3 → v15 | gated_router | – | -0.0 | +48.0 | +0.0 | +0.0 | -1.5 |
 | aniq_baseline_independent_cnn → aniq_baseline_independent_convnext_base |  | +9.2 | +8.9 | +10.2 | +7.0 | +15.4 | +15.4 |
 | aniq_baseline_independent_convnext_base → aniq_independent_convnext_base_336_1split |  | +3.5 | +0.6 | -7.3 | +0.2 | +0.8 | +1.5 |
 | aniq_cropnorm_v0 → aniq_cropnorm_v1 |  | +2.2 | -2.4 | -8.9 | -2.8 | -1.5 | -3.4 |
@@ -193,7 +193,7 @@ Validation Δ crosses 1-split and 3-split runs for v4.2 → v5 and v5.5 → v5.8
 | v6.6 | convnext336_v5.13_ensemble | 6.7 | 75.5 | 20.2 | 75.0 | 11.7 | 75.0 | 93.8 | 68.1 | 68.2 | 5.8 |
 | v6.7 | three_member_ensemble | 6.4 | 77.1 | 23.5 | 75.8 | 13.9 | 75.8 | 95.0 | 69.6 | 68.7 | 5.8 |
 | v6.8 | convnext_v11.3_ensemble | 5.4 | 74.2 | 29.6 | 74.7 | 18.4 | 74.8 | 95.7 | 68.5 | 68.8 | 4.8 |
-| v14 | gated_router | 0 | 75.0 | 75.0 | 64.2 | 90.1 | 74.6 | 95.1 | 67.0 | – | – |
+| v15 | gated_router | 0 | 75.0 | 75.0 | 64.2 | 90.1 | 74.6 | 95.1 | 67.0 | – | – |
 | aniq_baseline_independent_cnn |  | 6.5 | 59.7 | 14.5 | 67.2 | 8.2 | 67.2 | 75.8 | 47.2 | 50.9 | 4.8 |
 | aniq_baseline_multitask_cnn |  | 6.9 | 56.7 | 10.0 | 67.6 | 5.4 | 67.7 | 73.2 | 44.8 | 51.6 | 2.4 |
 | aniq_baseline_independent_convnext_base |  | 6.4 | 68.6 | 24.7 | 74.2 | 14.8 | 74.2 | 91.2 | 62.6 | 60.1 | 10.9 |
@@ -204,7 +204,7 @@ Validation Δ crosses 1-split and 3-split runs for v4.2 → v5 and v5.5 → v5.8
 | aniq_cropnorm_v3 |  | 7.2 | 53.9 | 1.8 | 66.5 | 0.9 | 66.5 | 73.1 | 42.8 | 51.7 | 0.6 |
 | aniq_cropnorm_v4 |  | 5.9 | 56.0 | 18.2 | 61.7 | 10.7 | 61.9 | 76.7 | 42.8 | 52.1 | 7.0 |
 
-Zero-shot runs (v1–v3.9) never used γ, so both HM columns are the same. v14 routes with a learned gate, so γ is 0 by design. "Val HM (γ=0)" is at the epoch selected with γ.
+Zero-shot runs (v1–v3.9) never used γ, so both HM columns are the same. v15 (the gated router) routes with a learned gate, so γ is 0 by design. "Val HM (γ=0)" is at the epoch selected with γ.
 
 ## Gamma-free validation metrics (seed-42 split, 862 val-seen / 533 pseudo-unseen images)
 
@@ -258,7 +258,7 @@ So a trained-model change counts as **real** only if its 95% interval excludes 0
 
 **Not real on test γ-free** (|Δ| < 2 pts on every γ-free metric, or the interval includes 0):
 
-- **Trained-model changes:** 336 px, TTA, class-balanced sampling, image consistency (v10), text anchor (v10.1/v10.3), EMA, patch disease (v7), zoom crops, within-crop negatives, multi-description (v5.10), two-sentence prompts (v5.7) and the gated router (v14, −1.5 AUSUC).
+- **Trained-model changes:** 336 px, TTA, class-balanced sampling, image consistency (v10), text anchor (v10.1/v10.3), EMA, patch disease (v7), zoom crops, within-crop negatives, multi-description (v5.10), two-sentence prompts (v5.7) and the gated router (v15, −1.5 AUSUC).
 - **BioCLIP** is significantly worse, both zero-shot (v3.9) and trained (v4.3).
 - **The v11 feature-generation branch** is a real gain over its own frozen-CLIP baseline (generation adds +24 closed unseen). On the same LoRA features it is worse than the prompt model it replaces (v10.3 → v11.3: AUSUC −3.5, closed unseen −4.3).
 
