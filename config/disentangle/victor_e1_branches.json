@@ -1,0 +1,108 @@
+{
+  "_note": "victor_e1_branches (E1, control for disentanglement): E0 with one change, the shared ConvNeXt-Base features pass through a crop branch and a disease branch (Linear 1024 -> 256, BatchNorm, ReLU) before the heads. The two spies train and their accuracy is logged (how much crop information z_dis holds, and disease information z_crop), but adversarial_weight 0 means they do not change the branches. E1 vs E0 measures the branch layers alone; the later runs vs E1 measure the disentangling losses.",
+  "_result": "Uncalibrated (gamma 0), seed 42: epoch 2 by mean validation HM 6.1%. Test HM Top-1 10.1% / Top-5 47.2%; seen top-1 52.5%, unseen top-1 5.6%; crop / disease accuracy seen 89.1% / 55.1%, unseen 76.9% / 8.8%. Crop leakage (crop spy accuracy on the disease branch, last training epoch) 75.3%.",
+  "version": "victor_e1_branches_g0",
+  "method": "cnn_disentangle",
+  "seed": 42,
+  "data": {
+    "_note": "Same splits and 333-pair protocol as the CLIP versions (generalised zero-shot).",
+    "eval_splits": [
+      "test_seen",
+      "test_unseen"
+    ],
+    "label_space": "all_pairs"
+  },
+  "model": {
+    "_note": "timm ConvNeXt-Base pretrained on ImageNet-22k and fine-tuned on ImageNet-1k (weights downloaded by timm from Hugging Face on first use). LayerNorm rather than BatchNorm, so small physical batches with gradient accumulation are equivalent to batch 32. Stochastic depth 0.1, head dropout 0.2 (Hein's recipe). z_dim: width of each branch output (z_crop, z_dis). spy_hidden: hidden width of each spy (a 2-layer MLP, so it can detect non-linear leakage, as in DANN). head_dropout applies before each branch.",
+    "backbone": "timm:convnext_base.fb_in22k_ft_in1k",
+    "pretrained": true,
+    "head_dropout": 0.2,
+    "drop_path_rate": 0.1,
+    "z_dim": 256,
+    "spy_hidden": 256
+  },
+  "disentangle": {
+    "_note": "adversarial_weight: GRL strength (how hard the branches are pushed to fool the spies); 0 = spies only observe. adversarial_ramp: DANN schedule that raises the strength from 0 to adversarial_weight over max_epochs. decorrelation_weight: weight of the cross-correlation penalty between z_crop and z_dis; 0 = off.",
+    "adversarial_weight": 0.0,
+    "adversarial_ramp": true,
+    "decorrelation_weight": 0.0
+  },
+  "input": {
+    "_note": "As the ResNet-50 baseline (256 px resize cache, train random resized crop 224, test resize 256 + centre crop 224, ImageNet mean/std) but bicubic resampling, which ConvNeXt was pretrained with.",
+    "resize_cache": 256,
+    "resize": 256,
+    "crop_size": 224,
+    "interpolation": "bicubic"
+  },
+  "augmentation": {
+    "_note": "Hein's recipe: random resized crop scale 0.5-1 (milder than the ResNet baseline's 0.25-1), flips, brightness/contrast/saturation jitter 0.2, no hue jitter (colour is diagnostic).",
+    "random_resized_crop_scale": [
+      0.5,
+      1.0
+    ],
+    "horizontal_flip_p": 0.5,
+    "vertical_flip_p": 0.5,
+    "color_jitter": {
+      "brightness": 0.2,
+      "contrast": 0.2,
+      "saturation": 0.2,
+      "hue": 0.0
+    }
+  },
+  "loss": {
+    "_note": "Cross-entropy with label smoothing 0.1 (long-tailed, noisy labels: median 7 images per pair). For the multi-task model the two head losses are summed with equal weight. The spy losses are plain cross-entropy with weight 1.",
+    "label_smoothing": 0.1,
+    "weights": {
+      "crop": 1.0,
+      "disease": 1.0
+    }
+  },
+  "optimizer": {
+    "_note": "AdamW; backbone 5e-5 (half the ResNet baseline: a larger pretrained model), heads 5e-4, weight decay 0.05. lr_head applies to the branches, heads and spies.",
+    "lr_backbone": 5e-05,
+    "lr_head": 0.0005,
+    "weight_decay": 0.05
+  },
+  "validation": {
+    "_note": "Same validation splits as aniq_baseline_independent_cnn (3 splits carved from train). The stopping epoch is the one with the best mean validation HM without calibration (gamma_grid [0]), the rule used for every model in the report; gamma calibration is applied only to the team's final model.",
+    "exclude_holdout_diseases": [
+      "healthy"
+    ],
+    "n_holdout_pairs": 20,
+    "min_holdout_images": 8,
+    "val_fraction": 0.15,
+    "gamma_grid": [
+      0.0,
+      0.1,
+      0.1
+    ],
+    "exclude_real_unseen_from_label_space": true,
+    "max_images_per_holdout_pair": 40,
+    "n_splits": 3
+  },
+  "training": {
+    "_note": "Physical batch 16 x 2 accumulation steps = effective 32 (16 peaks at 3.2 GiB on the 6 GB GPU, 77 img/s). 3 linear warmup epochs, then cosine to 1% of the base rate over a fixed 30-epoch horizon (lr_schedule_epochs), so the stage-2 refit for the selected e epochs follows exactly the learning rates of the first e validation epochs. max_epochs 20 bounds stage 1 (Hein selected epoch 15 of 30). Gradient clipping at norm 1.0. About 90 s per epoch, roughly 4 h for the whole run.",
+    "batch_size": 16,
+    "accumulation_steps": 2,
+    "max_epochs": 20,
+    "lr_schedule_epochs": 30,
+    "warmup_epochs": 3,
+    "min_lr_ratio": 0.01,
+    "gradient_clip": 1.0,
+    "final_fit": "all_train"
+  },
+  "evaluation": {
+    "_note": "Pair score = log P(crop) + log P(disease), evaluated without calibration (gamma 0).",
+    "top_k": [
+      1,
+      5
+    ]
+  },
+  "runtime": {
+    "_note": "2 dataloader workers (4 ran out of RAM on the 16 GB laptop: train and validation loaders each keep their workers alive); images come from the resized cache.",
+    "device": "cuda",
+    "amp": true,
+    "num_workers": 2
+  },
+  "output_dir": "runs/disentangle/victor_e1_branches_g0"
+}
