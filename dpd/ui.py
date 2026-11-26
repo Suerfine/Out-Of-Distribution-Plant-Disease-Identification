@@ -11,7 +11,10 @@ from PIL import Image, ImageOps
 
 from dpd.data import IMAGE_DIR, pair_table, read_metadata
 from dpd.evaluate import calibrate, ranked_indices
+from dpd.hf_sync import ensure_run_weights, is_hf_configured
 from dpd.inference import list_runs, load_run_model, model_class
+
+_CLOUD = is_hf_configured()
 
 SPLIT_LABELS = {"train": "Train", "test_seen": "Test seen", "test_unseen": "Test unseen"}
 
@@ -43,7 +46,7 @@ def load_metadata() -> pd.DataFrame:
     return read_metadata()
 
 
-@st.cache_data(max_entries=3000)
+@st.cache_data(max_entries=300 if _CLOUD else 3000)
 def thumbnail(file: str, size: int = 256) -> bytes:
     """Square, centre-cropped JPEG bytes for the gallery grid; full images are too large to send by the page-full."""
     with Image.open(IMAGE_DIR / file) as img:
@@ -138,15 +141,16 @@ def best_run_index(runs: list[dict]) -> int:
     return max(candidates, key=lambda i: runs[i]["metrics"]["harmonic_mean_top1"])
 
 
-@st.cache_resource(max_entries=2, show_spinner="Loading model…")
+@st.cache_resource(max_entries=1 if _CLOUD else 2, show_spinner="Loading model…")
 def get_model(run_dir: str):
     """A ClipRunModel or CnnRunModel (dpd/inference.py). st.cache_resource keys on this function's source, so edit
     this docstring if the returned object's interface changes, or a running server keeps serving stale objects."""
+    ensure_run_weights(run_dir)
     run = next(r for r in list_runs() if str(r["dir"]) == run_dir)
     return load_run_model(run, load_metadata())
 
 
-@st.cache_resource(max_entries=2, show_spinner="Loading training-image embeddings…")
+@st.cache_resource(max_entries=1 if _CLOUD else 2, show_spinner="Loading training-image embeddings…")
 def get_train_bank(run_dir: str):
     train = load_metadata().query("split == 'train'").reset_index(drop=True)
     return train, get_model(run_dir).train_bank(train)

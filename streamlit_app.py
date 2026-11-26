@@ -1,8 +1,18 @@
 import streamlit as st
 
 from dpd.data import ROOT
+from dpd.hf_sync import is_hf_configured, sync_all
 
 st.set_page_config(page_title="Plant disease ID", page_icon=":material/eco:", layout="wide")
+
+
+@st.cache_resource(show_spinner="Downloading dataset and model metadata from Hugging Face…")
+def _bootstrap_hf() -> bool:
+    return sync_all()
+
+
+if is_hf_configured():
+    _bootstrap_hf()
 
 page = st.navigation(
     {
@@ -21,7 +31,8 @@ page = st.navigation(
 
 if not ROOT.exists():
     st.error(
-        f"Expected the dataset at `{ROOT}`. Put `DPD_Small/` in the project root or set the `DPD_ROOT` environment variable.",
+        f"Expected the dataset at `{ROOT}`. Put `DPD_Small/` in the project root, set `DPD_ROOT`, "
+        "or configure `HF_REPO_ID` in Streamlit secrets / environment variables.",
         title="Dataset not found",
     )
     st.stop()

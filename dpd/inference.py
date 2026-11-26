@@ -415,7 +415,10 @@ def supcon_loadable(d: Path, cfg: dict, metrics: dict) -> bool:
     """Contrastive runs (train/train_supcon.py) the app can score: full runs that saved their network and test scores and
     whose pair score is the plain sum of the two cross-entropy heads' log-probabilities (scoring.mode "heads", no learned
     seen/unseen detector, no extra scoring terms). Screening runs and the other scoring variants are left out of the list."""
-    return ((d / "supcon_net.pt").exists() and (d / "scores.npz").exists() and cfg.get("scoring", {}).get("mode") == "heads"
+    from dpd.hf_sync import is_hf_configured
+
+    has_weights = (d / "supcon_net.pt").exists() or is_hf_configured()
+    return (has_weights and (d / "scores.npz").exists() and cfg.get("scoring", {}).get("mode") == "heads"
             and cfg["model"].get("ce_dropout") is not None and not cfg.get("loss", {}).get("new")
             and (metrics.get("val") or {}).get("scale") is None)
 
