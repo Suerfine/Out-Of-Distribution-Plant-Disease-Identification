@@ -10,6 +10,7 @@ from PIL import Image
 
 from dpd.data import IMAGE_DIR, pair_table
 from dpd.evaluate import evaluate
+from dpd.hf_sync import is_similarity_gallery_disabled
 from dpd.inference import list_runs, nearest, rank_scores
 from dpd.ui import (
     OUTCOMES, SPLIT_LABELS, best_run_index, get_model, get_train_bank, image_grid, load_metadata, outcome, run_label,
@@ -357,10 +358,21 @@ def show_details(name: str, uploaded: bool) -> None:
                         st.caption(entry["desc"])
     st.divider()
 
-    st.markdown("**Similar training images**")
-    train, bank = get_train_bank(run_dir)
-    idx, _ = nearest(emb, bank, 8)
-    image_grid(train.iloc[idx], n_cols=4, caption_fields=("pair",))
+    if is_similarity_gallery_disabled():
+        train = df[df["split"] == "train"].reset_index(drop=True)
+    else:
+        st.markdown("**Similar training images**")
+        train, bank = get_train_bank(run_dir)
+        if bank is not None:
+            idx, _ = nearest(emb, bank, 8)
+            image_grid(train.iloc[idx], n_cols=4, caption_fields=("pair",))
+        else:
+            st.info(
+                "Precomputed `train_features.npy` was not found for this model on Hugging Face, "
+                "so nearest-neighbor retrieval is skipped on CPU to prevent an out-of-memory crash. "
+                "Upload `train_features.npy` into this run's folder on Hugging Face to enable it.",
+                icon=":material/info:",
+            )
 
     same_pair = train[train["pair_id"] == top["pair_id"]]
     if len(same_pair):

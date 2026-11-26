@@ -66,10 +66,47 @@ def _get_setting(key: str, default: str | None = None) -> str | None:
     return val or default
 
 
+def _normalize_repo(repo_id: str | None, repo_type: str | None) -> tuple[str | None, str]:
+    """Normalize HF_REPO_ID (even if a full URL or datasets/ prefix was pasted) and HF_REPO_TYPE."""
+    rtype = (repo_type or "").strip().lower()
+    if rtype in ("models", "model"):
+        rtype = "model"
+    elif rtype in ("datasets", "dataset"):
+        rtype = "dataset"
+
+    if not repo_id:
+        return None, rtype or "model"
+
+    rid = repo_id.strip().strip("\"'").strip("/")
+    for prefix in ("https://huggingface.co/", "http://huggingface.co/", "huggingface.co/"):
+        if rid.lower().startswith(prefix):
+            rid = rid[len(prefix) :]
+            break
+
+    parts = [p for p in rid.split("/") if p]
+    if parts and parts[0].lower() == "datasets":
+        parts = parts[1:]
+        if not rtype:
+            rtype = "dataset"
+    elif parts and parts[0].lower() == "models":
+        parts = parts[1:]
+        if not rtype:
+            rtype = "model"
+
+    # Keep only "<owner>/<repo>" (drops /tree/main, /blob/..., etc. if a browser URL was pasted).
+    if len(parts) >= 2:
+        rid = f"{parts[0]}/{parts[1]}"
+    elif parts:
+        rid = parts[0]
+
+    return rid, rtype or "model"
+
+
 def hf_config() -> dict[str, str | None]:
+    repo_id, repo_type = _normalize_repo(_get_setting("HF_REPO_ID"), _get_setting("HF_REPO_TYPE"))
     return {
-        "repo_id": _get_setting("HF_REPO_ID"),
-        "repo_type": _get_setting("HF_REPO_TYPE", "model"),
+        "repo_id": repo_id,
+        "repo_type": repo_type,
         "token": _get_setting("HF_TOKEN"),
         "revision": _get_setting("HF_REVISION"),
     }
@@ -77,6 +114,11 @@ def hf_config() -> dict[str, str | None]:
 
 def is_hf_configured() -> bool:
     return bool(hf_config()["repo_id"])
+
+
+def is_similarity_gallery_disabled() -> bool:
+    val = (_get_setting("DISABLE_SIMILARITY_GALLERY", "") or "").lower()
+    return val in ("1", "true", "yes", "on")
 
 
 def _dataset_ready() -> bool:
@@ -121,7 +163,9 @@ def sync_dataset(cfg: dict[str, str | None] | None = None) -> bool:
 
     stage_dir = PROJECT_ROOT / ".hf_dataset_stage"
     stage_dir.mkdir(parents=True, exist_ok=True)
+    hf_cache = stage_dir / ".hf_cache"
     try:
+        print(f"[hf_sync] Downloading dataset/ from {cfg['repo_id']} ({cfg['repo_type']})...", flush=True)
         snapshot_download(
             repo_id=cfg["repo_id"],
             repo_type=cfg["repo_type"],
@@ -129,6 +173,7 @@ def sync_dataset(cfg: dict[str, str | None] | None = None) -> bool:
             revision=cfg["revision"],
             allow_patterns=["dataset/**"],
             local_dir=str(stage_dir),
+            cache_dir=str(hf_cache),
         )
         src_root = stage_dir / "dataset"
         if not src_root.exists():
@@ -147,7 +192,10 @@ def sync_dataset(cfg: dict[str, str | None] | None = None) -> bool:
 
         # 2. Extract any dataset zip archive(s) (split CSVs -> ROOT, images -> IMAGE_DIR).
         for zip_file in sorted(src_root.rglob("*.zip")):
-            _extract_dataset_zip(zip_file, ROOT, IMAGE_DIR)
+            size_mb = zip_file.stat().st_size / 1e6
+            print(f"[hf_sync] Extracting {zip_file.name} ({size_mb:.1f} MB)...", flush=True)
+            n = _extract_dataset_zip(zip_file, ROOT, IMAGE_DIR)
+            print(f"[hf_sync] Extracted {n} files from {zip_file.name}.", flush=True)
             zip_file.unlink(missing_ok=True)
 
         # 3. Also support loose images uploaded under dataset/DPD_Small_dataset/ or dataset/images/ or similar.
@@ -158,6 +206,7 @@ def sync_dataset(cfg: dict[str, str | None] | None = None) -> bool:
                     shutil.move(str(img_path), str(target))
     finally:
         shutil.rmtree(stage_dir, ignore_errors=True)
+    print("[hf_sync] Dataset sync complete.", flush=True)
     return True
 
 
@@ -170,6 +219,7 @@ def sync_runs_metadata(cfg: dict[str, str | None] | None = None, include_weights
     from huggingface_hub import snapshot_download
 
     patterns = ["runs/**"] if include_weights else RUN_METADATA_PATTERNS
+    print(f"[hf_sync] Downloading runs/ ({'all files' if include_weights else 'metadata'}) from {cfg['repo_id']}...", flush=True)
     snapshot_download(
         repo_id=cfg["repo_id"],
         repo_type=cfg["repo_type"],
@@ -178,6 +228,7 @@ def sync_runs_metadata(cfg: dict[str, str | None] | None = None, include_weights
         allow_patterns=patterns,
         local_dir=str(PROJECT_ROOT),
     )
+    print("[hf_sync] Runs metadata sync complete.", flush=True)
     return True
 
 

@@ -119,6 +119,11 @@ class ClipRunModel:
         return emb, self.pair_emb @ emb
 
     def train_bank(self, train) -> np.ndarray:
+        path = self.run["dir"] / "train_features.npy"
+        if path.exists():
+            bank = np.load(path)
+            if len(bank) == len(train):
+                return bank
         return train_embeddings(self.clip, self.preprocess, self.run["cfg"]["model"], train["file"])
 
     def explain(self, src, pred_crop_id: int, pred_disease_id: int):

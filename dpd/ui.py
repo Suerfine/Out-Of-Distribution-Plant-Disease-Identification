@@ -150,10 +150,29 @@ def get_model(run_dir: str):
     return load_run_model(run, load_metadata())
 
 
+def _has_precomputed_bank(model) -> bool:
+    """True if this model's training retrieval bank is already saved on disk (avoids 8,000-image CPU encode on cloud)."""
+    if hasattr(model, "models") and model.models:
+        return _has_precomputed_bank(model.models[0])
+    if hasattr(model, "cnns") and model.cnns:
+        return _has_precomputed_bank(model.cnns[0])
+    run_dir = Path(model.run["dir"])
+    if (run_dir / "train_features.npy").exists():
+        return True
+    cache_dir = run_dir.parent.parent / "cache"
+    if model.run["method"] in ("clip_zeroshot", "clip_prompt_learning") and cache_dir.exists():
+        if any(cache_dir.glob("*train*.npy")):
+            return True
+    return False
+
+
 @st.cache_resource(max_entries=1 if _CLOUD else 2, show_spinner="Loading training-image embeddings…")
 def get_train_bank(run_dir: str):
     train = load_metadata().query("split == 'train'").reset_index(drop=True)
-    return train, get_model(run_dir).train_bank(train)
+    model = get_model(run_dir)
+    if _CLOUD and not _has_precomputed_bank(model):
+        return train, None
+    return train, model.train_bank(train)
 
 
 @st.cache_data(persist="disk", show_spinner="Reading image headers…")
