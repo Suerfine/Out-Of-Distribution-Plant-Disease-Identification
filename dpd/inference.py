@@ -14,7 +14,7 @@ from dpd.data import PROJECT_ROOT, pair_table
 from dpd.evaluate import ranked_indices
 
 RUNS_DIR = PROJECT_ROOT / "runs"
-SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen", "cnn_independent", "cnn_multitask", "multi_task_cnn", "pretext_multitask_cnn", "ssl_multitask_cnn", "cnn_crop_norm", "ensemble", "cnn_supcon", "supcon_mix", "router")
+SUPPORTED_METHODS = ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen", "clip_cnn_moe", "cnn_independent", "cnn_multitask", "multi_task_cnn", "pretext_multitask_cnn", "ssl_multitask_cnn", "cnn_crop_norm", "ensemble", "cnn_supcon", "supcon_mix", "router")
 
 
 def list_runs(methods=SUPPORTED_METHODS) -> list[dict]:
@@ -641,12 +641,168 @@ class RouterRunModel:
         return {"supported": False, "reason": self.gradcam_reason, "cams": {}}
 
 
+class ClipCnnMoeRunModel:
+    """Final proposed model (Steps A-I): ConvNeXt-Base crop + LoRA-merged CLIP disease head (trained with
+    crop-anchored GAN synthetic features) for routing & unseen prediction, with seen-side handoff to the
+    Independent ConvNeXt-Base CNN.
+
+    Seen-pair scores from the CNN handoff are shift-aligned to match the routing seen-max, so standard
+    calibrated stacking (`scores[seen] -= gamma`) reproduces the exact MoE router at every gamma.
+    """
+
+    logit_scale = 1.0
+    score_help = "MoE pair score (CNN crop + CLIP disease for unseen/routing; shift-aligned CNN handoff for seen), after calibration"
+    supports_gradcam = False
+    gradcam_reason = (
+        "Grad-CAM is not supported for the hybrid CLIP + ConvNeXt MoE model. "
+        "Select an individual CNN model (Baseline 1 or Baseline 2) to view Grad-CAM heatmaps."
+    )
+
+    def __init__(self, run: dict, pairs):
+        import open_clip
+        import timm
+        import torch.nn as nn
+        import torchvision.transforms.v2 as T
+        from safetensors.torch import load_file
+
+        self.run, self.pairs = run, pairs
+        self.gamma = float(run["metrics"].get("gamma", run["cfg"].get("gamma", 3.0)))
+        cfg = run["cfg"]
+        folder = Path(run["dir"])
+        dev = device()
+        self.dev = dev
+
+        self.crop_id = pairs["crop_id"].to_numpy()
+        self.disease_id = pairs["disease_id"].to_numpy()
+        unseen = pairs["is_unseen"].to_numpy()
+        self.seen_ids = np.flatnonzero(~unseen)
+        self.unseen_ids = np.flatnonzero(unseen)
+
+        clip = open_clip.create_model(cfg["clip"]["arch"], pretrained=None)
+        clip.visual.load_state_dict(load_file(folder / "clip_visual.safetensors"))
+        self.clip_visual = clip.visual.to(dev).eval()
+        del clip
+
+        head = load_file(folder / "disease_head.safetensors")
+        self.head_w = torch.nn.functional.normalize(head["weight"].float(), dim=-1).to(dev)
+        self.head_scale = float(cfg["disease_head"]["logit_scale"])
+
+        class _SingleHeadCNN(nn.Module):
+            def __init__(self, bb: str, target: str, n: int):
+                super().__init__()
+                self.backbone = timm.create_model(bb, pretrained=False, num_classes=0)
+                self.heads = nn.ModuleDict({target: nn.Sequential(nn.Dropout(0.0), nn.Linear(self.backbone.num_features, n))})
+                self.target = target
+
+            def forward(self, x):
+                return self.heads[self.target](self.backbone(x))
+
+        self.cnn = {}
+        for target, n in (("crop", cfg["n_crops"]), ("disease", cfg["n_diseases"])):
+            net = _SingleHeadCNN(cfg["cnn"]["backbone"], target, n)
+            net.load_state_dict(load_file(folder / f"cnn_{target}.safetensors"))
+            self.cnn[target] = net.to(dev).eval()
+
+        clip_mean, clip_std = (0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)
+        im_mean, im_std = (0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
+        s = int(cfg["clip"]["crop_size"])
+        self.resize_cache = int(cfg["clip"].get("resize_cache", 256))
+        self.clip_tf = T.Compose([
+            T.Resize(s, interpolation=T.InterpolationMode.BICUBIC, antialias=True),
+            T.CenterCrop(s),
+            T.ToImage(),
+            T.ToDtype(torch.float32, scale=True),
+            T.Normalize(clip_mean, clip_std),
+        ])
+        c = cfg["cnn"]
+        self.cnn_tf = T.Compose([
+            T.Resize(int(c["resize"]), interpolation=T.InterpolationMode.BICUBIC, antialias=True),
+            T.CenterCrop(int(c["crop_size"])),
+            T.ToImage(),
+            T.ToDtype(torch.float32, scale=True),
+            T.Normalize(im_mean, im_std),
+        ])
+
+    def _compose_batch(self, clip_dis: np.ndarray, cnn_crop: np.ndarray, cnn_dis: np.ndarray) -> np.ndarray:
+        """Combine raw branch logits into a single (N, 333) score matrix compatible with calibrated stacking."""
+        ci, di, seen, unseen = self.crop_id, self.disease_id, self.seen_ids, self.unseen_ids
+        seen_route = cnn_crop[:, ci[seen]] + clip_dis[:, di[seen]]
+        unseen_scores = cnn_crop[:, ci[unseen]] + clip_dis[:, di[unseen]]
+        handoff = cnn_crop[:, ci[seen]] + cnn_dis[:, di[seen]]
+        seen_aligned = handoff - handoff.max(axis=1, keepdims=True) + seen_route.max(axis=1, keepdims=True)
+        out = np.empty((len(clip_dis), len(ci)), dtype=np.float32)
+        out[:, seen] = seen_aligned
+        out[:, unseen] = unseen_scores
+        return out
+
+    @torch.inference_mode()
+    def predict(self, src):
+        from dpd.resize_cache import standardise
+
+        img = standardise(src, self.resize_cache)
+        xc = self.clip_tf(img).unsqueeze(0).to(self.dev)
+        xn = self.cnn_tf(img).unsqueeze(0).to(self.dev)
+        with torch.autocast(self.dev, enabled=self.dev == "cuda"):
+            feat = torch.nn.functional.normalize(self.clip_visual(xc).float(), dim=-1)
+            clip_dis = (self.head_scale * feat @ self.head_w.T).float().cpu().numpy()
+            cnn_crop = self.cnn["crop"](xn).float().cpu().numpy()
+            cnn_dis = self.cnn["disease"](xn).float().cpu().numpy()
+        scores = self._compose_batch(clip_dis, cnn_crop, cnn_dis)
+        return feat[0].cpu().numpy(), scores[0]
+
+    @torch.inference_mode()
+    def predict_files(self, files, image_dir: Path, batch_size: int = 32) -> np.ndarray:
+        """Fast batched scoring over image paths for generating scores.npz."""
+        from dpd.resize_cache import standardise
+
+        all_scores = []
+        file_list = list(files)
+        for i in range(0, len(file_list), batch_size):
+            imgs = [standardise(image_dir / f, self.resize_cache) for f in file_list[i : i + batch_size]]
+            xc = torch.stack([self.clip_tf(im) for im in imgs]).to(self.dev)
+            xn = torch.stack([self.cnn_tf(im) for im in imgs]).to(self.dev)
+            with torch.autocast(self.dev, enabled=self.dev == "cuda"):
+                feat = torch.nn.functional.normalize(self.clip_visual(xc).float(), dim=-1)
+                clip_dis = (self.head_scale * feat @ self.head_w.T).float().cpu().numpy()
+                cnn_crop = self.cnn["crop"](xn).float().cpu().numpy()
+                cnn_dis = self.cnn["disease"](xn).float().cpu().numpy()
+            all_scores.append(self._compose_batch(clip_dis, cnn_crop, cnn_dis))
+        return np.concatenate(all_scores, axis=0)
+
+    def train_bank(self, train) -> np.ndarray:
+        path = self.run["dir"] / "train_features.npy"
+        if path.exists():
+            bank = np.load(path)
+            if len(bank) == len(train):
+                return bank
+        from dpd.resize_cache import ensure_resized
+
+        image_dir = ensure_resized(train["file"], self.resize_cache)
+        feats = []
+        files = list(train["file"])
+        with torch.inference_mode():
+            for i in range(0, len(files), 64):
+                imgs = [Image.open(image_dir / f).convert("RGB") for f in files[i : i + 64]]
+                xc = torch.stack([self.clip_tf(im) for im in imgs]).to(self.dev)
+                with torch.autocast(self.dev, enabled=self.dev == "cuda"):
+                    f = torch.nn.functional.normalize(self.clip_visual(xc).float(), dim=-1)
+                feats.append(f.cpu().numpy())
+        bank = np.concatenate(feats, axis=0)
+        np.save(path, bank)
+        return bank
+
+    def explain(self, src, pred_crop_id: int, pred_disease_id: int):
+        return {"supported": False, "reason": self.gradcam_reason, "cams": {}}
+
+
 def model_class(method: str):
     """ClipRunModel or CnnRunModel; class attributes (logit_scale, score_help) are usable without loading weights."""
     if method in ("clip_zeroshot", "clip_prompt_learning", "clip_feature_gen"):
         return ClipRunModel
     if method == "clip_prompt_lora":
         return ClipLoraRunModel
+    if method == "clip_cnn_moe":
+        return ClipCnnMoeRunModel
     if method in ("cnn_independent", "cnn_multitask", "multi_task_cnn", "pretext_multitask_cnn", "ssl_multitask_cnn"):
         return CnnRunModel
     if method == "cnn_crop_norm":

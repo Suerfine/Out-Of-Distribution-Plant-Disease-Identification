@@ -44,8 +44,8 @@ def check_gradcam_support(run_cfg: dict) -> tuple[bool, str]:
     method = run_cfg.get("method", "")
     if "vit" in bb:
         return False, "ViT backbones do not use 2D convolutional feature maps"
-    if method in ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen"):
-        return False, "VLM / CLIP zero-shot models compute multimodal embeddings without convolutional classification heads"
+    if method in ("clip_zeroshot", "clip_prompt_learning", "clip_prompt_lora", "clip_feature_gen", "clip_cnn_moe"):
+        return False, "VLM / hybrid CLIP models do not support direct single-backbone convolutional Grad-CAM"
     if method == "router":
         return False, "The gated router combines two models through a seen/unseen gate, with no single backbone to explain"
     if method == "ensemble":
@@ -131,8 +131,20 @@ with st.container(border=True):
             )
             st.button("Reset to validation γ", icon=":material/restart_alt:",
                       on_click=lambda: st.session_state.update({gamma_key: reported_gamma}))
-    live, ref = gamma_metrics(run_dir, gamma), gamma_metrics(run_dir, reported_gamma)
-    delta = lambda k: None if gamma == reported_gamma else f"{(live[k] - ref[k]) * 100:+.1f} pts"
+    has_scores = (Path(run_dir) / "scores.npz").exists() and (Path(run_dir) / "predictions_test_seen.csv").exists()
+    if has_scores:
+        live, ref = gamma_metrics(run_dir, gamma), gamma_metrics(run_dir, reported_gamma)
+        delta = lambda k: None if gamma == reported_gamma else f"{(live[k] - ref[k]) * 100:+.1f} pts"
+    else:
+        rm = run["metrics"]
+        live = {
+            "seen": rm["test_seen"]["top1"],
+            "unseen": rm["test_unseen"]["top1"],
+            "hm": rm["harmonic_mean_top1"],
+            "hm5": rm["harmonic_mean_top5"],
+            "seen_to_unseen": rm["test_seen"].get("predicted_as_unseen", 0.0),
+        }
+        delta = lambda k: None
     with st.container(horizontal=True):
         st.metric("Seen Top-1", f"{live['seen']:.1%}", delta('seen'), border=True)
         st.metric("Unseen Top-1", f"{live['unseen']:.1%}", delta('unseen'), border=True)
@@ -145,7 +157,7 @@ with st.container(border=True):
             f"Exploration only. Reported results use γ = {reported_gamma:g}, chosen on validation; picking γ by "
             "looking at these test numbers would be tuning on the test set.", icon=":material/science:",
         )
-    if not is_router:
+    if not is_router and has_scores:
         with st.expander("Seen / unseen trade-off across γ", icon=":material/show_chart:"):
             curve = gamma_curve(run_dir, grid)
             lines = alt.Chart(curve).mark_line().encode(
@@ -168,6 +180,14 @@ with st.container(border=True):
 # top-1 confidence and outcome. Test-set rows come from the run's saved scores (instant, identical to metrics.json);
 # uploads run through the model.
 if source == "Test set":
+    if not has_scores:
+        st.info(
+            "Precomputed test-set predictions (`scores.npz`) are not included for this model. "
+            "Switch **Images** to **Upload** above to run live inference on any leaf photo, "
+            "or pick a model with saved test predictions (e.g. Baseline 1 or Baseline 2) to browse the test set.",
+            icon=":material/upload:",
+        )
+        st.stop()
     preds = test_predictions(run_dir, run["method"], gamma)
     with st.container(horizontal=True, vertical_alignment="bottom"):
         split = st.segmented_control(

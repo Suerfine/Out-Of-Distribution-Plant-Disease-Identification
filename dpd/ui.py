@@ -27,6 +27,7 @@ KIND = {
     "clip_prompt_learning": "trained prompts",
     "clip_prompt_lora": "trained prompts + LoRA",
     "clip_feature_gen": "generated unseen features",
+    "clip_cnn_moe": "CLIP + ConvNeXt MoE (crop-anchored GAN)",
     "cnn_independent": "baseline: independent CNNs",
     "cnn_multitask": "baseline: multi-task CNN",
     "multi_task_cnn": "multi-task CNN",
@@ -105,6 +106,8 @@ def test_predictions(run_dir: str, method: str, gamma: float, k: int = 5) -> pd.
 
 
 def backbone(run: dict) -> str:
+    if run["method"] == "clip_cnn_moe":
+        return "OpenAI CLIP ViT-B/16 + ConvNeXt-Base"
     if run["method"] in ("ensemble", "router"):
         from dpd.inference import member_run
 

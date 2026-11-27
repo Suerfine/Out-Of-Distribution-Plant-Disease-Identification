@@ -11,6 +11,11 @@ from dpd.inference import list_runs
 from dpd.ui import KIND, OUTCOMES, backbone, best_run_index, load_metadata, run_label, test_predictions
 
 
+def has_scores(run_dir: str | Path) -> bool:
+    d = Path(run_dir)
+    return (d / "scores.npz").exists() and (d / "predictions_test_seen.csv").exists()
+
+
 @st.cache_data(max_entries=32)
 def top1_breakdown(run_dir: str, gamma: float) -> pd.DataFrame:
     """Pair / crop / disease Top-1 on both test splits, with the run's gamma and without calibration (gamma 0).
@@ -69,7 +74,7 @@ table = pd.DataFrame(
             "seen_top1": r["metrics"]["test_seen"]["top1"],
             "unseen_top1": r["metrics"]["test_unseen"]["top1"],
             "hm_top1": r["metrics"]["harmonic_mean_top1"],
-            "ausuc": tradeoff(str(r["dir"]))[1],
+            "ausuc": tradeoff(str(r["dir"]))[1] if has_scores(r["dir"]) else None,
             "seen_top5": r["metrics"]["test_seen"]["top5"],
             "unseen_top5": r["metrics"]["test_unseen"]["top5"],
             "hm_top5": r["metrics"]["harmonic_mean_top5"],
@@ -82,8 +87,11 @@ table = pd.DataFrame(
             "seen_disease": r["metrics"]["test_seen"]["disease_top1"],
             "unseen_crop": r["metrics"]["test_unseen"]["crop_top1"],
             "unseen_disease": r["metrics"]["test_unseen"]["disease_top1"],
-            "unseen_disease_g0": top1_breakdown(str(r["dir"]), gamma_of(r))
-            .query("setting == 'uncalibrated' and split == 'Unseen'")["disease"].iloc[0],
+            "unseen_disease_g0": (
+                top1_breakdown(str(r["dir"]), gamma_of(r))
+                .query("setting == 'uncalibrated' and split == 'Unseen'")["disease"].iloc[0]
+                if has_scores(r["dir"]) else None
+            ),
         }
         for r in runs
     ]
@@ -141,11 +149,13 @@ with c2, st.container(border=True):
 
 with st.container(border=True):
     st.markdown("**Seen / unseen trade-off over every calibration γ (AUSUC)**")
-    by_hm = table.sort_values("hm_top1", ascending=False)
+    scored_runs = [r for r in runs if has_scores(r["dir"])]
+    scored_versions = {r["version"] for r in scored_runs}
+    by_hm = table[table["model"].isin(scored_versions)].sort_values("hm_top1", ascending=False)
     default = list(dict.fromkeys([*by_hm["model"].head(3), *by_hm.loc[by_hm["family"] == "baseline", "model"].head(1)]))
     picked = st.multiselect("Models", by_hm["model"].tolist(), default=default, key="dash_ausuc_models")
     if picked:
-        dirs = {r["version"]: str(r["dir"]) for r in runs}
+        dirs = {r["version"]: str(r["dir"]) for r in scored_runs}
         auc = {m: tradeoff(dirs[m])[1] for m in picked}
         name = lambda m: f"{m} (AUSUC {auc[m]:.3f})"
         curves = pd.concat([tradeoff(dirs[m])[0].assign(model=name(m)) for m in picked])
@@ -169,6 +179,8 @@ with st.container(border=True):
         )
         st.altair_chart(alt.layer(lines, dots).properties(height=380),
                         alt="Seen against unseen Top-1 for each selected model as calibration gamma varies")
+    elif not scored_runs:
+        st.caption("No runs include `scores.npz` for sweeping γ.")
     st.caption("Each line sweeps the calibration γ from favouring seen pairs (right, unseen 0%) to favouring unseen "
                "pairs (top, seen 0%); the dot is the model's reported operating point (γ chosen on validation), whose "
                "harmonic mean is the headline number. **AUSUC** is the area under the line: 1 means perfect on both at "
@@ -177,33 +189,37 @@ with st.container(border=True):
 
 with st.container(border=True):
     st.markdown("**How each model's test predictions go wrong**")
-    split_pick = st.segmented_control(
-        "Test split", ["Both", "Seen", "Unseen"], default="Both", required=True, key="dash_outcome_split"
-    )
-    rows = []
-    for r in runs:
-        p = test_predictions(str(r["dir"]), r["method"], gamma_of(r))
-        if split_pick != "Both":
-            p = p[p["split"] == f"test_{split_pick.lower()}"]
-        share = p["outcome"].value_counts(normalize=True)
-        rows += [{"model": r["version"], "outcome": o, "share": float(share.get(o, 0.0)), "rank": i} for i, o in enumerate(OUTCOMES)]
-    out = pd.DataFrame(rows)
-    chart = (
-        alt.Chart(out)
-        .mark_bar()
-        .encode(
-            y=alt.Y("model:N", sort=order, title=None, axis=alt.Axis(labelLimit=240)),
-            x=alt.X("share:Q", stack="normalize", axis=alt.Axis(format="%"), title="Share of test images"),
-            color=alt.Color("outcome:N", sort=OUTCOMES, title=None, legend=alt.Legend(orient="top"),
-                            scale=alt.Scale(domain=OUTCOMES, range=["#2e9e5b", "#f2a33a", "#e0644f", "#8c2d2d"])),
-            order=alt.Order("rank:Q"),
-            tooltip=["model", "outcome", alt.Tooltip("share:Q", format=".1%")],
+    if not scored_runs:
+        st.caption("No runs include saved per-image test predictions (`scores.npz`).")
+    else:
+        split_pick = st.segmented_control(
+            "Test split", ["Both", "Seen", "Unseen"], default="Both", required=True, key="dash_outcome_split"
         )
-        .properties(height=34 * len(runs) + 40)
-    )
-    st.altair_chart(chart, alt="Share of test images per model that are correct, wrong crop, wrong disease or both wrong")
-    st.caption("Top-1 prediction against the true pair. *Wrong crop*: right disease on the wrong crop; "
-               "*wrong disease*: right crop with the wrong disease.")
+        rows = []
+        for r in scored_runs:
+            p = test_predictions(str(r["dir"]), r["method"], gamma_of(r))
+            if split_pick != "Both":
+                p = p[p["split"] == f"test_{split_pick.lower()}"]
+            share = p["outcome"].value_counts(normalize=True)
+            rows += [{"model": r["version"], "outcome": o, "share": float(share.get(o, 0.0)), "rank": i} for i, o in enumerate(OUTCOMES)]
+        out = pd.DataFrame(rows)
+        scored_order = [m for m in order if m in scored_versions]
+        chart = (
+            alt.Chart(out)
+            .mark_bar()
+            .encode(
+                y=alt.Y("model:N", sort=scored_order, title=None, axis=alt.Axis(labelLimit=240)),
+                x=alt.X("share:Q", stack="normalize", axis=alt.Axis(format="%"), title="Share of test images"),
+                color=alt.Color("outcome:N", sort=OUTCOMES, title=None, legend=alt.Legend(orient="top"),
+                                scale=alt.Scale(domain=OUTCOMES, range=["#2e9e5b", "#f2a33a", "#e0644f", "#8c2d2d"])),
+                order=alt.Order("rank:Q"),
+                tooltip=["model", "outcome", alt.Tooltip("share:Q", format=".1%")],
+            )
+            .properties(height=34 * len(scored_runs) + 40)
+        )
+        st.altair_chart(chart, alt="Share of test images per model that are correct, wrong crop, wrong disease or both wrong")
+        st.caption("Top-1 prediction against the true pair. *Wrong crop*: right disease on the wrong crop; "
+                   "*wrong disease*: right crop with the wrong disease.")
 
 with st.container(border=True):
     st.markdown("**All models**")
@@ -260,34 +276,48 @@ with st.container(horizontal=True):
 c1, c2 = st.columns(2)
 with c1, st.container(border=True, height="stretch"):
     st.markdown("**Top-1: pair, crop and disease, with and without calibration**")
-    bd = top1_breakdown(str(run["dir"]), gamma_of(run))
-    wide = bd.pivot(index="split", columns="setting", values=["pair", "crop", "disease"])
-    wide.columns = [f"{m}_{s}" for m, s in wide.columns]
-    st.dataframe(
-        wide.reset_index(),
-        hide_index=True,
-        alt="Pair, crop and disease Top-1 with and without calibration",
-        column_config={
-            "split": "Test split",
-            "pair_calibrated": pct("Pair (γ)"), "pair_uncalibrated": pct("Pair (γ=0)"),
-            "crop_calibrated": pct("Crop (γ)"), "crop_uncalibrated": pct("Crop (γ=0)"),
-            "disease_calibrated": pct("Disease (γ)"), "disease_uncalibrated": pct("Disease (γ=0)"),
-        },
-        column_order=["split", "pair_calibrated", "pair_uncalibrated", "crop_calibrated", "crop_uncalibrated",
-                      "disease_calibrated", "disease_uncalibrated"],
-    )
-    st.caption("Crop and disease accuracy are read off the top-1 predicted pair. Without calibration, unseen accuracy "
-               "usually drops sharply: the model favours pairs it was trained on.")
+    if has_scores(run["dir"]):
+        bd = top1_breakdown(str(run["dir"]), gamma_of(run))
+        wide = bd.pivot(index="split", columns="setting", values=["pair", "crop", "disease"])
+        wide.columns = [f"{m}_{s}" for m, s in wide.columns]
+        st.dataframe(
+            wide.reset_index(),
+            hide_index=True,
+            alt="Pair, crop and disease Top-1 with and without calibration",
+            column_config={
+                "split": "Test split",
+                "pair_calibrated": pct("Pair (γ)"), "pair_uncalibrated": pct("Pair (γ=0)"),
+                "crop_calibrated": pct("Crop (γ)"), "crop_uncalibrated": pct("Crop (γ=0)"),
+                "disease_calibrated": pct("Disease (γ)"), "disease_uncalibrated": pct("Disease (γ=0)"),
+            },
+            column_order=["split", "pair_calibrated", "pair_uncalibrated", "crop_calibrated", "crop_uncalibrated",
+                          "disease_calibrated", "disease_uncalibrated"],
+        )
+        st.caption("Crop and disease accuracy are read off the top-1 predicted pair. Without calibration, unseen accuracy "
+                   "usually drops sharply: the model favours pairs it was trained on.")
+    else:
+        st.dataframe(
+            pd.DataFrame([
+                {"split": "Seen", "pair": metrics["test_seen"]["top1"], "crop": metrics["test_seen"]["crop_top1"], "disease": metrics["test_seen"]["disease_top1"]},
+                {"split": "Unseen", "pair": metrics["test_unseen"]["top1"], "crop": metrics["test_unseen"]["crop_top1"], "disease": metrics["test_unseen"]["disease_top1"]},
+            ]),
+            hide_index=True,
+            column_config={"split": "Test split", "pair": pct("Pair"), "crop": pct("Crop"), "disease": pct("Disease")},
+        )
+        st.caption("Reported operating point from `metrics.json` (`scores.npz` not included for γ=0 comparison).")
 with c2, st.container(border=True, height="stretch"):
     st.markdown("**Most frequent confusions**")
-    pairs = pair_table(load_metadata())
-    names = pairs["pair"].to_numpy()
-    p = test_predictions(str(run["dir"]), run["method"], gamma_of(run))
-    wrong = p[p["outcome"] != "Correct"]
-    conf = (
-        wrong.assign(true=names[wrong["true_id"]], predicted=names[wrong["pred_id"]])
-        .groupby(["true", "predicted", "outcome"]).size().rename("images").reset_index()
-        .sort_values("images", ascending=False).head(10)
-    )
-    st.dataframe(conf, hide_index=True, alt="Ten most frequent true-predicted pair confusions on both test splits")
-    st.caption("Both test splits. The full seen-test confusion matrix is saved as `confusion_test_seen.csv` in the run folder.")
+    if has_scores(run["dir"]):
+        pairs = pair_table(load_metadata())
+        names = pairs["pair"].to_numpy()
+        p = test_predictions(str(run["dir"]), run["method"], gamma_of(run))
+        wrong = p[p["outcome"] != "Correct"]
+        conf = (
+            wrong.assign(true=names[wrong["true_id"]], predicted=names[wrong["pred_id"]])
+            .groupby(["true", "predicted", "outcome"]).size().rename("images").reset_index()
+            .sort_values("images", ascending=False).head(10)
+        )
+        st.dataframe(conf, hide_index=True, alt="Ten most frequent true-predicted pair confusions on both test splits")
+        st.caption("Both test splits. The full seen-test confusion matrix is saved as `confusion_test_seen.csv` in the run folder.")
+    else:
+        st.caption("Per-image test predictions (`scores.npz`) are not included for this run.")

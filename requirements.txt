@@ -8,3 +8,4 @@ open_clip_torch
 timm
 tqdm
 huggingface_hub
+safetensors
