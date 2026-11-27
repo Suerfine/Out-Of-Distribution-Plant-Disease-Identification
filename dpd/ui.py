@@ -122,13 +122,14 @@ def backbone(run: dict) -> str:
     if run["method"] == "cnn_supcon":
         name = {"timm:convnext_base.fb_in22k_ft_in1k": "ConvNeXt-Base"}.get(run["cfg"]["model"]["backbone"], run["cfg"]["model"]["backbone"])
         return f"{name} ({run['cfg']['input']['crop_size']} px)"
-    mcfg = run["cfg"].get("model", {})
-    if "backbone" in mcfg:
-        bb = mcfg["backbone"]
-        n = "2 × " if run["method"] == "cnn_independent" else ""
-        return n + {"resnet50": "ResNet-50"}.get(bb, bb)
-    if "arch" in mcfg:
-        return "BioCLIP" if "bioclip" in mcfg["arch"] else "OpenAI CLIP"
+    mcfg = run["cfg"].get("model")
+    if isinstance(mcfg, dict):
+        if "backbone" in mcfg:
+            bb = mcfg["backbone"]
+            n = "2 × " if run["method"] == "cnn_independent" else ""
+            return n + {"resnet50": "ResNet-50"}.get(bb, bb)
+        if "arch" in mcfg:
+            return "BioCLIP" if "bioclip" in mcfg["arch"] else "OpenAI CLIP"
     return "Unknown"
 
 

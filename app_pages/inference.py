@@ -40,7 +40,8 @@ def explain_bytes(run_dir: str, data: bytes, pred_crop_id: int, pred_disease_id:
 
 
 def check_gradcam_support(run_cfg: dict) -> tuple[bool, str]:
-    bb = run_cfg.get("model", {}).get("backbone", "").lower()
+    mcfg = run_cfg.get("model")
+    bb = (mcfg.get("backbone", "") if isinstance(mcfg, dict) else "").lower()
     method = run_cfg.get("method", "")
     if "vit" in bb:
         return False, "ViT backbones do not use 2D convolutional feature maps"
